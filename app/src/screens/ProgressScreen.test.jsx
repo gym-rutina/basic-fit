@@ -125,3 +125,110 @@ describe('ProgressScreen', () => {
     });
   });
 });
+
+/**
+ * exercise-level-tracking (spec.md AC10; ux-design.md S5).
+ *
+ * The picker selects by exercise key, so two exercises on one machine are two
+ * pills. Where two exercises share a NAME (different machines), the pill label
+ * gets a model-code suffix — that suffix is real text inside the button, so it
+ * lands in the accessible name for free.
+ */
+const TWO_ON_ONE_MACHINE = [
+  {
+    id: 's1',
+    dayLabel: 'Lunes',
+    dayIndex: 0,
+    status: 'completed',
+    startedAt: '2026-07-06T09:00:00.000Z',
+    endedAt: '2026-07-06T09:50:00.000Z',
+    exercises: [
+      {
+        equipmentId: 'g3-s10',
+        name: 'Prensa de Pecho',
+        weightUsed: 32,
+        difficulty: 'normal',
+        completedAt: '2026-07-06T09:10:00.000Z',
+      },
+      {
+        equipmentId: 'g3-s10',
+        name: 'Press de Hombro',
+        weightUsed: 24,
+        difficulty: 'hard',
+        completedAt: '2026-07-06T09:20:00.000Z',
+      },
+    ],
+  },
+];
+
+describe('ProgressScreen — exercise-level picker (AC10)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('shows two pills for two exercises on the same machine', async () => {
+    db.listSessions.mockResolvedValue(TWO_ON_ONE_MACHINE);
+    renderProgress();
+
+    expect(await screen.findByRole('button', { name: /Prensa de Pecho/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Press de Hombro/i })).toBeInTheDocument();
+  });
+
+  it('selects each exercise independently, not the machine they share', async () => {
+    const user = userEvent.setup();
+    db.listSessions.mockResolvedValue(TWO_ON_ONE_MACHINE);
+    renderProgress();
+
+    const chest = await screen.findByRole('button', { name: /Prensa de Pecho/i });
+    expect(chest).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /Press de Hombro/i })).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(screen.getByRole('button', { name: /Press de Hombro/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Press de Hombro/i })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByRole('button', { name: /Prensa de Pecho/i })).toHaveAttribute('aria-pressed', 'false');
+    });
+  });
+
+  it('disambiguates two exercises that share a name with their model code', async () => {
+    db.listSessions.mockResolvedValue([
+      {
+        ...TWO_ON_ONE_MACHINE[0],
+        exercises: [
+          {
+            equipmentId: 'g3-s40',
+            name: 'Remo',
+            weightUsed: 40,
+            difficulty: 'normal',
+            completedAt: '2026-07-06T09:10:00.000Z',
+          },
+          {
+            equipmentId: 'g3-s60',
+            name: 'Remo',
+            weightUsed: 50,
+            difficulty: 'normal',
+            completedAt: '2026-07-06T09:20:00.000Z',
+          },
+        ],
+      },
+    ]);
+    renderProgress();
+
+    // Two same-named exercises on different machines must not render two
+    // indistinguishable pills.
+    const pills = await screen.findAllByRole('button', { name: /Remo/i });
+    expect(pills).toHaveLength(2);
+    expect(pills[0].textContent).not.toBe(pills[1].textContent);
+    expect(pills.map((p) => p.textContent).join(' ')).toMatch(/G3-S40/i);
+    expect(pills.map((p) => p.textContent).join(' ')).toMatch(/G3-S60/i);
+  });
+
+  it('leaves labels unsuffixed when there is no name collision', async () => {
+    db.listSessions.mockResolvedValue(TWO_ON_ONE_MACHINE);
+    renderProgress();
+
+    const chest = await screen.findByRole('button', { name: /Prensa de Pecho/i });
+    expect(chest.textContent.trim()).toBe('Prensa de Pecho');
+  });
+});

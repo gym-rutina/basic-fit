@@ -41,6 +41,11 @@ chat can't open zip attachments.
 - Do NOT include a "summaryTable" field — it does not exist in the schema and
   will fail validation. Any summary view is derived from "days" elsewhere.
 - Omit a field only when the schema marks it optional; every other field is required.
+- If field 8 (prior progress export) names an exercise you are repeating this phase,
+  reuse its exact name and spelling. Progress and prefilled weights are tracked by
+  exercise name, so a respelled exercise starts a new, empty history.
+- "videoQuery" (optional) is a search query for THIS exercise on THIS equipment, not a
+  generic machine query — set it only to override the app's automatic query.
 
 ### OUTPUT
 Return the JSON object now. Nothing else.

@@ -3,11 +3,18 @@ import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 
 /**
  * Bottom-sheet overlay showing equipment reference detail.
- * Props: { name, imageUrl, steps, videoHref, onClose }
+ * Props: { name, imageUrl, steps, videoHref, videoLabel, onClose }
  * Reuses ConfirmSheet positioning + GuideOverlay dialog/Escape patterns.
  * Sections (image, Técnica, video) are omitted when their prop is absent/empty.
+ *
+ * exercise-level-tracking AC18′ (UAT decision A2): the sheet renders exactly
+ * ONE video link — the exercise tutorial the caller composed with
+ * buildVideoQuery. The catalog machine video is no longer offered here (it
+ * stays reachable in the Catálogo tab). The sheet's title is the MACHINE (it
+ * must match the row that opened it), so `videoLabel` is what tells the user
+ * the link is scoped to a specific exercise on that machine.
  */
-export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, onClose }) {
+export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, videoLabel = 'Ver tutorial en YouTube', onClose }) {
   const closeRef = useRef(null);
 
   useEffect(() => {
@@ -111,9 +118,11 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, onCl
               font: '600 14px/1.2 var(--font-sans)',
               color: 'var(--bf-purple)',
               textDecoration: 'none',
+              minHeight: 44,
             }}
           >
-            Ver tutorial en YouTube
+            {videoLabel}
+            <span className="sr-only"> (se abre en una pestaña nueva)</span>
           </a>
         )}
       </div>

@@ -92,3 +92,62 @@ describe('EquipmentReferenceSheet', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * exercise-level-tracking (spec.md AC18′ — restated at UAT).
+ *
+ * UAT decision A2: the catalog machine video is REMOVED from the exercise
+ * context. This sheet renders exactly one video link, and that link is the
+ * exercise tutorial its caller composed with buildVideoQuery. The machine's own
+ * clip stays in the Catálogo tab, which this feature does not touch.
+ *
+ * The sheet is titled with the MACHINE (it must match the row that opened it),
+ * so the link label is what tells the user the tutorial is for the exercise —
+ * hence the optional videoLabel prop.
+ */
+describe('EquipmentReferenceSheet — exercise tutorial link (AC18′)', () => {
+  const TUTORIAL = 'https://www.youtube.com/results?search_query=Press%20de%20Hombro%20t%C3%A9cnica';
+
+  it('renders the custom videoLabel when the caller names the exercise', () => {
+    render(
+      <EquipmentReferenceSheet
+        {...RICH}
+        videoHref={TUTORIAL}
+        videoLabel="Ver técnica de «Press de Hombro» en YouTube"
+        onClose={vi.fn()}
+      />
+    );
+
+    const link = screen.getByRole('link', { name: /ver técnica de «Press de Hombro»/i });
+    expect(link).toHaveAttribute('href', TUTORIAL);
+  });
+
+  it('keeps the generic label when no videoLabel is passed', () => {
+    render(<EquipmentReferenceSheet {...RICH} onClose={vi.fn()} />);
+
+    expect(screen.getByRole('link', { name: /ver tutorial en youtube/i })).toBeInTheDocument();
+  });
+
+  it('renders exactly ONE link — no separate machine-video link', () => {
+    render(
+      <EquipmentReferenceSheet
+        {...RICH}
+        videoHref={TUTORIAL}
+        videoLabel="Ver técnica de «Press de Hombro» en YouTube"
+        onClose={vi.fn()}
+      />
+    );
+
+    expect(screen.getAllByRole('link')).toHaveLength(1);
+    expect(screen.queryByRole('link', { name: /vídeo de la máquina/i })).not.toBeInTheDocument();
+  });
+
+  it('opens in a new tab safely and says so for screen readers', () => {
+    render(<EquipmentReferenceSheet {...RICH} videoHref={TUTORIAL} onClose={vi.fn()} />);
+
+    const link = screen.getByRole('link', { name: /youtube/i });
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(link).toHaveAccessibleName(/se abre en una pestaña nueva/i);
+  });
+});

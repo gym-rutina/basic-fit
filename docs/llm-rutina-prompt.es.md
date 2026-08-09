@@ -142,6 +142,26 @@ en consecuencia.
 
 ---
 
+## Mantén los ejercicios rastreables entre fases
+
+El progreso, el peso prellenado y los enlaces de tutorial se rastrean **por ejercicio**,
+no por máquina — dos ejercicios distintos en el mismo aparato (por ejemplo, una prensa de
+pecho y un press de hombro en la misma máquina multiestación) se registran, grafican y
+exportan de forma independiente. Un ejercicio se identifica por su **nombre** junto con el
+equipamiento que usa, así que al escribir el REQUEST de la siguiente fase:
+
+- **Reutiliza el nombre exacto de la fase anterior** cuando esta fase repite un ejercicio.
+  La exportación de progreso (campo 8) imprime el nombre de cada ejercicio tal como se
+  registró — cópialo literalmente en vez de reformularlo ("Prensa de Pecho", no "Press de
+  Pecho" ni "Chest Press"). Un nombre reescrito se trata como un ejercicio *distinto* con
+  historial vacío — perderías la tendencia de peso y el prellenado ya acumulados.
+- **`videoQuery` es una búsqueda para *este ejercicio en este equipamiento*, no para la
+  máquina en general.** La app ya compone una buena búsqueda automáticamente a partir del
+  nombre del ejercicio y del equipamiento — define `videoQuery` solo cuando quieras
+  sobrescribirla (una variante específica, una demostración preferida, etc.).
+
+---
+
 ## Actualizar tu programa
 
 Una vez que hay un programa cargado, puedes reemplazarlo o eliminarlo desde la pestaña **Programa**:

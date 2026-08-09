@@ -1,25 +1,33 @@
 import { difficultyLabel } from './difficulty.js';
+import { exerciseKey } from './exerciseKey.js';
 
 /**
  * Export formatter — turns session history into the two portable artifacts
- * spec.md's Export ACs ask for: a precise re-importable JSON payload, and a
+ * spec.md's Export ACs ask for: a JSON payload keyed by exercise, and a
  * Markdown summary written to be pasted into an LLM chat.
  *
- * Both outputs are derived from the SAME per-equipment chronological
+ * Both outputs are derived from the SAME per-exercise chronological
  * grouping so they can never drift apart from each other.
  */
 
-/** Groups every *logged* exercise (completedAt set) across sessions by equipmentId, chronological ascending. */
-function groupByEquipment(sessions) {
-  const groups = new Map(); // equipmentId -> { name, entries: [{date, weightUsed, difficulty}] }
+/**
+ * Groups every *logged* exercise (completedAt set) across sessions by
+ * exercise key, chronological ascending (exercise-level-tracking AC13/AC14).
+ * An exercise whose key is `null` (not trackable) contributes nothing, same
+ * as an abandoned/skipped/never-reached exercise.
+ */
+function groupByExercise(sessions) {
+  const groups = new Map(); // exerciseKey -> { name, equipmentId, entries: [{date, weightUsed, difficulty}] }
 
   for (const session of sessions) {
     for (const ex of session.exercises || []) {
       if (ex.completedAt == null) continue; // abandoned/skipped/never-reached — contributes nothing (spec.md Export AC)
-      if (!groups.has(ex.equipmentId)) {
-        groups.set(ex.equipmentId, { name: ex.name, entries: [] });
+      const key = exerciseKey(ex);
+      if (key == null) continue;
+      if (!groups.has(key)) {
+        groups.set(key, { name: ex.name, equipmentId: ex.equipmentId, entries: [] });
       }
-      groups.get(ex.equipmentId).entries.push({
+      groups.get(key).entries.push({
         date: ex.completedAt.slice(0, 10),
         weightUsed: ex.weightUsed,
         difficulty: ex.difficulty,
@@ -47,21 +55,22 @@ function formatEntryLine(entry) {
 /**
  * @param {Array} sessions - full session history (any status)
  * @param {{from?: string, to?: string}} range - inclusive YYYY-MM-DD bounds, both optional
- * @returns {{json: {exercises: Record<string, Array<{date:string, weightUsed:number, difficulty:string}>>}, markdown: string}}
+ * @returns {{json: {exercises: Record<string, Array<{date:string, weightUsed:number, difficulty:string}>>, exerciseNames: Record<string,string>}, markdown: string}}
  */
 export function buildExportPayload(sessions = [], { from, to } = {}) {
-  const groups = groupByEquipment(sessions);
+  const groups = groupByExercise(sessions);
 
-  const json = { exercises: {} };
+  const json = { exercises: {}, exerciseNames: {} };
   const lines = [];
 
-  for (const [equipmentId, group] of groups) {
+  for (const [key, group] of groups) {
     const entries = group.entries.filter((e) => inRange(e.date, from, to));
     if (entries.length === 0) continue;
 
-    json.exercises[equipmentId] = entries.map(({ date, weightUsed, difficulty }) => ({ date, weightUsed, difficulty }));
+    json.exercises[key] = entries.map(({ date, weightUsed, difficulty }) => ({ date, weightUsed, difficulty }));
+    json.exerciseNames[key] = group.name;
 
-    lines.push(`${group.name} (${equipmentId})`);
+    lines.push(group.equipmentId ? `${group.name} (${group.equipmentId})` : group.name);
     entries.forEach((e) => lines.push(`  · ${formatEntryLine(e)}`));
     lines.push('');
   }

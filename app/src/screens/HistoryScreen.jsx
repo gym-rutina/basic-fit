@@ -8,6 +8,7 @@ import { listSessions, deleteSessions } from '../lib/db.js';
 import { buildExerciseTrends } from '../lib/trends.js';
 import { difficultyLabel } from '../lib/difficulty.js';
 import { formatRelativeDays } from '../lib/relativeTime.js';
+import { machineLabel } from '../lib/machineLabel.js';
 
 function durationMinutes(session) {
   if (!session.endedAt) return null;
@@ -245,19 +246,40 @@ export function HistoryScreen() {
         {!selectionMode && trends.length > 0 && (
           <>
             <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: 'var(--space-4) 0 0' }}>Por ejercicio</h2>
-            {trends.map((t) => (
-              <div key={t.equipmentId} style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}>
-                <div style={{ font: '700 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: 6 }}>{t.name}</div>
-                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-                  {t.entries.map((e, i) => (
-                    <span key={i}>
-                      {e.weightUsed != null ? `${e.weightUsed}kg · ` : ''}
-                      {difficultyLabel(e.difficulty)}
-                    </span>
-                  ))}
+            {trends.map((t) => {
+              // exercise-level-tracking AC9: one row per exercise key, so one
+              // machine can now head several rows — the sub-line names WHICH
+              // machine (always shown; a line only on collisions would read
+              // as a glitch).
+              const subLine = machineLabel(t.equipmentId, t.name);
+              return (
+                <div key={t.exerciseKey} style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}>
+                  <div style={{ font: '700 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: subLine ? 2 : 6 }}>{t.name}</div>
+                  {subLine && (
+                    <div
+                      style={{
+                        font: '600 12px/1.3 var(--font-sans)',
+                        color: 'var(--text-muted)',
+                        marginBottom: 6,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {subLine}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
+                    {t.entries.map((e, i) => (
+                      <span key={i}>
+                        {e.weightUsed != null ? `${e.weightUsed}kg · ` : ''}
+                        {difficultyLabel(e.difficulty)}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </>
         )}
 

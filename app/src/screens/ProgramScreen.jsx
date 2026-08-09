@@ -12,6 +12,7 @@ import { ConfirmSheet } from '../components/ConfirmSheet.jsx';
 import { getEquipmentById, mainImageUrl, equipmentDisplayName } from '../data/equipment.js';
 import { dayFocusLabels, muscleGroupLabels } from '../lib/muscleGroups.js';
 import { getActiveSession, listSessions, clearActiveRutina } from '../lib/db.js';
+import { buildVideoQuery } from '../lib/videoQuery.js';
 
 const wrap = { maxWidth: 760, margin: '0 auto', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 'var(--space-8)' };
 
@@ -327,11 +328,8 @@ function ProgramDayDetail({ rutina, dayIndex }) {
                 equipment={equipment ? `${equipment.series ? `Matrix ${equipment.series} ` : ''}${equipment.modelCode} — ${equipmentDisplayName(equipment)}` : exercise.equipmentId}
                 imageUrl={equipment ? mainImageUrl(equipment) : undefined}
                 steps={exercise.technique || []}
-                videoHref={
-                  exercise.videoQuery
-                    ? `https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.videoQuery)}`
-                    : (equipment?.videos?.es || equipment?.videos?.en || [])[0]?.url
-                }
+                videoHref={`https://www.youtube.com/results?search_query=${encodeURIComponent(buildVideoQuery(exercise, equipment))}`}
+                videoLabel={`Ver técnica de «${exercise.name}» en YouTube`}
               />
             );
           })}

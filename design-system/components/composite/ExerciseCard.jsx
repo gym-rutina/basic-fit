@@ -3,7 +3,7 @@ import { Tag } from "../primitives/Tag.jsx";
 import { DetailItem } from "../primitives/DetailItem.jsx";
 
 /** Full exercise card for routine day sections. Mobile-first; details grid wraps. */
-export function ExerciseCard({ number, name, muscles = [], details = [], equipment, alternative, imageUrl, steps = [], videoHref, style }) {
+export function ExerciseCard({ number, name, muscles = [], details = [], equipment, alternative, imageUrl, steps = [], videoHref, videoLabel = "Ver tutorial en YouTube →", style }) {
   const [hover, setHover] = React.useState(false);
   return (
     <article onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} style={{
@@ -70,10 +70,13 @@ export function ExerciseCard({ number, name, muscles = [], details = [], equipme
       )}
 
       {videoHref && (
-        <a href={videoHref} target="_blank" rel="noreferrer" style={{
+        <a href={videoHref} target="_blank" rel="noopener noreferrer" style={{
           display: "inline-block", marginTop: "var(--space-3)",
           font: "600 14px/1.3 var(--font-sans)", color: "var(--text-link)",
-        }}>Ver tutorial en YouTube →</a>
+        }}>
+          {videoLabel}
+          <span className="sr-only"> (se abre en una pestaña nueva)</span>
+        </a>
       )}
     </article>
   );

@@ -220,3 +220,94 @@ describe('ProgramScreen — program management actions (AC-1 through AC-6)', () 
     expect(onRutinaCleared).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * exercise-level-tracking (spec.md AC17, AC18′).
+ *
+ * ProgramScreen used to build its own `youtube.com/results?search_query=…`
+ * expression inline — a second implementation that could drift from the one in
+ * ActiveSessionScreen. AC17 collapses both onto buildVideoQuery. AC18′ (UAT
+ * decision A2) removes the catalog-machine-video fallback that sat behind it.
+ */
+import { getEquipmentById as getEq, equipmentDisplayName as eqName } from '../data/equipment.js';
+
+const DAY_RUTINA = {
+  schemaVersion: 1,
+  program: { name: 'Test', phaseName: 'Fase 1', phaseNumber: 1, durationWeeks: 4 },
+  phaseInfo: { objective: 'Test objective', intensityPercent: '60%', restSeconds: 60, frequencyPerWeek: 3 },
+  warmup: { durationMinutes: 5, steps: ['Warm up step'] },
+  cooldown: { durationMinutes: 5, steps: ['Cool down step'] },
+  days: [
+    {
+      label: 'Lunes',
+      exercises: [
+        {
+          equipmentId: 'g3-s10',
+          name: 'Press de Hombro',
+          sets: 4,
+          reps: 8,
+          restSeconds: 75,
+          muscleGroups: ['shoulders'],
+        },
+      ],
+    },
+  ],
+  rules: [],
+  notes: [],
+};
+
+function renderDay() {
+  return render(
+    <MemoryRouter initialEntries={['/program/0']}>
+      <Routes>
+        <Route
+          path="/program/:dayIndex"
+          element={<ProgramScreen rutina={DAY_RUTINA} onGoImport={vi.fn()} onRutinaCleared={vi.fn()} />}
+        />
+      </Routes>
+    </MemoryRouter>
+  );
+}
+
+describe('ProgramScreen — day detail tutorial link (AC17, AC18′)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    db.getActiveSession.mockResolvedValue(null);
+    db.listSessions.mockResolvedValue([]);
+  });
+
+  it('links to a query composed from the exercise and its equipment (AC17)', async () => {
+    renderDay();
+
+    const link = await screen.findByRole('link', { name: /ver técnica de «Press de Hombro»/i });
+    const href = link.getAttribute('href');
+    expect(href).toContain('youtube.com/results');
+    expect(href).toContain(encodeURIComponent('Press de Hombro'));
+    expect(href).toContain(encodeURIComponent(eqName(getEq('g3-s10'))));
+  });
+
+  it('does not link to the catalog machine video (AC18′)', async () => {
+    renderDay();
+
+    await screen.findByRole('link', { name: /ver técnica/i });
+    const catalogVideo = (getEq('g3-s10').videos?.es || getEq('g3-s10').videos?.en || [])[0]?.url;
+    expect(catalogVideo).toBeTruthy(); // fixture sanity
+
+    const links = screen.getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).not.toContain(catalogVideo);
+    expect(screen.queryByRole('link', { name: /vídeo de la máquina/i })).not.toBeInTheDocument();
+  });
+
+  it('builds the identical href for the same exercise as /session does (AC17)', async () => {
+    // The two screens must not drift: one helper, one query.
+    const { buildVideoQuery } = await import('../lib/videoQuery.js');
+    const expected = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+      buildVideoQuery({ name: 'Press de Hombro', equipmentId: 'g3-s10' }, getEq('g3-s10'))
+    )}`;
+
+    renderDay();
+
+    const link = await screen.findByRole('link', { name: /ver técnica/i });
+    expect(link).toHaveAttribute('href', expected);
+  });
+});

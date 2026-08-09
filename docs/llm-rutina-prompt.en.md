@@ -141,6 +141,26 @@ too hard, and which sessions were abandoned — and adjusts the next phase accor
 
 ---
 
+## Keeping exercises trackable across phases
+
+Progress, prefilled weights, and tutorial links are tracked **per exercise**, not per
+machine — two different exercises on the same piece of equipment (a chest press and a
+shoulder press on the same multi-station machine, say) are logged, charted, and exported
+independently. An exercise is identified by its **name** together with the equipment it
+uses, so two things matter when you write the next phase's REQUEST:
+
+- **Reuse the exact name from the previous phase** when this phase repeats an exercise.
+  The progress export (field 8) prints each exercise's name exactly as it was logged —
+  copy it verbatim rather than rephrasing it ("Prensa de Pecho", not "Press de Pecho" or
+  "Chest Press"). A respelled name is treated as a *different* exercise with an empty
+  history — you'd lose the weight trend and prefill you built up.
+- **`videoQuery` is a search query for *this exercise on this equipment*, not for the
+  machine in general.** The app already composes a good query automatically from the
+  exercise name and the equipment name — set `videoQuery` only when you want to override
+  it (a specific variant, a preferred demo, etc.).
+
+---
+
 ## Updating your program
 
 Once a program is loaded, you can replace or remove it from the **Programa** tab:

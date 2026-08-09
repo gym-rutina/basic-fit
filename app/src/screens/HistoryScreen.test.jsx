@@ -374,3 +374,78 @@ describe('HistoryScreen — after deletion (AC20, AC21, AC22)', () => {
     expect(screen.getByText('Día 1')).toBeInTheDocument();
   });
 });
+
+/**
+ * exercise-level-tracking (spec.md AC9; ux-design.md S4).
+ *
+ * "Por ejercicio" splits by exercise key, so one machine can head several rows.
+ * That makes a disambiguating sub-line mandatory: without it, two rows can
+ * differ only by a name the user may not recognise as machine-specific.
+ */
+const SAME_MACHINE_SESSION = {
+  id: 'sess-two',
+  dayLabel: 'Día 1',
+  dayIndex: 0,
+  status: 'completed',
+  startedAt: '2026-08-01T09:00:00.000Z',
+  endedAt: '2026-08-01T09:48:00.000Z',
+  exercises: [
+    logged('g3-s10', 'Prensa de Pecho', 40, '2026-08-01T09:10:00.000Z'),
+    logged('g3-s10', 'Press de Hombro', 24, '2026-08-01T09:20:00.000Z'),
+  ],
+};
+
+describe('HistoryScreen — per-exercise trends (AC9)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    db.listSessions.mockResolvedValue([SAME_MACHINE_SESSION]);
+    db.deleteSessions.mockResolvedValue(undefined);
+  });
+
+  it('renders one row per exercise, not one per machine', async () => {
+    renderHistory();
+
+    await screen.findByText('Por ejercicio');
+    expect(screen.getByText('Prensa de Pecho')).toBeInTheDocument();
+    expect(screen.getByText('Press de Hombro')).toBeInTheDocument();
+  });
+
+  it('keeps each exercise weights in its OWN row, not merged into one', async () => {
+    renderHistory();
+
+    await screen.findByText('Por ejercicio');
+
+    // Asserting both weights are merely "on the page" would pass today, when
+    // the two exercises share one merged g3-s10 row. The point is that each
+    // weight sits in the row of the exercise that produced it.
+    const chestRow = screen.getByText('Prensa de Pecho').closest('div');
+    const shoulderRow = screen.getByText('Press de Hombro').closest('div');
+    expect(chestRow).not.toBe(shoulderRow);
+    expect(within(chestRow.parentElement).getByText(/40kg/)).toBeInTheDocument();
+    expect(within(shoulderRow.parentElement).getByText(/24kg/)).toBeInTheDocument();
+    expect(within(chestRow.parentElement).queryByText(/24kg/)).not.toBeInTheDocument();
+  });
+
+  it('names the machine on the row whose exercise name differs from it', async () => {
+    renderHistory();
+
+    await screen.findByText('Por ejercicio');
+    // g3-s10 is "Prensa de Pecho" in the catalog, so the chest row needs only
+    // the model code; the shoulder row must say where it happened.
+    expect(screen.getByText(/G3-S10 · Prensa de Pecho/i)).toBeInTheDocument();
+  });
+
+  it('omits the machine sub-line for a bodyweight exercise', async () => {
+    db.listSessions.mockResolvedValue([
+      {
+        ...SAME_MACHINE_SESSION,
+        exercises: [logged(null, 'Plancha', null, '2026-08-01T09:10:00.000Z')],
+      },
+    ]);
+    renderHistory();
+
+    await screen.findByText('Por ejercicio');
+    expect(screen.getByText('Plancha')).toBeInTheDocument();
+    expect(screen.queryByText(/G3-/i)).not.toBeInTheDocument();
+  });
+});

@@ -17,6 +17,8 @@ export interface ExerciseCardProps {
   /** Technique steps (ordered) */
   steps?: React.ReactNode[];
   videoHref?: string;
+  /** Overrides the default "Ver tutorial en YouTube →" — e.g. to name the exercise. */
+  videoLabel?: React.ReactNode;
   style?: React.CSSProperties;
 }
 export declare function ExerciseCard(props: ExerciseCardProps): JSX.Element;

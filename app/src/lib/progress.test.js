@@ -85,8 +85,8 @@ describe('listLoggedExercises', () => {
       }),
     ];
     expect(listLoggedExercises(sessions)).toEqual([
-      { equipmentId: 'g3-s10', name: 'Prensa' },
-      { equipmentId: 'g3-s20', name: 'Jalón' },
+      { exerciseKey: 'g3-s10::prensa', equipmentId: 'g3-s10', name: 'Prensa' },
+      { exerciseKey: 'g3-s20::jalon', equipmentId: 'g3-s20', name: 'Jalón' },
     ]);
   });
 
@@ -111,7 +111,7 @@ describe('listLoggedExercises', () => {
 });
 
 describe('buildWeightSeries', () => {
-  it('returns chronological ascending uncapped points for one equipment', () => {
+  it('returns chronological ascending uncapped points for one exercise key', () => {
     const sessions = [
       session({
         id: 'newer',
@@ -156,7 +156,7 @@ describe('buildWeightSeries', () => {
         ],
       }),
     ];
-    expect(buildWeightSeries(sessions, 'g3-s10')).toEqual([
+    expect(buildWeightSeries(sessions, 'g3-s10::prensa')).toEqual([
       {
         date: '2026-07-06',
         weightUsed: 30,
@@ -383,5 +383,166 @@ describe('buildFrequencyStats', () => {
       last30: 0,
       streak: 0,
     });
+  });
+});
+
+/**
+ * exercise-level-tracking (spec.md AC10, AC11, AC12).
+ *
+ * Every aggregator in this module used to group by equipmentId, so two
+ * exercises sharing a machine collapsed into one chart line, one picker entry,
+ * and — in buildRutinaMap — one prescription, silently discarding the other's
+ * sets×reps. Re-keying is the fix for all three.
+ */
+const CHEST = { equipmentId: 'g3-s10', name: 'Prensa de Pecho' };
+const SHOULDER = { equipmentId: 'g3-s10', name: 'Press de Hombro' }; // SAME machine
+const CHEST_KEY = 'g3-s10::prensa-de-pecho';
+const SHOULDER_KEY = 'g3-s10::press-de-hombro';
+
+function ex(base, weightUsed, completedAt, difficulty = 'normal') {
+  return { ...base, weightUsed, difficulty, completedAt };
+}
+
+describe('listLoggedExercises — exercise-level (AC10)', () => {
+  it('returns one entry per exercise when a machine hosts two exercises', () => {
+    const sessions = [
+      session({
+        id: 'a',
+        exercises: [
+          ex(CHEST, 32, '2026-07-06T09:10:00.000Z'),
+          ex(SHOULDER, 24, '2026-07-06T09:20:00.000Z'),
+        ],
+      }),
+    ];
+
+    expect(listLoggedExercises(sessions)).toEqual([
+      { exerciseKey: CHEST_KEY, equipmentId: 'g3-s10', name: 'Prensa de Pecho' },
+      { exerciseKey: SHOULDER_KEY, equipmentId: 'g3-s10', name: 'Press de Hombro' },
+    ]);
+  });
+
+  it('splits EXISTING session history by exercise without any backfill (AC7)', () => {
+    // These rows were written before this feature existed: they carry
+    // equipmentId + name and nothing else. The key is derived at read time.
+    const sessions = [
+      session({ id: 'old-1', exercises: [ex(CHEST, 30, '2026-06-01T09:10:00.000Z')] }),
+      session({ id: 'old-2', exercises: [ex(SHOULDER, 22, '2026-06-08T09:10:00.000Z')] }),
+    ];
+
+    expect(listLoggedExercises(sessions).map((e) => e.exerciseKey)).toEqual([CHEST_KEY, SHOULDER_KEY]);
+  });
+
+  it('excludes an exercise whose key is null', () => {
+    const sessions = [
+      session({
+        id: 'a',
+        exercises: [
+          ex({ equipmentId: null, name: '' }, 30, '2026-07-06T09:10:00.000Z'),
+          ex(CHEST, 32, '2026-07-06T09:20:00.000Z'),
+        ],
+      }),
+    ];
+
+    expect(listLoggedExercises(sessions).map((e) => e.exerciseKey)).toEqual([CHEST_KEY]);
+  });
+});
+
+describe('buildWeightSeries — exercise-level (AC10, AC12)', () => {
+  it('charts only the requested exercise, not everything on its machine', () => {
+    const sessions = [
+      session({
+        id: 'a',
+        exercises: [
+          ex(CHEST, 32, '2026-07-06T09:10:00.000Z'),
+          ex(SHOULDER, 24, '2026-07-06T09:20:00.000Z'),
+        ],
+      }),
+    ];
+
+    expect(buildWeightSeries(sessions, CHEST_KEY).map((p) => p.weightUsed)).toEqual([32]);
+    expect(buildWeightSeries(sessions, SHOULDER_KEY).map((p) => p.weightUsed)).toEqual([24]);
+  });
+
+  it('joins one continuous series across two different programs (AC12)', () => {
+    // Fase 1 and Fase 2 are separate imported rutinas. The same
+    // (equipmentId, name) pair is the same exercise, so the series continues.
+    const sessions = [
+      session({ id: 'fase1', exercises: [ex(CHEST, 30, '2026-06-01T09:10:00.000Z')] }),
+      session({ id: 'fase2', exercises: [ex(CHEST, 36, '2026-08-01T09:10:00.000Z')] }),
+    ];
+
+    expect(buildWeightSeries(sessions, CHEST_KEY).map((p) => p.weightUsed)).toEqual([30, 36]);
+  });
+
+  it('treats a case/accent variant of the same name as the same exercise (AC12)', () => {
+    const sessions = [
+      session({ id: 'a', exercises: [ex(CHEST, 30, '2026-06-01T09:10:00.000Z')] }),
+      session({
+        id: 'b',
+        exercises: [ex({ equipmentId: 'g3-s10', name: 'PRENSA DE PECHO' }, 36, '2026-08-01T09:10:00.000Z')],
+      }),
+    ];
+
+    expect(buildWeightSeries(sessions, CHEST_KEY).map((p) => p.weightUsed)).toEqual([30, 36]);
+  });
+});
+
+describe('buildSessionVolumes — exercise-level rutina join (AC11)', () => {
+  const TWO_ON_ONE_MACHINE = {
+    days: [
+      {
+        label: 'Lunes',
+        exercises: [
+          { equipmentId: 'g3-s10', name: 'Prensa de Pecho', sets: 3, reps: 10 },
+          { equipmentId: 'g3-s10', name: 'Press de Hombro', sets: 4, reps: 8 },
+        ],
+      },
+    ],
+  };
+
+  it('counts BOTH exercises on one machine instead of overwriting the first', () => {
+    // The pre-existing bug this fixes: buildRutinaMap keyed on equipmentId, so
+    // the second exercise overwrote the first and the day's volume was computed
+    // from one prescription applied to both logs.
+    const sessions = [
+      session({
+        id: 'a',
+        exercises: [
+          ex(CHEST, 10, '2026-07-06T09:10:00.000Z'), // 3 × 10 × 10 = 300
+          ex(SHOULDER, 10, '2026-07-06T09:20:00.000Z'), // 4 ×  8 × 10 = 320
+        ],
+      }),
+    ];
+
+    expect(buildSessionVolumes(sessions, TWO_ON_ONE_MACHINE)).toEqual([
+      { sessionId: 'a', date: '2026-07-06', volume: 620 },
+    ]);
+  });
+
+  it('still excludes a logged exercise that is absent from the current rutina', () => {
+    const sessions = [
+      session({
+        id: 'a',
+        exercises: [
+          ex(CHEST, 10, '2026-07-06T09:10:00.000Z'),
+          ex({ equipmentId: 'g3-s99', name: 'Remo' }, 50, '2026-07-06T09:30:00.000Z'),
+        ],
+      }),
+    ];
+
+    expect(buildSessionVolumes(sessions, TWO_ON_ONE_MACHINE)[0].volume).toBe(300);
+  });
+
+  it('matches a rutina prescription by exercise, not by machine', () => {
+    // The CHEST direction is the discriminating one. Today's equipmentId-keyed
+    // map ends up holding whichever exercise the rutina lists LAST (shoulder,
+    // 4×8), so a chest-only log wrongly scores 4×8×10 = 320 instead of
+    // 3×10×10 = 300. Asserting the shoulder direction alone would pass against
+    // the very bug this covers.
+    const chestOnly = [session({ id: 'a', exercises: [ex(CHEST, 10, '2026-07-06T09:10:00.000Z')] })];
+    expect(buildSessionVolumes(chestOnly, TWO_ON_ONE_MACHINE)[0].volume).toBe(300);
+
+    const shoulderOnly = [session({ id: 'b', exercises: [ex(SHOULDER, 10, '2026-07-06T09:20:00.000Z')] })];
+    expect(buildSessionVolumes(shoulderOnly, TWO_ON_ONE_MACHINE)[0].volume).toBe(320);
   });
 });

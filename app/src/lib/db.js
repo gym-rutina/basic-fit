@@ -1,11 +1,15 @@
 import { openDB } from 'idb';
+import { exerciseKey } from './exerciseKey.js';
 
 /**
- * IndexedDB wrapper (db name `basicfit-rutina`, version 1). Storage schema
+ * IndexedDB wrapper (db name `basicfit-rutina`, version 2). Storage schema
  * per tech-plan.md:
  *   activeRutina  — fixed key "current": { key, rutina, importedAt }
  *   sessions      — keyPath id, indexes by-status / by-startedAt
- *   lastWeights   — keyPath equipmentId: { equipmentId, weight, loggedAt }
+ *   lastWeights   — keyPath exerciseKey: { exerciseKey, weight, loggedAt,
+ *                    equipmentId, name } (exercise-level-tracking, DB_VERSION 2 —
+ *                    equipmentId/name are plain, non-key fields, retained for
+ *                    debuggability and a future re-key, DD-001)
  *
  * Each exported function opens its own short-lived connection and closes it
  * before returning, rather than caching one module-level connection. This
@@ -18,20 +22,31 @@ import { openDB } from 'idb';
  * (a handful of writes per workout session — the extra open/close cost is
  * immaterial).
  *
- * `lastWeights` single-writer assumption: today the ONLY writers of this
- * store are `saveSession`'s mirror (below) and `deleteSessions`'s scoped
- * rollback — both derive every record from the `sessions` store, never from
- * an independent input. That is what makes the `deleteSessions` recompute
- * well-defined: it can safely reconstruct "the most recent surviving logged
- * value" by re-scanning sessions. If anything ever writes `lastWeights` from
- * a source other than a session's own exercises, this assumption breaks and
- * the recompute can silently diverge from reality.
+ * `lastWeights` single-writer assumption, restated in KEY terms
+ * (exercise-level-tracking): today the ONLY writers of this store are
+ * `saveSession`'s mirror (below) and `deleteSessions`'s scoped rollback —
+ * both derive every record from the `sessions` store, grouped by exercise
+ * key, never from an independent input. That is what makes the
+ * `deleteSessions` recompute well-defined: it can safely reconstruct "the
+ * most recent surviving logged value for this exercise" by re-scanning
+ * sessions. If anything ever writes `lastWeights` from a source other than
+ * a session's own exercises, this assumption breaks and the recompute can
+ * silently diverge from reality.
  */
 
 const DB_NAME = 'basicfit-rutina';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
-function upgrade(db) {
+/**
+ * `idb`'s upgrade callback is `(db, oldVersion, newVersion, tx, event)` —
+ * only `oldVersion` is needed here. `lastWeights` moves from keyPath
+ * `equipmentId` to keyPath `exerciseKey` at version 2: the store is DROPPED
+ * and recreated rather than migrated in place, because a v1 row carries no
+ * `name` field, so no exercise key can be derived from it — it is
+ * unmigratable. Not re-seeded (DD-002); prefill self-heals after one
+ * workout per exercise. `sessions` and `activeRutina` are untouched.
+ */
+function upgrade(db, oldVersion) {
   if (!db.objectStoreNames.contains('activeRutina')) {
     db.createObjectStore('activeRutina', { keyPath: 'key' });
   }
@@ -40,8 +55,11 @@ function upgrade(db) {
     store.createIndex('by-status', 'status');
     store.createIndex('by-startedAt', 'startedAt');
   }
+  if (oldVersion < 2 && db.objectStoreNames.contains('lastWeights')) {
+    db.deleteObjectStore('lastWeights');
+  }
   if (!db.objectStoreNames.contains('lastWeights')) {
-    db.createObjectStore('lastWeights', { keyPath: 'equipmentId' });
+    db.createObjectStore('lastWeights', { keyPath: 'exerciseKey' });
   }
 }
 
@@ -81,6 +99,11 @@ export async function clearActiveRutina() {
  * scanning all sessions on every render to prefill a weight input).
  * Idempotent: re-saving an already-saved session just re-writes the same
  * lastWeights values.
+ *
+ * Keyed by exercise key, not equipmentId (exercise-level-tracking AC1/AC4):
+ * an exercise whose key is `null` (no id and no usable name) is not
+ * trackable and the mirror skips it rather than writing an undefined-keyed
+ * row.
  */
 export async function saveSession(session) {
   return withDb(async (db) => {
@@ -91,7 +114,15 @@ export async function saveSession(session) {
     await sessionsStore.put(session);
     for (const ex of session.exercises || []) {
       if (ex.weightUsed != null && ex.completedAt) {
-        await weightsStore.put({ equipmentId: ex.equipmentId, weight: ex.weightUsed, loggedAt: ex.completedAt });
+        const key = exerciseKey(ex);
+        if (key == null) continue;
+        await weightsStore.put({
+          exerciseKey: key,
+          weight: ex.weightUsed,
+          loggedAt: ex.completedAt,
+          equipmentId: ex.equipmentId,
+          name: ex.name,
+        });
       }
     }
 
@@ -121,8 +152,9 @@ export async function listSessions({ from, to } = {}) {
 
 /**
  * Deletes one or many sessions and rolls back `lastWeights` for every
- * equipment id they logged, in ONE `readwrite` transaction over
- * ['sessions', 'lastWeights'] (spec.md AC1, AC6-AC9, AC17, AC18).
+ * exercise key they logged, in ONE `readwrite` transaction over
+ * ['sessions', 'lastWeights'] (spec.md AC1, AC6-AC9, AC17, AC18; re-keyed
+ * onto exercise identity by exercise-level-tracking AC8).
  *
  * A single batch entry point — never N per-id calls — because this module
  * opens a fresh connection per exported call (see docblock above): N calls
@@ -130,7 +162,7 @@ export async function listSessions({ from, to } = {}) {
  * sessions are gone and lastWeights is only half rolled back. That would
  * also make the multi-delete confirm sheet's "se borrarán N sesiones" a lie.
  *
- * The rollback winner for each affected equipmentId is chosen by the SAME
+ * The rollback winner for each affected exercise key is chosen by the SAME
  * predicate saveSession uses to write lastWeights in the first place
  * (`weightUsed != null && completedAt`, see saveSession above) — using a
  * looser predicate here could invent a lastWeights value saveSession itself
@@ -150,13 +182,16 @@ export async function deleteSessions(ids) {
     const toDelete = allSessions.filter((s) => idSet.has(s.id));
     const survivors = allSessions.filter((s) => !idSet.has(s.id));
 
-    // AC6 scope: every equipmentId that had a LOGGED exercise in a deleted
-    // session — an exercise that was never completed never seeded a
-    // lastWeights value, so it must not be touched (AC8).
+    // AC6/AC8 scope: every exercise key that had a LOGGED exercise in a
+    // deleted session — an exercise that was never completed never seeded a
+    // lastWeights value, so it must not be touched. A null key (not
+    // trackable) never had a row either, so it is skipped too.
     const affected = new Set();
     for (const s of toDelete) {
       for (const ex of s.exercises || []) {
-        if (ex.completedAt != null) affected.add(ex.equipmentId);
+        if (ex.completedAt == null) continue;
+        const key = exerciseKey(ex);
+        if (key != null) affected.add(key);
       }
     }
 
@@ -164,19 +199,25 @@ export async function deleteSessions(ids) {
       await sessionsStore.delete(id);
     }
 
-    for (const equipmentId of affected) {
+    for (const key of affected) {
       let winner = null;
       for (const s of survivors) {
         for (const ex of s.exercises || []) {
-          if (ex.equipmentId !== equipmentId) continue;
+          if (exerciseKey(ex) !== key) continue;
           if (ex.weightUsed == null || !ex.completedAt) continue; // mirrors saveSession's mirror condition exactly
           if (!winner || ex.completedAt > winner.completedAt) winner = ex;
         }
       }
       if (winner) {
-        await weightsStore.put({ equipmentId, weight: winner.weightUsed, loggedAt: winner.completedAt });
+        await weightsStore.put({
+          exerciseKey: key,
+          weight: winner.weightUsed,
+          loggedAt: winner.completedAt,
+          equipmentId: winner.equipmentId,
+          name: winner.name,
+        });
       } else {
-        await weightsStore.delete(equipmentId); // AC7 — no survivor, remove the record entirely
+        await weightsStore.delete(key); // no survivor, remove the record entirely
       }
     }
 
@@ -184,15 +225,22 @@ export async function deleteSessions(ids) {
   });
 }
 
-export async function getLastWeight(equipmentId) {
+export async function getLastWeight(key) {
   return withDb(async (db) => {
-    const record = await db.get('lastWeights', equipmentId);
+    const record = await db.get('lastWeights', key);
     return record ?? null;
   });
 }
 
-export async function setLastWeight(equipmentId, weight, loggedAt = new Date().toISOString()) {
+/**
+ * Test-only escape hatch (no production callers — the app writes
+ * `lastWeights` exclusively through `saveSession`'s mirror and
+ * `deleteSessions`'s rollback, both above). `equipmentId`/`name` are
+ * optional plain fields, kept for debuggability and a future re-key
+ * (DD-001).
+ */
+export async function setLastWeight(key, weight, loggedAt = new Date().toISOString(), { equipmentId, name } = {}) {
   return withDb(async (db) => {
-    await db.put('lastWeights', { equipmentId, weight, loggedAt });
+    await db.put('lastWeights', { exerciseKey: key, weight, loggedAt, equipmentId, name });
   });
 }

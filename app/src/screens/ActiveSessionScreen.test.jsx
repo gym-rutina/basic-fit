@@ -116,7 +116,9 @@ describe('ActiveSessionScreen — equipment reference (AC1–AC5)', () => {
     expect(dialog).toHaveAttribute('aria-modal', 'true');
     expect(within(dialog).getByText(RICH_NAME)).toBeInTheDocument();
     expect(within(dialog).getByText('Ajusta el asiento')).toBeInTheDocument();
-    const yt = within(dialog).getByRole('link', { name: /ver tutorial en youtube/i });
+    // Label names the EXERCISE — the sheet's title is the machine, so the link
+    // is the only thing that says which of the machine's exercises this is.
+    const yt = within(dialog).getByRole('link', { name: /ver técnica de «Prensa»/i });
     expect(yt.getAttribute('href')).toContain(encodeURIComponent('leg press machine form'));
   });
 
@@ -157,20 +159,30 @@ describe('ActiveSessionScreen — equipment reference (AC1–AC5)', () => {
     ).toBe(true);
   });
 
-  it('falls back to catalog equipment video when rutina omits videoQuery', async () => {
+  it('composes a tutorial query instead of falling back to the machine video (AC18′)', async () => {
+    // Was: "falls back to catalog equipment video when rutina omits videoQuery".
+    // UAT decision A2 removed that fallback — the machine's clip is equipment-
+    // level and cannot be the tutorial for whichever exercise is on it today.
+    // It stays reachable in the Catálogo tab.
     const user = userEvent.setup();
     renderSession();
     await screen.findByRole('button', { name: new RegExp(RICH_EQ.modelCode) });
 
-    // g3-s45: no images, no technique/videoQuery in fixture — but catalog has videos.
     await user.click(screen.getByRole('button', { name: /sparse machine/i }));
     const trigger = await screen.findByRole('button', { name: new RegExp(SPARSE_EQ.modelCode) });
     await user.click(trigger);
 
     const dialog = await screen.findByRole('dialog');
-    const link = within(dialog).getByRole('link', { name: /ver tutorial en youtube/i });
-    const expected = (SPARSE_EQ.videos?.es || SPARSE_EQ.videos?.en || [])[0]?.url;
-    expect(link).toHaveAttribute('href', expected);
+    const catalogVideo = (SPARSE_EQ.videos?.es || SPARSE_EQ.videos?.en || [])[0]?.url;
+    expect(catalogVideo).toBeTruthy(); // fixture sanity: the fallback WOULD have had something to use
+
+    const links = within(dialog).getAllByRole('link');
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute('href')).not.toBe(catalogVideo);
+    expect(links[0].getAttribute('href')).toContain('youtube.com/results');
+    // Composed from the exercise name plus the equipment's human name.
+    expect(links[0].getAttribute('href')).toContain(encodeURIComponent('Sparse machine'));
+    expect(links[0].getAttribute('href')).toContain(encodeURIComponent(equipmentDisplayName(SPARSE_EQ)));
   });
 
   it('collapsed card does not show equipment row (AC5)', async () => {
@@ -351,5 +363,197 @@ describe('ActiveSessionScreen — discard (AC1–AC5)', () => {
     await waitFor(() => expect(db.saveSession).toHaveBeenCalled());
     expect(db.saveSession.mock.calls.at(-1)[0]).toMatchObject({ status: 'completed' });
     expect(db.deleteSessions).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * exercise-level-tracking (spec.md AC5, AC16, AC19; ux-design.md S1/S2).
+ *
+ * Two exercises can share one machine, so "the last weight for this equipment"
+ * was always the wrong question. Prefill, the caption that describes it, and
+ * the tutorial link all move to the exercise.
+ */
+const TWO_ON_ONE_MACHINE = {
+  schemaVersion: 1,
+  program: { name: 'Test', phaseName: 'Fase 1', phaseNumber: 1, durationWeeks: 4 },
+  days: [
+    {
+      label: 'Lunes',
+      exercises: [
+        { equipmentId: RICH_ID, name: 'Prensa de Pecho', sets: 3, reps: 10, restSeconds: 75 },
+        { equipmentId: RICH_ID, name: 'Press de Hombro', sets: 4, reps: 8, restSeconds: 75 },
+      ],
+    },
+  ],
+};
+
+function sessionFor(rutina, overrides = {}) {
+  return {
+    id: 'sess-1',
+    dayLabel: 'Lunes',
+    dayIndex: 0,
+    status: 'active',
+    startedAt: '2026-08-08T10:00:00.000Z',
+    endedAt: null,
+    exercises: rutina.days[0].exercises.map((ex) => ({
+      equipmentId: ex.equipmentId,
+      name: ex.name,
+      weightUsed: null,
+      difficulty: null,
+      completedAt: null,
+    })),
+    ...overrides,
+  };
+}
+
+describe('ActiveSessionScreen — exercise-level prefill (AC5, AC19)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    db.getActiveRutina.mockResolvedValue({ rutina: TWO_ON_ONE_MACHINE, importedAt: '2026-08-08' });
+    db.getActiveSession.mockResolvedValue(sessionFor(TWO_ON_ONE_MACHINE));
+    db.saveSession.mockResolvedValue(undefined);
+  });
+
+  it('looks the prefill up by exercise key, not equipment id (AC5)', async () => {
+    db.getLastWeight.mockResolvedValue(null);
+    renderSession();
+
+    await screen.findByLabelText(/peso usado/i);
+    await waitFor(() => {
+      expect(db.getLastWeight).toHaveBeenCalledWith('g3-s70::prensa-de-pecho');
+    });
+    expect(db.getLastWeight).not.toHaveBeenCalledWith(RICH_ID);
+  });
+
+  it('prefills the value stored for THIS exercise (AC5)', async () => {
+    db.getLastWeight.mockResolvedValue({ exerciseKey: 'g3-s70::prensa-de-pecho', weight: 32 });
+    renderSession();
+
+    await waitFor(() => expect(screen.getByLabelText(/peso usado/i)).toHaveValue(32));
+  });
+
+  it('caption names the exercise scope, never the equipment (AC19)', async () => {
+    db.getLastWeight.mockResolvedValue({ weight: 32 });
+    renderSession();
+
+    expect(await screen.findByText(/Prellenado con tu último peso en este ejercicio/i)).toBeInTheDocument();
+    // The old copy claimed machine scope, which is exactly the bug.
+    expect(screen.queryByText(/para este equipo/i)).not.toBeInTheDocument();
+  });
+
+  it('caption reads "sin registros" when the exercise has never been logged (AC19)', async () => {
+    // Also the post-migration state: lastWeights is empty until each exercise
+    // is logged once (DD-002). UAT decision B2 made this caption the ONLY
+    // explanation the user gets, so it has to carry its weight.
+    db.getLastWeight.mockResolvedValue(null);
+    renderSession();
+
+    expect(await screen.findByText(/Sin registros de este ejercicio todavía/i)).toBeInTheDocument();
+  });
+
+  it('caption does not claim a prefill while the lookup is still in flight (AC19)', async () => {
+    db.getLastWeight.mockReturnValue(new Promise(() => {})); // never resolves
+    renderSession();
+
+    expect(await screen.findByText(/El peso se guarda por ejercicio/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Prellenado con tu último peso/i)).not.toBeInTheDocument();
+  });
+
+  it('caption describes a completed exercise as a recorded value (AC19)', async () => {
+    const done = sessionFor(TWO_ON_ONE_MACHINE);
+    done.exercises[0] = {
+      ...done.exercises[0],
+      weightUsed: 30,
+      difficulty: 'normal',
+      completedAt: '2026-08-08T10:10:00.000Z',
+    };
+    db.getActiveSession.mockResolvedValue(done);
+    db.getLastWeight.mockResolvedValue({ weight: 99 });
+    renderSession();
+
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: /prensa de pecho/i }));
+
+    expect(await screen.findByText(/Peso registrado para este ejercicio/i)).toBeInTheDocument();
+    // A done card shows ITS OWN logged value, never the lastWeights prefill.
+    expect(screen.getByLabelText(/peso usado/i)).toHaveValue(30);
+  });
+
+  it('associates the caption with the weight input for screen readers', async () => {
+    db.getLastWeight.mockResolvedValue({ weight: 32 });
+    renderSession();
+
+    const input = await screen.findByLabelText(/peso usado/i);
+    const captionId = input.getAttribute('aria-describedby');
+    expect(captionId).toBeTruthy();
+    expect(document.getElementById(captionId)).toHaveTextContent(/este ejercicio/i);
+  });
+
+  it('a failed prefill lookup degrades to the empty caption and still allows logging', async () => {
+    const user = userEvent.setup();
+    db.getLastWeight.mockRejectedValue(new Error('idb unavailable'));
+    renderSession();
+
+    expect(await screen.findByText(/Sin registros de este ejercicio todavía/i)).toBeInTheDocument();
+
+    const input = screen.getByLabelText(/peso usado/i);
+    await user.type(input, '25');
+    await user.click(screen.getByRole('radio', { name: /normal/i }));
+    await user.click(screen.getByRole('button', { name: /marcar completado/i }));
+
+    await waitFor(() => expect(db.saveSession).toHaveBeenCalled());
+  });
+});
+
+describe('ActiveSessionScreen — tutorial link (AC16, AC17, AC18′)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    db.getActiveRutina.mockResolvedValue({ rutina: TWO_ON_ONE_MACHINE, importedAt: '2026-08-08' });
+    db.getActiveSession.mockResolvedValue(sessionFor(TWO_ON_ONE_MACHINE));
+    db.getLastWeight.mockResolvedValue(null);
+    db.saveSession.mockResolvedValue(undefined);
+  });
+
+  async function openSheetFor(user, exerciseName) {
+    const header = screen.getByRole('button', { name: new RegExp(exerciseName, 'i') });
+    // The accordion is single-open: clicking an ALREADY-expanded card's own
+    // header toggles it closed. The first exercise auto-expands on load, so
+    // only click when this card isn't the one currently open (its weight
+    // input, a sibling under the same card wrapper, is the tell).
+    const alreadyOpen = !!header.closest('div')?.querySelector('input');
+    if (!alreadyOpen) {
+      await user.click(header);
+    }
+    const trigger = await screen.findByRole('button', { name: new RegExp(RICH_EQ.modelCode) });
+    await user.click(trigger);
+    const dialog = await screen.findByRole('dialog');
+    const href = within(dialog).getAllByRole('link')[0].getAttribute('href');
+    await user.click(screen.getByRole('button', { name: /cerrar/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    return href;
+  }
+
+  it('gives two exercises on the same machine two different links (AC16)', async () => {
+    const user = userEvent.setup();
+    renderSession();
+    await screen.findByRole('button', { name: new RegExp(RICH_EQ.modelCode) });
+
+    const chestHref = await openSheetFor(user, 'Prensa de Pecho');
+    const shoulderHref = await openSheetFor(user, 'Press de Hombro');
+
+    expect(chestHref).not.toBe(shoulderHref);
+    expect(chestHref).toContain(encodeURIComponent('Prensa de Pecho'));
+    expect(shoulderHref).toContain(encodeURIComponent('Press de Hombro'));
+  });
+
+  it('never puts a Matrix model code or series in the query (AC16)', async () => {
+    const user = userEvent.setup();
+    renderSession();
+    await screen.findByRole('button', { name: new RegExp(RICH_EQ.modelCode) });
+
+    const href = await openSheetFor(user, 'Prensa de Pecho');
+
+    expect(href).not.toMatch(new RegExp(RICH_EQ.modelCode, 'i'));
+    expect(href).not.toMatch(/aura/i);
   });
 });

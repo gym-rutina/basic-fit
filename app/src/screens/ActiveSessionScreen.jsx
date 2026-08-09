@@ -9,6 +9,8 @@ import { sessionReducer } from '../lib/sessionMachine.js';
 import { getActiveRutina, getActiveSession, saveSession, getLastWeight, deleteSessions } from '../lib/db.js';
 import { DIFFICULTY_LEVELS, difficultyLabel } from '../lib/difficulty.js';
 import { getEquipmentById, mainImageUrl, equipmentDisplayName } from '../data/equipment.js';
+import { exerciseKey } from '../lib/exerciseKey.js';
+import { buildVideoQuery } from '../lib/videoQuery.js';
 
 /**
  * Joins this day's prescription (rutina) with the session's tracking record
@@ -66,8 +68,16 @@ function DifficultyPicker({ value, onChange }) {
 
 /**
  * Compact equipment reference row rendered inside the expanded exercise card.
- * Three display states: unresolved → plain text id; resolved+sparse → name text;
- * resolved+rich → button that opens EquipmentReferenceSheet overlay.
+ * Two display states: unresolved → plain text id; resolved → button that
+ * opens EquipmentReferenceSheet overlay.
+ *
+ * exercise-level-tracking AC18′ (UAT decision A2): the catalog machine video
+ * fallback is DELETED here, not demoted — the machine's clip is equipment-
+ * level and cannot be the tutorial for whichever exercise is on it today (it
+ * stays reachable in the Catálogo tab, unaffected by this feature). Every
+ * resolved apparatus now gets a composed exercise-tutorial link via
+ * buildVideoQuery, so the sheet always has a video, and the old "resolved +
+ * sparse → plain text" branch is unreachable and has been removed (D8).
  */
 function EquipmentRow({ ex }) {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -86,22 +96,8 @@ function EquipmentRow({ ex }) {
   const imageUrl = mainImageUrl(eq);
   const displayName = `${eq.series ? `Matrix ${eq.series} ` : ''}${eq.modelCode} — ${equipmentDisplayName(eq)}`;
   const steps = ex.technique || [];
-  // Prefer rutina videoQuery (exercise-specific) when present; otherwise fall
-  // back to the catalog machine video — same source CatalogScreen uses, so
-  // every resolved apparatus gets a tutorial even when the rutina omitted videoQuery.
-  const catalogVideo = (eq.videos?.es || eq.videos?.en || [])[0]?.url;
-  const videoHref = ex.videoQuery
-    ? `https://www.youtube.com/results?search_query=${encodeURIComponent(ex.videoQuery)}`
-    : catalogVideo;
-  const hasMore = !!(imageUrl || steps.length > 0 || videoHref);
-
-  if (!hasMore) {
-    return (
-      <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', padding: '4px 0' }}>
-        {displayName}
-      </div>
-    );
-  }
+  const videoHref = `https://www.youtube.com/results?search_query=${encodeURIComponent(buildVideoQuery(ex, eq))}`;
+  const videoLabel = `Ver técnica de «${ex.name}» en YouTube`;
 
   return (
     <>
@@ -140,6 +136,7 @@ function EquipmentRow({ ex }) {
           imageUrl={imageUrl}
           steps={steps}
           videoHref={videoHref}
+          videoLabel={videoLabel}
           onClose={() => {
             setSheetOpen(false);
             triggerRef.current?.focus();
@@ -150,16 +147,37 @@ function EquipmentRow({ ex }) {
   );
 }
 
+/**
+ * Caption copy for the weight-input's four states (ux-design.md S1, AC19).
+ * `isDone` is checked first and independently of `prefillState` — a
+ * completed card shows ITS OWN logged value, never the lastWeights lookup,
+ * so there is no "loading"/"empty" distinction to make once it is done.
+ */
+function prefillCaption(prefillState, isDone) {
+  if (isDone) return 'Peso registrado para este ejercicio.';
+  if (prefillState === 'loading') return 'El peso se guarda por ejercicio.';
+  if (prefillState === 'filled') return 'Prellenado con tu último peso en este ejercicio.';
+  return 'Sin registros de este ejercicio todavía.';
+}
+
 function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, onUndo }) {
   const isDone = Boolean(ex.completedAt);
   const [weight, setWeight] = useState(ex.weightUsed ?? '');
   const [difficulty, setDifficulty] = useState(ex.difficulty ?? null);
+  // 'loading' | 'filled' | 'empty' — "is the input empty" cannot tell apart
+  // "not looked up yet" from "looked up, nothing there" (tech-plan.md D9),
+  // and rendering the "Prellenado…" claim before the lookup resolves would
+  // be false for one frame.
+  const [prefillState, setPrefillState] = useState('loading');
   const weightInputId = `weight-${ex.exerciseIndex}-${ex.equipmentId ?? 'x'}`;
+  const captionId = `${weightInputId}-caption`;
 
   // Prefill: an already-done exercise being reopened shows ITS OWN logged
   // values (correction); a not-yet-done exercise becoming current prefills
-  // from the last logged weight for that equipment id (ux-design.md's
-  // single biggest one-handed-gym-use friction reducer).
+  // from the last logged weight for THAT EXERCISE — exercise-level-tracking
+  // AC5, since two exercises can share a machine and "last weight for this
+  // equipment" was always the wrong question. A rejected lookup degrades to
+  // the empty caption and must never block logging (AC19).
   useEffect(() => {
     if (isDone) {
       setWeight(ex.weightUsed ?? '');
@@ -167,14 +185,30 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
       return undefined;
     }
     if (!isExpanded) return undefined;
+    const key = exerciseKey(ex);
+    if (key == null) {
+      setPrefillState('empty');
+      return undefined;
+    }
+    setPrefillState('loading');
     let cancelled = false;
-    getLastWeight(ex.equipmentId).then((record) => {
-      if (!cancelled && record) setWeight(record.weight);
-    });
+    getLastWeight(key)
+      .then((record) => {
+        if (cancelled) return;
+        if (record) {
+          setWeight(record.weight);
+          setPrefillState('filled');
+        } else {
+          setPrefillState('empty');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPrefillState('empty');
+      });
     return () => {
       cancelled = true;
     };
-  }, [isExpanded, isDone, ex.equipmentId, ex.weightUsed, ex.difficulty]);
+  }, [isExpanded, isDone, ex.equipmentId, ex.name, ex.weightUsed, ex.difficulty]);
 
   const isCurrent = isExpanded || (isNextPending && !isDone);
 
@@ -251,6 +285,7 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
               onFocus={(e) => e.target.select()}
+              aria-describedby={captionId}
               style={{
                 width: '100%',
                 boxSizing: 'border-box',
@@ -261,7 +296,9 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
                 padding: '12px 14px',
               }}
             />
-            <div style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', marginTop: 4 }}>Prellenado con el último peso registrado para este equipo.</div>
+            <div id={captionId} style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', marginTop: 4 }}>
+              {prefillCaption(prefillState, isDone)}
+            </div>
           </div>
 
           <div>

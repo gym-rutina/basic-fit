@@ -20,6 +20,7 @@ import {
   FrequencyHeatmap,
 } from '../components/ProgressCharts.jsx';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
+import { collisionSuffix } from '../lib/machineLabel.js';
 
 const PAGE_STYLE = {
   background: 'var(--bf-grey-1)',
@@ -99,12 +100,21 @@ export function ProgressScreen({ rutina }) {
   }
 
   const exercises = listLoggedExercises(sessions);
-  const activeId = selectedId || exercises[0]?.equipmentId || null;
+  const activeId = selectedId || exercises[0]?.exerciseKey || null;
   const weightPoints = buildWeightSeries(sessions, activeId);
   const volumes = buildSessionVolumes(sessions, rutina);
   const todayKey = localDateKey();
   const { cells } = buildFrequencyGrid(sessions, { weeks: 12, todayKey });
   const stats = buildFrequencyStats(sessions, { todayKey });
+
+  // exercise-level-tracking AC10: the picker selects by exercise key, so two
+  // exercises on one machine are two pills. Where two exercises share a NAME
+  // (different machines), the pill label gets a model-code suffix — real
+  // text inside the button, so it lands in the accessible name for free.
+  const nameCounts = {};
+  for (const ex of exercises) {
+    nameCounts[ex.name] = (nameCounts[ex.name] || 0) + 1;
+  }
 
   return (
     <div style={PAGE_STYLE}>
@@ -127,12 +137,13 @@ export function ProgressScreen({ rutina }) {
             <>
               <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 10 }}>
                 {exercises.map((ex) => {
-                  const isActive = activeId === ex.equipmentId;
+                  const isActive = activeId === ex.exerciseKey;
+                  const collides = nameCounts[ex.name] > 1;
                   return (
                     <button
-                      key={ex.equipmentId}
+                      key={ex.exerciseKey}
                       aria-pressed={isActive}
-                      onClick={() => setSelectedId(ex.equipmentId)}
+                      onClick={() => setSelectedId(ex.exerciseKey)}
                       style={{
                         ...PILL_BASE,
                         background: isActive ? 'var(--bf-orange, #f57c00)' : 'var(--bf-white)',
@@ -141,6 +152,7 @@ export function ProgressScreen({ rutina }) {
                       }}
                     >
                       {ex.name}
+                      {collides ? collisionSuffix(ex.equipmentId) : ''}
                     </button>
                   );
                 })}

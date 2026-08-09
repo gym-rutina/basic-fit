@@ -1,3 +1,5 @@
+import { exerciseKey } from './exerciseKey.js';
+
 /**
  * Aggregators for the Progress screen (AC2/AC3/AC4).
  * Pure functions — no I/O; all data comes from the caller.
@@ -9,6 +11,11 @@
  * Day keys throughout are computed via localDateKey() (local calendar date,
  * not UTC slice) so evening sessions don't land on the wrong cell in
  * timezones east of UTC (tech-plan Decision 5).
+ *
+ * Grouped by exercise key, not equipmentId (exercise-level-tracking AC10-AC12):
+ * one machine hosting two exercises used to collapse into one chart line,
+ * one picker entry, and — in buildRutinaMap — one prescription, silently
+ * discarding the other's sets×reps. Re-keying is the fix for all three.
  */
 
 /**
@@ -26,11 +33,12 @@ export function localDateKey(date = new Date()) {
 }
 
 /**
- * Returns the first-seen unique equipment entries that have at least one
- * logged (completedAt set) exercise across all sessions.
+ * Returns the first-seen unique exercises that have at least one logged
+ * (completedAt set) entry across all sessions, keyed by exercise key so two
+ * exercises sharing one machine are two entries, not one (AC10).
  *
  * @param {Array} sessions
- * @returns {Array<{equipmentId: string, name: string}>}
+ * @returns {Array<{exerciseKey: string, equipmentId: string|null, name: string}>}
  */
 export function listLoggedExercises(sessions = []) {
   const seen = new Map();
@@ -38,29 +46,32 @@ export function listLoggedExercises(sessions = []) {
   for (const session of sessions) {
     for (const ex of session.exercises || []) {
       if (ex.completedAt == null) continue;
-      if (!seen.has(ex.equipmentId)) {
-        seen.set(ex.equipmentId, ex.name);
-        order.push(ex.equipmentId);
+      const key = exerciseKey(ex);
+      if (key == null) continue;
+      if (!seen.has(key)) {
+        seen.set(key, { equipmentId: ex.equipmentId, name: ex.name });
+        order.push(key);
       }
     }
   }
-  return order.map((id) => ({ equipmentId: id, name: seen.get(id) }));
+  return order.map((key) => ({ exerciseKey: key, ...seen.get(key) }));
 }
 
 /**
- * Returns chronological ascending weight-series points for one equipment.
- * Uncapped (unlike buildExerciseTrends which defaults to last 3).
+ * Returns chronological ascending weight-series points for one exercise key.
+ * Uncapped (unlike buildExerciseTrends which defaults to last 3). The same
+ * key in two different imported programs is one continuous series (AC12).
  *
  * @param {Array} sessions
- * @param {string} equipmentId
+ * @param {string} exerciseKeyValue
  * @returns {Array<{date: string, weightUsed: number, difficulty: string, completedAt: string}>}
  */
-export function buildWeightSeries(sessions = [], equipmentId) {
+export function buildWeightSeries(sessions = [], exerciseKeyValue) {
   const points = [];
   for (const session of sessions) {
     for (const ex of session.exercises || []) {
-      if (ex.equipmentId !== equipmentId) continue;
       if (ex.completedAt == null) continue;
+      if (exerciseKey(ex) !== exerciseKeyValue) continue;
       points.push({
         date: localDateKey(new Date(ex.completedAt)),
         weightUsed: ex.weightUsed,
@@ -73,7 +84,12 @@ export function buildWeightSeries(sessions = [], equipmentId) {
 }
 
 /**
- * Builds a rutina map from equipmentId to {sets, reps}.
+ * Builds a rutina map from exercise key to {sets, reps}. Keyed by exercise
+ * key, not equipmentId (AC11 — the pre-existing bug this fixes): a day with
+ * two exercises on one machine used to have the second silently overwrite
+ * the first's prescription, so a chest-only log wrongly scored the
+ * shoulder day's sets×reps.
+ *
  * @param {object} rutina
  * @returns {Map<string, {sets: number, reps: number}>}
  */
@@ -81,7 +97,9 @@ function buildRutinaMap(rutina) {
   const map = new Map();
   for (const day of (rutina && rutina.days) || []) {
     for (const ex of day.exercises || []) {
-      map.set(ex.equipmentId, { sets: ex.sets, reps: ex.reps });
+      const key = exerciseKey(ex);
+      if (key == null) continue;
+      map.set(key, { sets: ex.sets, reps: ex.reps });
     }
   }
   return map;
@@ -90,7 +108,7 @@ function buildRutinaMap(rutina) {
 /**
  * Computes per-session total volume (Σ sets × reps × weightUsed) for all
  * past sessions (status !== 'active'), joined against the current rutina by
- * equipmentId. Exercises absent from the current rutina are excluded.
+ * exercise key. Exercises absent from the current rutina are excluded.
  * Abandoned sessions with no completed exercises appear with volume: 0.
  *
  * @param {Array} sessions
@@ -105,7 +123,8 @@ export function buildSessionVolumes(sessions = [], rutina) {
       let volume = 0;
       for (const ex of s.exercises || []) {
         if (ex.completedAt == null) continue;
-        const rutinaEx = rutinaMap.get(ex.equipmentId);
+        const key = exerciseKey(ex);
+        const rutinaEx = key != null ? rutinaMap.get(key) : undefined;
         if (!rutinaEx) continue;
         if (ex.weightUsed == null) continue;
         volume += rutinaEx.sets * rutinaEx.reps * ex.weightUsed;
