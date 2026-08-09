@@ -226,10 +226,33 @@ function seedPlanForRoute(route) {
   return null;
 }
 
-async function checkRoute(browser, width, route) {
-  const page = await browser.newPage();
+async function createPageWithRetry(browser, attempts = 3) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await browser.newPage();
+    } catch (err) {
+      lastErr = err;
+      // Target.createTarget faults observed in this file's own fix cycle
+      // were transient CDP session hiccups under load — a short backoff
+      // before retrying is enough for them to clear.
+      await new Promise((r) => setTimeout(r, 500));
+    }
+  }
+  throw lastErr;
+}
+
+// `page` is created ONCE in main() and reused for every check (see main()'s
+// comment for why). `errorSink` is a mutable `{ current: fn }` box: the
+// page's single 'pageerror' listener (attached once, for the page's whole
+// lifetime) calls `errorSink.current(err)`, and each checkRoute call points
+// `errorSink.current` at ITS OWN failures array before doing anything else.
+// Without this indirection, a pageerror firing asynchronously between
+// checks — or attributed to whichever check happens to be running when a
+// deferred error surfaces — would bleed into the wrong check's result.
+async function checkRoute(page, width, route, errorSink) {
   const failures = [];
-  page.on('pageerror', (err) => failures.push(`console error: ${err.message}`));
+  errorSink.current = (err) => failures.push(`console error: ${err.message}`);
 
   try {
     await page.setViewport({ width, height: HEIGHT });
@@ -270,12 +293,61 @@ async function checkRoute(browser, width, route) {
       failures.push(`bottom tab bar wrapped to ${tabBarRows} rows (expected 1)`);
     }
   } catch (err) {
+    // Fault containment: nothing above this line runs outside this try, so
+    // ANY failure in this one check — a bad selector, a goto timeout, a CDP
+    // hiccup on setViewport/evaluate — is recorded as this check's own
+    // failure and returned normally. It cannot escape to kill the width/route
+    // loop in main(), which is what let one flaky check take down the other
+    // 39 in every earlier run of this harness.
     failures.push(`navigation error: ${err.message}`);
-  } finally {
-    await page.close();
   }
 
   return failures;
+}
+
+// `browser.close()` has been observed to hang indefinitely (>20s, no
+// resolution) even against `about:blank` with no app loaded — a pre-existing
+// fault in this harness's Chrome interaction, not the app or its service
+// worker, and not something earlier runs of this file ever reached because
+// they crashed before getting here. Left unbounded, a hang here means the
+// process never exits, `$?` is whatever the caller sees from a killed/timed
+// -out process, and a genuinely all-green run reports as a failure — the
+// exact inversion this harness must not produce. Race the close against a
+// timeout, then force-kill the browser process unconditionally — see the
+// comment further down for why "only on timeout" is not enough either.
+async function closeBrowserWithTimeout(browser, timeoutMs = 10000) {
+  let timer;
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(() => resolve('timeout'), timeoutMs);
+  });
+  // `.then(ok, ok)` — both the success and rejection branches resolve to
+  // 'closed', so this promise itself never rejects. Without that, killing
+  // the process out from under an in-flight close() (the timeout branch
+  // below) can make the ORIGINAL close() promise settle — typically reject
+  // — well after Promise.race has already moved on, producing a later
+  // unhandled-rejection warning for a close we've already handled.
+  const closing = browser.close().then(
+    () => 'closed',
+    () => 'closed'
+  );
+  try {
+    await Promise.race([closing, timeout]);
+  } finally {
+    clearTimeout(timer);
+    // Force-kill unconditionally, not only when the race above times out.
+    // Verified directly in this fix cycle: `browser.close()` can resolve
+    // 'closed' well inside the timeout — no hang — while the underlying
+    // chrome.exe process tree keeps running for a further one to two
+    // minutes afterward (confirmed by checking process CreationDate against
+    // wall-clock time, well after this script's own node process had
+    // already exited). A kill gated on "only if it timed out" misses that
+    // path entirely, so every clean run would still leak a headless Chrome
+    // process. `ChildProcess#kill()` on an already-exited process is a
+    // documented no-op (returns false, does not throw), so calling it here
+    // unconditionally is safe on the genuinely-instant-close path too.
+    const proc = browser.process();
+    if (proc) proc.kill('SIGKILL');
+  }
 }
 
 async function main() {
@@ -286,11 +358,35 @@ async function main() {
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
   });
   let failCount = 0;
+  let page = null;
 
   try {
+    // ONE page for the entire run, not one `newPage()`/`close()` cycle per
+    // check. checkRoute only ever does setViewport + goto on it — nothing it
+    // does needs a fresh browser target — and 40 sequential target
+    // create/destroy cycles on a single browser is a known trigger for
+    // `Target.createTarget: Session with given id not found` under load,
+    // which is exactly the error that aborted this file's last three runs
+    // (at a different route each time, consistent with load-dependent target
+    // churn rather than a bug tied to one route). Reusing one page removes
+    // ~39 of those 40 target creations. The one remaining creation below is
+    // still a single point of failure, so it gets a bounded retry.
+    //
+    // Verified this does not change test semantics: puppeteer's
+    // `browser.newPage()` was already opening every page in the browser's
+    // one default context (no `createIncognitoBrowserContext()` anywhere in
+    // this file), and IndexedDB is partitioned by origin, not by page/tab —
+    // so `basicfit-rutina`'s storage was ALREADY shared and accumulating
+    // across all 40 checks in every prior run, page-per-check or not.
+    // Reuse changes zero storage behavior; it only removes redundant target
+    // churn.
+    page = await createPageWithRetry(browser);
+    const errorSink = { current: () => {} };
+    page.on('pageerror', (err) => errorSink.current(err));
+
     for (const width of WIDTHS) {
       for (const route of ROUTES) {
-        const failures = await checkRoute(browser, width, route);
+        const failures = await checkRoute(page, width, route, errorSink);
         const label = `${width}px ${route}`;
         if (failures.length === 0) {
           console.log(`✓ ${label}`);
@@ -302,7 +398,15 @@ async function main() {
       }
     }
   } finally {
-    await browser.close();
+    // page.close() is not implicated (Bagnik's probe: it completes fine even
+    // when the following browser.close() hangs), so it stays unbounded but
+    // guarded. closeBrowserWithTimeout never throws — success, timeout, and
+    // outright rejection are all handled inside it — specifically so
+    // stopPreviewServer() below always runs and the preview server can never
+    // be left orphaned by a hung close, which would undo the fix already
+    // made for that exact problem.
+    if (page) await page.close().catch(() => {});
+    await closeBrowserWithTimeout(browser);
     stopPreviewServer();
   }
 

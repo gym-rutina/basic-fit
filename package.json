@@ -1,6 +1,6 @@
 {
   "name": "basicfit-rutina",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "BasicFit Equipment Catalog and Routine Generator",
   "scripts": {
     "serve": "npx --yes serve . -p 3000",
@@ -21,7 +21,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretest:viewport": "npm run build",
+    "pretest:viewport": "vite build && node scripts/copy-static-pages.js",
     "test:viewport": "node tests/viewport-check.js"
   },
   "keywords": [
