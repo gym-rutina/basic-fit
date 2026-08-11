@@ -1,0 +1,155 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import React from 'react';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { SettingsScreen } from './SettingsScreen.jsx';
+import { BottomTabBar } from '../components/BottomTabBar.jsx';
+import { I18nProvider, UI_LOCALES, LOCALE_AUTONYMS } from '../i18n/index.js';
+import { UI_LANG_KEY } from '../lib/uiLangStorage.js';
+
+/**
+ * pwa-ui-language AC11 + AC12 (tech-plan.md D10).
+ *
+ * DEC-3 put the switcher on a dedicated screen rather than a 6th tab because
+ * `tests/viewport-check.js` asserts all five `tab-item` elements share one
+ * `offsetTop` at 280-768px — a 6th would wrap. Settings also gives the future
+ * prefs DEC-3 names (units, data reset) somewhere to live.
+ */
+
+function LocationProbe() {
+  return <span data-testid="pathname">{useLocation().pathname}</span>;
+}
+
+function renderSettings({ locale = 'es' } = {}) {
+  return render(
+    <I18nProvider initialLocale={locale}>
+      <MemoryRouter initialEntries={['/settings']}>
+        <LocationProbe />
+        <Routes>
+          <Route path="/settings" element={<SettingsScreen />} />
+          <Route path="/" element={<div>home</div>} />
+        </Routes>
+        <BottomTabBar />
+      </MemoryRouter>
+    </I18nProvider>
+  );
+}
+
+beforeEach(() => localStorage.clear());
+afterEach(() => {
+  vi.restoreAllMocks();
+  localStorage.clear();
+});
+
+describe('SettingsScreen (AC11)', () => {
+  it('is titled Ajustes, not Idioma — it is scoped for future prefs', () => {
+    renderSettings();
+    expect(screen.getByRole('heading', { level: 1, name: 'Ajustes' })).toBeInTheDocument();
+  });
+
+  it('offers a back control rather than being a dead end', () => {
+    renderSettings();
+    expect(screen.getByRole('button', { name: /volver/i })).toBeInTheDocument();
+  });
+
+  it('does not add a sixth tab — BottomTabBar is untouched (DEC-3)', () => {
+    const { container } = renderSettings();
+    expect(container.querySelectorAll('[data-testid="tab-item"]')).toHaveLength(5);
+    expect(screen.queryByRole('link', { name: /ajustes/i })).not.toBeInTheDocument();
+  });
+
+  it('keeps the bottom tab bar visible and usable underneath', () => {
+    // Matches the existing /session precedent; only /import hides the nav.
+    renderSettings();
+    expect(screen.getByTestId('bottom-tab-bar')).toBeInTheDocument();
+  });
+
+  it('does not offer a settings affordance to itself', () => {
+    renderSettings();
+    expect(screen.queryByRole('button', { name: /^ajustes$/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('SettingsScreen — the language picker (AC11, a11y)', () => {
+  it('is a radiogroup with one option per shipped locale', () => {
+    renderSettings();
+    const group = screen.getByRole('radiogroup', { name: /idioma/i });
+    expect(within(group).getAllByRole('radio')).toHaveLength(UI_LOCALES.length);
+  });
+
+  it('marks exactly the active locale as checked', () => {
+    renderSettings({ locale: 'be' });
+    const checked = screen.getAllByRole('radio').filter((r) => r.getAttribute('aria-checked') === 'true');
+    expect(checked).toHaveLength(1);
+    expect(checked[0]).toHaveTextContent('BE');
+  });
+
+  it('prints each language autonym so it is recognisable from any UI language', () => {
+    renderSettings({ locale: 'en' });
+    for (const locale of UI_LOCALES) {
+      expect(screen.getByText(new RegExp(LOCALE_AUTONYMS[locale]))).toBeInTheDocument();
+    }
+  });
+
+  it('shows exactly three options — never an empty or loading state', () => {
+    // UI_LOCALES is a static in-code array (AC1), not fetched data, so the
+    // loading/empty/retry states do not exist here.
+    renderSettings();
+    expect(screen.getAllByRole('radio')).toHaveLength(3);
+  });
+});
+
+describe('SettingsScreen — switching (AC12)', () => {
+  it('re-renders in place, with no navigation', async () => {
+    const user = userEvent.setup();
+    renderSettings();
+
+    await user.click(screen.getByRole('radio', { name: /EN/ }));
+
+    expect(screen.getByTestId('pathname')).toHaveTextContent('/settings');
+    expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
+  });
+
+  it('re-renders the chrome outside this screen too', async () => {
+    const user = userEvent.setup();
+    renderSettings();
+    expect(screen.getByText('Inicio')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: /EN/ }));
+
+    expect(screen.getByText('Home')).toBeInTheDocument();
+  });
+
+  it('persists the choice', async () => {
+    const user = userEvent.setup();
+    renderSettings();
+    await user.click(screen.getByRole('radio', { name: /BE/ }));
+    expect(localStorage.getItem(UI_LANG_KEY)).toBe('be');
+  });
+
+  it('keeps focus on the option the user tapped', async () => {
+    // ux-design.md: switching must not steal or move focus.
+    const user = userEvent.setup();
+    renderSettings();
+    const option = screen.getByRole('radio', { name: /EN/ });
+
+    await user.click(option);
+
+    expect(document.activeElement).toBe(screen.getByRole('radio', { name: /EN/ }));
+  });
+
+  it('keeps the previous locale active, and stays silent, when persistence fails', async () => {
+    // ux-design.md's Error row — onboardingStorage.js precedent: swallow.
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota exceeded');
+    });
+    const user = userEvent.setup();
+    renderSettings();
+
+    await user.click(screen.getByRole('radio', { name: /EN/ }));
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
+  });
+});

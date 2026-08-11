@@ -19,6 +19,12 @@ export interface ExerciseCardProps {
   videoHref?: string;
   /** Overrides the default "Ver tutorial en YouTube →" — e.g. to name the exercise. */
   videoLabel?: React.ReactNode;
+  /** Overrides the default "Equipo:" label — e.g. to localize it. */
+  equipmentLabel?: React.ReactNode;
+  /** Overrides the default "Alternativa:" label — e.g. to localize it. */
+  alternativeLabel?: React.ReactNode;
+  /** Overrides the default "Técnica" heading — e.g. to localize it. */
+  techniqueLabel?: React.ReactNode;
   style?: React.CSSProperties;
 }
 export declare function ExerciseCard(props: ExerciseCardProps): JSX.Element;

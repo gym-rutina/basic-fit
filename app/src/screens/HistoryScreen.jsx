@@ -9,18 +9,15 @@ import { buildExerciseTrends } from '../lib/trends.js';
 import { difficultyLabel } from '../lib/difficulty.js';
 import { formatRelativeDays } from '../lib/relativeTime.js';
 import { machineLabel } from '../lib/machineLabel.js';
+import { useI18n } from '../i18n/index.js';
 
 function durationMinutes(session) {
   if (!session.endedAt) return null;
   return Math.max(0, Math.round((new Date(session.endedAt) - new Date(session.startedAt)) / 60000));
 }
 
-function pluralize(n, singular, plural) {
-  return n === 1 ? singular : plural;
-}
-
-function sessionIdentity(s) {
-  return `${s.dayLabel} · ${formatRelativeDays(s.startedAt)}`;
+function sessionIdentity(s, locale, t) {
+  return `${s.dayLabel} · ${formatRelativeDays(s.startedAt, new Date(), { locale, t })}`;
 }
 
 /**
@@ -39,6 +36,7 @@ function sessionIdentity(s) {
  */
 export function HistoryScreen() {
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [allSessions, setAllSessions] = useState(null); // null = loading
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -71,8 +69,8 @@ export function HistoryScreen() {
         <div style={{ color: 'var(--text-muted)', marginBottom: 12 }}>
           <Icon name="bar-chart-2" size={36} />
         </div>
-        <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 6px' }}>Aún no hay sesiones registradas</h2>
-        <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', maxWidth: 280 }}>Empieza un entrenamiento desde Inicio para ver tu historial aquí.</p>
+        <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 6px' }}>{t('history.emptyTitle')}</h2>
+        <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', maxWidth: 280 }}>{t('history.emptyBody')}</p>
       </div>
     );
   }
@@ -125,14 +123,15 @@ export function HistoryScreen() {
       if (confirm.kind === 'multi') exitSelectionMode();
     } catch {
       setDeleteBusy(false);
-      setDeleteError(confirm.kind === 'single' ? 'No se pudo borrar la sesión.' : 'No se pudieron borrar las sesiones.');
+      setDeleteError(confirm.kind === 'single' ? t('history.deleteSingleError') : t('history.deleteMultiError'));
     }
   }
 
   return (
     <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: selectionMode ? 160 : 100 }}>
       <ScreenHeader
-        title={selectionMode ? undefined : 'Historial'}
+        title={selectionMode ? undefined : t('tab.history')}
+        onSettings={selectionMode ? undefined : () => navigate('/settings')}
         trailing={
           selectionMode ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%' }}>
@@ -141,17 +140,17 @@ export function HistoryScreen() {
                 onClick={exitSelectionMode}
                 style={{ all: 'unset', cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center', font: '700 14px/1 var(--font-sans)', color: 'var(--bf-purple)' }}
               >
-                Cancelar
+                {t('common.cancel')}
               </button>
               <span aria-live="polite" style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-                {selectionCount} {pluralize(selectionCount, 'seleccionada', 'seleccionadas')}
+                {t(selectionCount === 1 ? 'history.selectedCountOne' : 'history.selectedCountOther', { n: selectionCount })}
               </span>
               <button
                 type="button"
                 onClick={toggleSelectAll}
                 style={{ all: 'unset', cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center', font: '700 14px/1 var(--font-sans)', color: 'var(--bf-purple)' }}
               >
-                {allSelected ? 'Quitar selección' : 'Seleccionar todo'}
+                {allSelected ? t('history.deselectAll') : t('history.selectAll')}
               </button>
             </div>
           ) : (
@@ -160,7 +159,7 @@ export function HistoryScreen() {
               onClick={() => setSelectionMode(true)}
               style={{ all: 'unset', cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center', font: '700 14px/1 var(--font-sans)', color: 'var(--bf-purple)', flexShrink: 0 }}
             >
-              Seleccionar
+              {t('history.selectAction')}
             </button>
           )
         }
@@ -172,11 +171,12 @@ export function HistoryScreen() {
           const total = s.exercises.length;
           const minutes = durationMinutes(s);
           const incomplete = s.status === 'abandoned';
-          const identity = sessionIdentity(s);
+          const identity = sessionIdentity(s, locale, t);
           const meta = (
             <div style={{ font: 'var(--text-body-sm)', color: incomplete ? 'var(--bf-danger)' : 'var(--text-muted)', marginTop: 4 }}>
-              {done}/{total} completados{minutes != null ? ` · ${minutes} min` : ''}
-              {incomplete ? ' · sesión sin terminar' : ''}
+              {t('common.completedOf', { done, total })}
+              {minutes != null ? ` · ${minutes} min` : ''}
+              {incomplete ? ` · ${t('common.unfinishedSuffix')}` : ''}
             </div>
           );
           const selected = selectedIds.has(s.id);
@@ -200,13 +200,13 @@ export function HistoryScreen() {
                   type="checkbox"
                   checked={selected}
                   onChange={() => toggleSelect(s.id)}
-                  aria-label={`Seleccionar sesión ${identity}`}
+                  aria-label={t('history.selectSessionAria', { identity })}
                   style={{ width: 44, height: 44, flexShrink: 0, margin: 0, accentColor: 'var(--bf-purple)' }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-                    <span style={{ font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{s.dayLabel}</span>
-                    <span style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', flexShrink: 0 }}>{formatRelativeDays(s.startedAt)}</span>
+                    <span dir="auto" style={{ font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{s.dayLabel}</span>
+                    <span style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', flexShrink: 0 }}>{formatRelativeDays(s.startedAt, new Date(), { locale, t })}</span>
                   </div>
                   {meta}
                 </div>
@@ -217,11 +217,11 @@ export function HistoryScreen() {
           return (
             <div key={s.id} style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ flex: 1, minWidth: 0, font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{s.dayLabel}</span>
-                <span style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', flexShrink: 0 }}>{formatRelativeDays(s.startedAt)}</span>
+                <span dir="auto" style={{ flex: 1, minWidth: 0, font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{s.dayLabel}</span>
+                <span style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', flexShrink: 0 }}>{formatRelativeDays(s.startedAt, new Date(), { locale, t })}</span>
                 <button
                   type="button"
-                  aria-label={`Borrar sesión ${identity}`}
+                  aria-label={t('history.deleteSessionAria', { identity })}
                   onClick={() => openSingleConfirm(s)}
                   style={{
                     all: 'unset',
@@ -245,16 +245,16 @@ export function HistoryScreen() {
 
         {!selectionMode && trends.length > 0 && (
           <>
-            <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: 'var(--space-4) 0 0' }}>Por ejercicio</h2>
-            {trends.map((t) => {
+            <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: 'var(--space-4) 0 0' }}>{t('progress.byExercise')}</h2>
+            {trends.map((tr) => {
               // exercise-level-tracking AC9: one row per exercise key, so one
               // machine can now head several rows — the sub-line names WHICH
               // machine (always shown; a line only on collisions would read
               // as a glitch).
-              const subLine = machineLabel(t.equipmentId, t.name);
+              const subLine = machineLabel(tr.equipmentId, tr.name, locale);
               return (
-                <div key={t.exerciseKey} style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}>
-                  <div style={{ font: '700 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: subLine ? 2 : 6 }}>{t.name}</div>
+                <div key={tr.exerciseKey} style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}>
+                  <div dir="auto" style={{ font: '700 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: subLine ? 2 : 6 }}>{tr.name}</div>
                   {subLine && (
                     <div
                       style={{
@@ -270,10 +270,10 @@ export function HistoryScreen() {
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-                    {t.entries.map((e, i) => (
+                    {tr.entries.map((e, i) => (
                       <span key={i}>
                         {e.weightUsed != null ? `${e.weightUsed}kg · ` : ''}
-                        {difficultyLabel(e.difficulty)}
+                        {difficultyLabel(e.difficulty, t)}
                       </span>
                     ))}
                   </div>
@@ -285,7 +285,7 @@ export function HistoryScreen() {
 
         {!selectionMode && (
           <Button variant="primary" size="lg" style={{ width: '100%', marginTop: 8 }} onClick={() => navigate('/export')}>
-            <Icon name="download" size={16} /> Exportar progreso
+            <Icon name="download" size={16} /> {t('export.title')}
           </Button>
         )}
       </div>
@@ -314,23 +314,23 @@ export function HistoryScreen() {
             }}
             aria-label={
               selectionCount > 0
-                ? `Borrar ${selectionCount} ${pluralize(selectionCount, 'sesión seleccionada', 'sesiones seleccionadas')}`
+                ? t(selectionCount === 1 ? 'history.deleteSelectedAriaOne' : 'history.deleteSelectedAriaOther', { n: selectionCount })
                 : undefined
             }
             onClick={openMultiConfirm}
           >
-            Borrar ({selectionCount})
+            {t('history.deleteCount', { n: selectionCount })}
           </Button>
         </div>
       )}
 
       {confirm && confirm.kind === 'single' && (
         <ConfirmSheet
-          title="¿Borrar esta sesión?"
-          description={`Se borrará «${sessionIdentity(confirm.session)}». También se recalcularán los pesos sugeridos para los ejercicios de esta sesión. No se puede deshacer.`}
-          primaryLabel="Borrar"
+          title={t('history.deleteSingleTitle')}
+          description={t('history.deleteSingleBody', { identity: sessionIdentity(confirm.session, locale, t) })}
+          primaryLabel={t('history.deleteConfirmAction')}
           onPrimary={handleConfirmDelete}
-          cancelLabel="Cancelar"
+          cancelLabel={t('common.cancel')}
           onCancel={closeConfirm}
           danger
           busy={deleteBusy}
@@ -340,11 +340,11 @@ export function HistoryScreen() {
 
       {confirm && confirm.kind === 'multi' && (
         <ConfirmSheet
-          title={`¿Borrar ${selectionCount} ${pluralize(selectionCount, 'sesión', 'sesiones')}?`}
-          description={`Se ${pluralize(selectionCount, 'borrará', 'borrarán')} ${selectionCount} ${pluralize(selectionCount, 'sesión', 'sesiones')} del historial. También se recalcularán los pesos sugeridos para sus ejercicios. No se puede deshacer.`}
-          primaryLabel={`Borrar ${selectionCount}`}
+          title={t(selectionCount === 1 ? 'history.deleteMultiTitleOne' : 'history.deleteMultiTitleOther', { n: selectionCount })}
+          description={t(selectionCount === 1 ? 'history.deleteMultiBodyOne' : 'history.deleteMultiBodyOther', { n: selectionCount })}
+          primaryLabel={t('history.deleteConfirmCount', { n: selectionCount })}
           onPrimary={handleConfirmDelete}
-          cancelLabel="Cancelar"
+          cancelLabel={t('common.cancel')}
           onCancel={closeConfirm}
           danger
           busy={deleteBusy}

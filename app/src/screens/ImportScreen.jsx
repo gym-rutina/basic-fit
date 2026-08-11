@@ -4,17 +4,23 @@ import { Button } from '../../../design-system/components/primitives/Button.jsx'
 import { ConfirmSheet } from '../components/ConfirmSheet.jsx';
 import { GuideOverlay } from '../components/GuideOverlay.jsx';
 import { OnboardingOverlay } from '../components/OnboardingOverlay.jsx';
-import { detectGuideLocale, GUIDE_LINK_TEXT } from '../lib/guideLocale.js';
 import { validateImportedRutina } from '../lib/validateImport.js';
 import { saveActiveRutina, getActiveRutina, getActiveSession, listSessions } from '../lib/db.js';
 import exampleRutina from '../../../data/examples/phase1-monday.json';
+import { useI18n } from '../i18n/index.js';
 
 /**
  * First-run empty state, and reachable later (from Home, not wired as a
  * bottom tab — ux-design.md) to replace the active program. States: empty |
  * loading | error | success (ux-design.md's States Matrix).
+ *
+ * pwa-ui-language AC8: the guide link now reads the active UI locale via
+ * `useI18n()` rather than `detectGuideLocale(navigator.language)` directly —
+ * a user who switched the app to English gets the English guide regardless
+ * of what the browser reports.
  */
 export function ImportScreen({ onImported }) {
+  const { t, locale } = useI18n();
   const [text, setText] = useState('');
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +33,6 @@ export function ImportScreen({ onImported }) {
   const fileInputRef = useRef(null);
   const guideLinkRef = useRef(null);
   const onboardingLinkRef = useRef(null);
-  const locale = detectGuideLocale(navigator.language);
 
   function handleFilePick(e) {
     const file = e.target.files && e.target.files[0];
@@ -63,7 +68,7 @@ export function ImportScreen({ onImported }) {
       try {
         parsed = JSON.parse(text);
       } catch (err) {
-        setErrors([`JSON inválido: ${err.message}`]);
+        setErrors([t('import.invalidJson', { message: err.message })]);
         setLoading(false);
         return;
       }
@@ -101,9 +106,9 @@ export function ImportScreen({ onImported }) {
       <div style={{ color: 'var(--bf-purple)', marginBottom: 12 }}>
         <Icon name="dumbbell" size={40} strokeWidth={1.6} />
       </div>
-      <h1 style={{ font: 'var(--text-h2)', textTransform: 'uppercase', color: 'var(--bf-ink)', textAlign: 'center', margin: '0 0 6px' }}>Importa tu rutina para empezar</h1>
+      <h1 style={{ font: 'var(--text-h2)', textTransform: 'uppercase', color: 'var(--bf-ink)', textAlign: 'center', margin: '0 0 6px' }}>{t('import.title')}</h1>
       <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', textAlign: 'center', margin: '0 0 var(--space-6)', maxWidth: 340 }}>
-        Pega el JSON generado por un LLM, o elige un archivo .json.
+        {t('import.subtitle')}
       </p>
 
       <div style={{ width: '100%', maxWidth: 420 }}>
@@ -115,7 +120,7 @@ export function ImportScreen({ onImported }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={8}
-          placeholder="Pegar JSON aquí..."
+          placeholder={t('import.placeholder')}
           style={{
             width: '100%',
             boxSizing: 'border-box',
@@ -131,7 +136,8 @@ export function ImportScreen({ onImported }) {
         {errors.length > 0 && (
           <div role="alert" style={{ marginTop: 10, background: 'var(--bf-danger-tint)', border: '1px solid var(--bf-danger)', borderRadius: 'var(--radius-md)', padding: '10px 14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, font: '700 13px/1.3 var(--font-sans)', color: 'var(--bf-danger)', marginBottom: 6 }}>
-              <Icon name="alert-triangle" size={16} /> {errors.length} error{errors.length === 1 ? '' : 'es'} de validación
+              <Icon name="alert-triangle" size={16} />
+              {t(errors.length === 1 ? 'import.errorCountOne' : 'import.errorCountOther', { n: errors.length })}
             </div>
             <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 4 }}>
               {errors.map((e, i) => (
@@ -141,7 +147,7 @@ export function ImportScreen({ onImported }) {
               ))}
             </ul>
             <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '8px 0 0' }}>
-              Copia estos errores y pégalos de vuelta en tu chat con el LLM para corregirlos.
+              {t('import.errorHint')}
             </p>
           </div>
         )}
@@ -149,20 +155,20 @@ export function ImportScreen({ onImported }) {
         <div style={{ display: 'grid', gap: 10, marginTop: 16 }}>
           <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={handleFilePick} style={{ display: 'none' }} />
           <Button variant="outline" style={{ width: '100%' }} onClick={() => fileInputRef.current && fileInputRef.current.click()}>
-            <Icon name="download" size={16} style={{ transform: 'rotate(180deg)' }} /> Elegir archivo .json
+            <Icon name="download" size={16} style={{ transform: 'rotate(180deg)' }} /> {t('import.chooseFile')}
           </Button>
           <Button variant="primary" disabled={!text || loading} style={{ width: '100%' }} onClick={handleImport}>
-            {loading ? 'Validando...' : 'Importar'}
+            {loading ? t('import.validating') : t('import.importAction')}
           </Button>
           {!text && (
             <Button variant="ghost" style={{ width: '100%' }} onClick={loadExample}>
-              Cargar ejemplo
+              {t('import.loadExample')}
             </Button>
           )}
         </div>
 
         <p style={{ textAlign: 'center', font: 'var(--text-body-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-6)' }}>
-          ¿Primera vez aquí?
+          {t('onboarding.firstTime')}
           <br />
           <a
             ref={onboardingLinkRef}
@@ -173,12 +179,12 @@ export function ImportScreen({ onImported }) {
             }}
             style={{ color: 'var(--text-link)', fontWeight: 600 }}
           >
-            Cómo funciona la app →
+            {t('onboarding.howItWorksLink')}
           </a>
         </p>
 
         <p style={{ textAlign: 'center', font: 'var(--text-body-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-6)' }}>
-          ¿No tienes un rutina.json?
+          {t('guide.noRutina')}
           <br />
           <a
             ref={guideLinkRef}
@@ -189,14 +195,13 @@ export function ImportScreen({ onImported }) {
             }}
             style={{ color: 'var(--text-link)', fontWeight: 600 }}
           >
-            {GUIDE_LINK_TEXT[locale]}
+            {t('guide.linkText')}
           </a>
         </p>
       </div>
 
       {showGuide && (
         <GuideOverlay
-          locale={locale}
           onClose={() => {
             setShowGuide(false);
             guideLinkRef.current?.focus();
@@ -215,11 +220,11 @@ export function ImportScreen({ onImported }) {
 
       {pendingRutina && (
         <ConfirmSheet
-          title="Reemplazar rutina activa"
-          description="Ya tienes un programa activo con sesiones guardadas. Importar este rutina.json lo reemplazará como programa activo — tu historial de sesiones se conserva, pero una sesión en curso podría quedar desactualizada."
-          primaryLabel="Reemplazar"
+          title={t('import.replaceTitle')}
+          description={t('import.replaceBody')}
+          primaryLabel={t('import.replaceAction')}
           onPrimary={() => commitImport(pendingRutina)}
-          cancelLabel="Cancelar"
+          cancelLabel={t('common.cancel')}
           onCancel={() => setPendingRutina(null)}
         />
       )}

@@ -8,6 +8,16 @@ lo que tengas a mano) e importa la respuesta en la aplicación **Rutina**.
 No se requieren conocimientos de JSON. Sin cuenta, sin clave API — funciona en una
 ventana de chat de navegador normal.
 
+> **Idioma.** El campo 7 fija el idioma del texto de la rutina — escríbelo en
+> el idioma que quieras (no solo inglés/español/bielorruso; cualquier idioma
+> que el LLM pueda producir). Rutina muestra los nombres de ejercicios,
+> etiquetas de días, indicaciones técnicas, reglas y notas **exactamente como
+> las escribe el LLM**, en un único idioma, y nunca las traduce, las
+> reetiqueta ni exige que coincidan con el idioma de la interfaz de la app
+> (que se configura por separado, en **Ajustes**). Pide al LLM **una sola
+> cadena de texto por campo** — nunca un objeto multilingüe como
+> `{"en": "Monday", "es": "Lunes"}`.
+
 Todos los datos de referencia están en el repositorio público
 [github.com/bthos/gym-routine-basic-fit](https://github.com/bthos/gym-routine-basic-fit).
 El prompt indica al LLM dónde leerlos — **no** necesitas copiar tú mismo el esquema ni

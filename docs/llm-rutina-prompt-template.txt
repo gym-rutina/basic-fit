@@ -46,6 +46,11 @@ chat can't open zip attachments.
   exercise name, so a respelled exercise starts a new, empty history.
 - "videoQuery" (optional) is a search query for THIS exercise on THIS equipment, not a
   generic machine query — set it only to override the app's automatic query.
+- Write every text field in ONLY the language given in REQUEST field 7 — one
+  plain string per field (e.g. "label": "Monday"), never a multilingual
+  object (NOT "label": {"en": "Monday", "es": "Lunes"}). The app displays
+  routine text exactly as written and does not translate it, so do not try
+  to match any other language, including the app's own interface language.
 
 ### OUTPUT
 Return the JSON object now. Nothing else.

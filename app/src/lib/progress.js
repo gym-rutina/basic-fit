@@ -1,4 +1,5 @@
 import { exerciseKey } from './exerciseKey.js';
+import { defaultT } from '../i18n/index.js';
 
 /**
  * Aggregators for the Progress screen (AC2/AC3/AC4).
@@ -160,10 +161,10 @@ function qualifyingDays(sessions) {
  * whose completedAt is set.
  *
  * @param {Array} sessions
- * @param {{weeks?: number, todayKey?: string}} options
+ * @param {{weeks?: number, todayKey?: string, t?: (key: string) => string}} options
  * @returns {{cells: Array<{date: string, filled: boolean, ariaLabel: string}>, weeks: number}}
  */
-export function buildFrequencyGrid(sessions = [], { weeks = 12, todayKey = localDateKey() } = {}) {
+export function buildFrequencyGrid(sessions = [], { weeks = 12, todayKey = localDateKey(), t = defaultT } = {}) {
   const filledDays = qualifyingDays(sessions);
 
   // Mon-start: getDay() Sun=0, Mon=1..Sat=6 → Mon-indexed: (getDay()+6)%7 → Mon=0..Sun=6
@@ -187,7 +188,7 @@ export function buildFrequencyGrid(sessions = [], { weeks = 12, todayKey = local
     cells.push({
       date: dateKey,
       filled,
-      ariaLabel: filled ? 'sesión completada' : 'sin sesión',
+      ariaLabel: filled ? t('a11y.sessionCompleted') : t('a11y.noSession'),
     });
   }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
+import { useI18n } from '../i18n/index.js';
 
 // Routes where the indicator would either point at the current screen or is
 // redundant with a fuller resume affordance already on screen (spec.md
@@ -21,6 +22,7 @@ const HIDDEN_ROUTES = new Set(['/session', '/import', '/']);
  * only ever repeat that, on every other screen, as noise.
  */
 export function SessionInProgressBanner({ status, session }) {
+  const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -29,7 +31,7 @@ export function SessionInProgressBanner({ status, session }) {
 
   const total = session.exercises.length;
   const done = session.exercises.filter((e) => e.completedAt).length;
-  const accessibleName = `Entrenamiento en curso: ${session.dayLabel}, ${done} de ${total} completados. Volver a la sesión.`;
+  const accessibleName = t('session.inProgressAria', { label: session.dayLabel, done, total });
 
   return (
     <button
@@ -63,7 +65,7 @@ export function SessionInProgressBanner({ status, session }) {
         }}
       />
       <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', font: '700 14px/1.3 var(--font-sans)' }}>
-        Entrenamiento en curso · {session.dayLabel}
+        {t('session.inProgressLabel')} · <span dir="auto">{session.dayLabel}</span>
       </span>
       <span style={{ flexShrink: 0, font: '700 13px/1 var(--font-sans)' }}>
         {done}/{total}

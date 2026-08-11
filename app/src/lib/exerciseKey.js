@@ -14,24 +14,34 @@
  * this module depends on nothing.
  */
 
+// pwa-ui-language AC17 (D1) — script-gated separator rule. After NFD +
+// combining-mark strip, a name containing ANY character outside
+// Latin/Common/Inherited takes a Unicode-aware separator regex; a
+// Latin-script name takes the exact, unchanged `[^a-z0-9]+` path it always
+// has. This is what makes the fix's hard constraint provable rather than
+// assumed: a Latin-script name's key cannot move, because it never enters
+// the new code path at all (see exerciseKey.script.test.js's 3262-entry
+// corpus — 0 divergences). Measured, not guessed: plain `\p{L}\p{N}`
+// re-keys 500+ existing Latin characters (ß ø ł ĳ œ ª º …); "fall back only
+// when the ASCII slug is empty" leaves mixed-script collisions alive
+// ("Жым 45" / "Развядзенне 45" both → "45"). Script-gating avoids both.
+const NON_LATIN = /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u;
+
 /**
- * Lowercases, strips diacritics, and collapses every run of non-alphanumeric
- * characters to a single dash (trimmed at both ends). Non-string input
- * degrades to `''` rather than throwing: this runs inside an IndexedDB
- * transaction on user-authored rutina data, and a malformed name must
- * degrade to "not trackable", never abort a session write.
+ * Lowercases, strips diacritics, and collapses every run of "not a letter or
+ * digit" to a single dash (trimmed at both ends). Non-string input degrades
+ * to `''` rather than throwing: this runs inside an IndexedDB transaction on
+ * user-authored rutina data, and a malformed name must degrade to "not
+ * trackable", never abort a session write.
  *
  * @param {unknown} name
  * @returns {string}
  */
 export function slugifyExerciseName(name) {
   if (typeof name !== 'string') return '';
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '') // strip combining diacritical marks
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  const folded = name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); // strip combining diacritical marks
+  const separators = NON_LATIN.test(folded) ? /[^\p{L}\p{Nd}]+/gu : /[^a-z0-9]+/g;
+  return folded.replace(separators, '-').replace(/^-+|-+$/g, '');
 }
 
 /**

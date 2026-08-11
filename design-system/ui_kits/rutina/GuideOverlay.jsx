@@ -163,6 +163,23 @@ function GuideOverlay({ locale = "es", onClose }) {
   const closeLabel = GUIDE_CLOSE[locale] || "Close";
   const html       = GUIDE_HTML[locale]  || GUIDE_HTML.en;
 
+  /* gym-directory-and-catalog (2026-08-09) — Club Picker trigger, replacing
+     the old "no sabes el id de tu gimnasio? -> gyms.html" link (S5/S6,
+     ux-design.md Screens A/A'). Selection persists via BF_KIT_CLUB_STORE so
+     it's shared with CatalogScreen's club filter (same picker, shared
+     singleton — see ux-design.md's Interaction summary). */
+  const [club, setClub] = React.useState(() => window.BF_KIT_CLUB_STORE.get());
+  const [showPicker, setShowPicker] = React.useState(false);
+  const [showOverlay, setShowOverlay] = React.useState(false);
+  const ClubPickerSheetComp = window.ClubPickerSheet;
+  const EquipmentOverlaySheetComp = window.EquipmentOverlaySheet;
+
+  function handleSelectClub(c) {
+    setClub(c);
+    window.BF_KIT_CLUB_STORE.set(c);
+    setShowPicker(false);
+  }
+
   /* Escape key closes the overlay (standard dialog behaviour — AC2). */
   React.useEffect(() => {
     function handleKey(e) {
@@ -236,6 +253,50 @@ function GuideOverlay({ locale = "es", onClose }) {
           overflowY: "auto",
           padding: "var(--space-6) var(--page-gutter) var(--space-10)",
         }}>
+          {/* ── Club Picker trigger (ux-design.md Screens A/A') ──────────── */}
+          <div style={{
+            maxWidth: 600, margin: "0 0 var(--space-6)",
+            background: "var(--bf-purple-tint)", border: "1px solid var(--bf-purple)",
+            borderRadius: "var(--radius-md)", padding: "12px 14px",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <GuideIcon name="map-pin" size={18} style={{ color: "var(--bf-purple)" }} />
+              <span style={{ font: "700 13px/1.3 var(--font-sans)", color: "var(--bf-ink)" }}>Tu club</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPicker(true)}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                width: "100%", textAlign: "left", cursor: "pointer",
+                background: "var(--bf-white)", border: "1px solid var(--border-control)",
+                borderRadius: "var(--radius-control)", padding: "11px 14px",
+              }}
+            >
+              {club ? (
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: "block", font: "700 14px/1.3 var(--font-sans)", color: "var(--bf-ink)" }}>{club.name}</span>
+                  <span style={{ display: "block", font: "var(--text-caption)", color: "var(--bf-ink-2)" }}>{club.address} · {club.cityName}</span>
+                </span>
+              ) : (
+                <span style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-muted)" }}>
+                  <GuideIcon name="search" size={16} />
+                  Selecciona tu club
+                </span>
+              )}
+              <GuideIcon name="chevron-right" size={18} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+            </button>
+            {club && (
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); setShowOverlay(true); }}
+                style={{ display: "inline-block", marginTop: 8, font: "600 13px/1.2 var(--font-sans)", color: "var(--text-link)" }}
+              >
+                ¿Equipamiento distinto en tu club? →
+              </a>
+            )}
+          </div>
+
           <article
             className="guide-article"
             style={{
@@ -248,6 +309,22 @@ function GuideOverlay({ locale = "es", onClose }) {
           />
         </div>
       </div>
+
+      {showPicker && ClubPickerSheetComp && (
+        <ClubPickerSheetComp
+          initialClub={club}
+          onSelect={handleSelectClub}
+          onManualEdit={() => setShowPicker(false)}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
+      {showOverlay && club && EquipmentOverlaySheetComp && (
+        <EquipmentOverlaySheetComp
+          clubName={club.name}
+          clubId={club.id}
+          onClose={() => setShowOverlay(false)}
+        />
+      )}
     </>
   );
 }

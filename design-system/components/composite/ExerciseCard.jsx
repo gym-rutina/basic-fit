@@ -2,8 +2,18 @@ import React from "react";
 import { Tag } from "../primitives/Tag.jsx";
 import { DetailItem } from "../primitives/DetailItem.jsx";
 
-/** Full exercise card for routine day sections. Mobile-first; details grid wraps. */
-export function ExerciseCard({ number, name, muscles = [], details = [], equipment, alternative, imageUrl, steps = [], videoHref, videoLabel = "Ver tutorial en YouTube →", style }) {
+/**
+ * Full exercise card for routine day sections. Mobile-first; details grid wraps.
+ *
+ * `equipmentLabel`/`alternativeLabel`/`techniqueLabel` — pwa-ui-language AC16
+ * code-QA follow-up (Cmok fix cycle 1). `ExerciseCard` has two consumers with
+ * OPPOSITE language requirements: the PWA (`app/src/screens/ProgramScreen.jsx`,
+ * must localize) and the static-HTML deliverables (DD-1, deliberately kept
+ * Spanish). Optional props with the shipped Spanish text as defaults, same
+ * pattern as `videoLabel`, preserve the static side byte-for-byte while
+ * letting the PWA pass translated labels via `t()`.
+ */
+export function ExerciseCard({ number, name, muscles = [], details = [], equipment, alternative, imageUrl, steps = [], videoHref, videoLabel = "Ver tutorial en YouTube →", equipmentLabel = "Equipo:", alternativeLabel = "Alternativa:", techniqueLabel = "Técnica", style }) {
   const [hover, setHover] = React.useState(false);
   return (
     <article onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} style={{
@@ -20,7 +30,10 @@ export function ExerciseCard({ number, name, muscles = [], details = [], equipme
           font: "800 16px/1 var(--font-display)",
         }}>{number}</span>
         <div style={{ minWidth: 0 }}>
-          <h3 style={{ font: "var(--text-h3)", margin: 0 }}>{name}</h3>
+          {/* pwa-ui-language AC16 (tech-plan.md D14/D19): the exercise NAME is
+              axis-3 (user-authored) content — the app does not know its
+              language, so it gets dir="auto" and no lang attribute. */}
+          <h3 dir="auto" style={{ font: "var(--text-h3)", margin: 0 }}>{name}</h3>
           {muscles.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
               {muscles.map((m, i) => <Tag key={i} tone={i === 0 ? "primary" : "secondary"}>{m}</Tag>)}
@@ -40,8 +53,8 @@ export function ExerciseCard({ number, name, muscles = [], details = [], equipme
 
       {(equipment || alternative) && (
         <div style={{ marginTop: "var(--space-4)", font: "var(--text-body-sm)", color: "var(--text-body)", display: "grid", gap: 4 }}>
-          {equipment && <div><strong style={{ color: "var(--text-heading)" }}>Equipo:</strong> {equipment}</div>}
-          {alternative && <div style={{ color: "var(--text-muted)" }}><em>Alternativa:</em> {alternative}</div>}
+          {equipment && <div><strong style={{ color: "var(--text-heading)" }}>{equipmentLabel}</strong> {equipment}</div>}
+          {alternative && <div style={{ color: "var(--text-muted)" }}><em>{alternativeLabel}</em> {alternative}</div>}
         </div>
       )}
 
@@ -62,9 +75,10 @@ export function ExerciseCard({ number, name, muscles = [], details = [], equipme
           <div style={{
             font: "var(--text-label)", letterSpacing: "var(--tracking-label)",
             textTransform: "uppercase", color: "var(--bf-orange-deep)", marginBottom: 8,
-          }}>Técnica</div>
+          }}>{techniqueLabel}</div>
           <ol style={{ margin: 0, paddingLeft: 20, font: "var(--text-body-sm)", color: "var(--text-body)", display: "grid", gap: 4 }}>
-            {steps.map((s, i) => <li key={i}>{s}</li>)}
+            {/* Technique cues are axis-3 too — same dir="auto", no lang. */}
+            {steps.map((s, i) => <li key={i} dir="auto">{s}</li>)}
           </ol>
         </div>
       )}

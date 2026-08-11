@@ -8,6 +8,15 @@ comes back into the **Rutina** app.
 No JSON knowledge required. No account, no API key — this works in a normal browser chat
 window.
 
+> **Language.** Field 7 sets the language of the routine text — write it in
+> whatever language you want (not limited to English/Spanish/Belarusian; any
+> language the LLM can produce). Rutina displays exercise names, day labels,
+> technique cues, rules and notes **exactly as the LLM writes them**, in a
+> single language, and never translates them, re-labels them, or requires
+> them to match the app's own interface language (set separately, under
+> **Settings**). Ask the LLM for **one plain string per field** — never a
+> multilingual object like `{"en": "Monday", "es": "Lunes"}`.
+
 All reference data lives in the public repository
 [github.com/bthos/gym-routine-basic-fit](https://github.com/bthos/gym-routine-basic-fit).
 The prompt tells the LLM where to read it — you do **not** need to copy schema or

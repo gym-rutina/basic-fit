@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ImportScreen } from './ImportScreen.jsx';
+import { I18nProvider } from '../i18n/index.js';
 
 vi.mock('../lib/db.js', () => ({
   saveActiveRutina: vi.fn(),
@@ -10,32 +11,42 @@ vi.mock('../lib/db.js', () => ({
   listSessions: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../lib/guideLocale.js', async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    detectGuideLocale: () => 'en',
-  };
-});
-
 vi.mock('../lib/onboardingStorage.js', () => ({
   hasSeenOnboarding: vi.fn().mockReturnValue(true),
   markOnboardingSeen: vi.fn(),
 }));
 
+/**
+ * pwa-ui-language AC8 (tech-plan.md D17) updated this block's mechanism, not
+ * its intent: `detectGuideLocale` stopped being a second, independently
+ * mockable source of truth — the guide now follows the ACTIVE UI LOCALE via
+ * `useI18n()`, exactly like every other piece of chrome. Forcing English
+ * here is now done the same way any other screen would be put into English
+ * (`I18nProvider initialLocale="en"`) rather than by mocking a function
+ * ImportScreen no longer calls. See guideConsumer.test.jsx and
+ * GuideOverlay.test.jsx for the AC8 contract itself.
+ */
 describe('ImportScreen — LLM guide link (AC1, AC2)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
+  function renderEnglish() {
+    return render(
+      <I18nProvider initialLocale="en">
+        <ImportScreen />
+      </I18nProvider>
+    );
+  }
+
   it('does not show the guide overlay on mount', () => {
-    render(<ImportScreen />);
+    renderEnglish();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('opens the guide overlay when the link is clicked', async () => {
     const user = userEvent.setup();
-    render(<ImportScreen />);
+    renderEnglish();
 
     await user.click(screen.getByRole('link', { name: /view the llm creation guide/i }));
 
@@ -45,7 +56,7 @@ describe('ImportScreen — LLM guide link (AC1, AC2)', () => {
 
   it('dismisses the guide overlay when the close button is clicked', async () => {
     const user = userEvent.setup();
-    render(<ImportScreen />);
+    renderEnglish();
 
     await user.click(screen.getByRole('link', { name: /view the llm creation guide/i }));
     await user.click(screen.getByRole('button', { name: /close/i }));

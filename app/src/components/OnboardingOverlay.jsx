@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
-import { ONBOARDING_STEPS } from '../lib/onboardingContent.js';
+import { buildOnboardingSteps } from '../lib/onboardingContent.js';
 import { markOnboardingSeen } from '../lib/onboardingStorage.js';
-
-const TOTAL_STEPS = ONBOARDING_STEPS.length;
+import { LanguageSheet } from './LanguageSheet.jsx';
+import { useI18n, LOCALE_AUTONYMS } from '../i18n/index.js';
 
 /** Decorative-only step position (dots) — aria-hidden, real progress is the sr-only text below. */
 function DotIndicator({ total, current }) {
@@ -36,11 +36,20 @@ function DotIndicator({ total, current }) {
  * Owns "mark seen" internally (tech-plan.md Decision 5): both Shell
  * (first-run) and ImportScreen (on-demand revisit) pass only `onClose`.
  *
+ * pwa-ui-language Q2 (tech-plan.md D11): step 1 renders a compact language
+ * trigger (globe icon + current autonym + chevron) below the body
+ * paragraph, opening `LanguageSheet`. It does not gate "Siguiente" — a
+ * hint, not a step — and only appears on step 1.
+ *
  * Props:
  *   onClose: () => void
  */
 export function OnboardingOverlay({ onClose }) {
+  const { t, locale } = useI18n();
+  const ONBOARDING_STEPS = useMemo(() => buildOnboardingSteps(t), [t]);
+  const TOTAL_STEPS = ONBOARDING_STEPS.length;
   const [step, setStep] = useState(0);
+  const [showLanguageSheet, setShowLanguageSheet] = useState(false);
   const headingRef = useRef(null);
   const current = ONBOARDING_STEPS[step];
   const isFirst = step === 0;
@@ -92,7 +101,7 @@ export function OnboardingOverlay({ onClose }) {
         className="sr-only"
         aria-live="polite"
       >
-        {`Paso ${step + 1} de ${TOTAL_STEPS}`}
+        {t('onboarding.stepAnnouncement', { current: step + 1, total: TOTAL_STEPS })}
       </div>
 
       <div
@@ -118,7 +127,7 @@ export function OnboardingOverlay({ onClose }) {
             cursor: 'pointer',
           }}
         >
-          Saltar
+          {t('onboarding.skip')}
         </button>
       </div>
 
@@ -164,6 +173,35 @@ export function OnboardingOverlay({ onClose }) {
             >
               {current.body}
             </p>
+          )}
+
+          {isFirst && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-5)' }}>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-label={t('onboarding.languageTrigger')}
+                onClick={() => setShowLanguageSheet(true)}
+                style={{
+                  all: 'unset',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  minHeight: 44,
+                  padding: '8px 16px',
+                  border: '1px solid var(--border-control)',
+                  borderRadius: 'var(--radius-control)',
+                  font: '600 14px/1 var(--font-sans)',
+                  color: 'var(--bf-ink)',
+                }}
+              >
+                <Icon name="globe" size={16} />
+                <span>{LOCALE_AUTONYMS[locale]}</span>
+                <Icon name="chevron-down" size={14} />
+              </button>
+            </div>
           )}
 
           {current.steps && (
@@ -237,13 +275,15 @@ export function OnboardingOverlay({ onClose }) {
       >
         {!isFirst && (
           <Button variant="outline" onClick={handleBack}>
-            Atrás
+            {t('onboarding.back')}
           </Button>
         )}
         <Button variant="primary" onClick={isLast ? exit : handleNext} style={isFirst ? { marginLeft: 'auto' } : undefined}>
-          {isLast ? 'Empezar' : 'Siguiente'}
+          {isLast ? t('onboarding.start') : t('onboarding.next')}
         </Button>
       </div>
+
+      {showLanguageSheet && <LanguageSheet onClose={() => setShowLanguageSheet(false)} />}
     </div>
   );
 }

@@ -95,7 +95,6 @@ basicfit-rutina/
 │   └── viewport-check.js           # Puppeteer: no horizontal scroll + tab-bar row-wrap at 280/360/390/412/768px
 ├── docs/
 │   ├── export-format.md            # Export Markdown + JSON format reference (LLM paste contract)
-│   ├── llm-rutina-prompt.md            # Redirect — backward compat
 │   ├── llm-rutina-prompt-template.txt  # Copy-paste LLM prompt (shared)
 │   ├── llm-rutina-prompt.en.md         # English guide
 │   ├── llm-rutina-prompt.es.md         # Spanish / Español
@@ -185,6 +184,42 @@ On Chromium-based browsers (Chrome, Edge, Samsung Internet), the app also shows 
 
 All data is stored locally in IndexedDB — no account, no server.
 
+## Languages
+
+The app distinguishes three things that used to be silently conflated as
+"the app is in Spanish" — telling them apart is the point of this section,
+because conflating them is exactly what caused the two bugs described below.
+
+| # | Axis | Controlled by | Lives in | Behavior |
+|---|------|----------------|----------|----------|
+| 1 | **UI chrome** — labels, buttons, headings, aria-labels, empty states, errors, onboarding, the LLM guide overlay | The app | `app/src/i18n/{es,en,be}.js` | `es` / `en` / `be`, switchable from **Settings** (the sliders icon + language code in the header) or from the onboarding language picker on first run. Persisted in `localStorage`. First run defaults from the browser: `es`/`be` → that locale, anything else → `en`. |
+| 2 | **Bundled reference data** — equipment names, descriptions, instructions, video links | The app | `data/equipment.json` (`{en, es, be}` per field) | Follows the UI language everywhere in the app, with a local, non-persisted override on the **Catálogo** tab's `Idioma` pills. |
+| 3 | **User-authored routine content** — exercise names, day labels, technique cues, rules, notes, phase objectives | The user, via whatever LLM they used | Imported `rutina.json` | Rendered **exactly as authored, in whatever language it was written in.** Never translated, never validated for language, never assumed to be Spanish. |
+
+Axes 1 and 2 are a translation problem the app solves for you. Axis 3 is
+different on purpose — the app has no idea what language your routine text
+is in, and must not guess. Before this was made explicit, that guess was
+implicit and wrong in two places:
+
+- A non-Latin exercise name (Cyrillic, Greek, CJK, Arabic, Hebrew…) used to
+  slug to an empty string, so two differently-named exercises on the same
+  machine silently shared one history — weights, trends, progress charts and
+  export all merged — and a non-Latin bodyweight exercise couldn't be
+  tracked at all.
+- "Today's session" used to be resolved by matching the day label against a
+  hardcoded **Spanish** weekday list. An English- or Belarusian-authored
+  routine silently fell out of "today's session" into a weaker
+  "guess from history" fallback, with no error or warning.
+
+Both are now fixed at the library level (`app/src/lib/exerciseKey.js`,
+`app/src/lib/today.js`, covered by tests) — but the underlying rule is the
+one worth remembering when touching either axis: **code for axis 1/2 may
+assume a language; code that touches axis 3 never may.**
+
+Switching the UI language (axis 1) is immediate — no reload, no navigation,
+no lost session or scroll position. Weight units always stay `kg` regardless
+of language; that's a units question, not a translation one.
+
 ## Authoring a Rutina with an LLM
 
 Training programs are authored by pasting a ready-made prompt into any LLM chat — no coding required.
@@ -204,8 +239,6 @@ Full walkthrough (shown in-app via **Import → guide link**) — pick your lang
 | English | [`docs/llm-rutina-prompt.en.md`](docs/llm-rutina-prompt.en.md) | [`docs/llm-rutina-prompt-template.txt`](docs/llm-rutina-prompt-template.txt) |
 | Español | [`docs/llm-rutina-prompt.es.md`](docs/llm-rutina-prompt.es.md) | (same template) |
 | Беларуская | [`docs/llm-rutina-prompt.be.md`](docs/llm-rutina-prompt.be.md) | (same template) |
-
-The original [`docs/llm-rutina-prompt.md`](docs/llm-rutina-prompt.md) redirects to the English guide.
 
 ## Data Format
 
@@ -290,6 +323,33 @@ To add or update equipment:
 2. Follow the existing structure (EN/ES/BE content required)
 3. Run `npm run validate-data` — must pass
 4. Run `npm run build-catalog` to update the static HTML catalog
+
+### Adding or changing a UI string
+
+UI copy lives in `app/src/i18n/{es,en,be}.js` — flat, dotted-key objects
+(e.g. `'settings.title': 'Ajustes'`), not nested. To add or change one:
+
+1. Add or edit the key in **all three** catalog files. `catalogs.test.js`
+   fails if the three files' key sets don't match exactly, or if any value
+   is empty/whitespace-only — this is enforced, not just requested.
+2. Library functions that produce copy outside React (`relativeTime.js`,
+   `exportFormat.js`, `machineLabel.js`, …) take an optional trailing `t`
+   (or `lang`) argument that defaults to the Spanish-pinned translator
+   (`defaultT`, exported from `app/src/i18n/index.js`). A call site that
+   doesn't pass one keeps getting Spanish, which is what lets the app's
+   ~124 pre-existing Spanish-literal test assertions keep passing
+   untouched. Follow the same pattern for any new function that emits
+   user-visible text.
+3. `app/src/i18n/strayLiterals.test.js` scans `app/src/**/*.{js,jsx}` for
+   Spanish-looking string/JSX literals left outside the catalogs, as a
+   regression tripwire (heuristic, not a proof — it won't catch
+   everything). A literal that legitimately isn't translatable copy (a
+   `localStorage` key, a filename) goes in that file's `ALLOWLIST` array
+   with a one-line reason — never a silent dumping ground.
+4. If you edit `docs/llm-rutina-prompt.{es,en,be}.md`, run
+   `npm run build-guide` afterward — the in-app guide overlay reads a
+   generated `app/src/data/guideContent.js`, not the Markdown files
+   directly, and it will silently go stale if you skip this.
 
 ## License
 

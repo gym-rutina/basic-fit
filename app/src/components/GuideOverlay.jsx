@@ -1,29 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { GUIDE_HTML, GUIDE_PROMPT } from '../data/guideContent.js';
-import {
-  GUIDE_CLOSE,
-  GUIDE_COPY,
-  GUIDE_COPIED,
-  GUIDE_DATA_ARCHIVE,
-  GUIDE_DATA_FILES_BASE_URL,
-  GUIDE_DOWNLOAD_ACTION,
-  GUIDE_DOWNLOAD_ARCHIVE_LABEL,
-  GUIDE_DOWNLOADS_BODY,
-  GUIDE_DOWNLOADS_HEADING,
-  GUIDE_FILL_HINT,
-  GUIDE_GYM_ALT,
-  GUIDE_GYM_BODY,
-  GUIDE_GYM_HINT,
-  GUIDE_GYM_LINK,
-  GUIDE_PROMPT_LABEL,
-  GUIDE_TITLE,
-  GYMS_CATALOG_URL,
-} from '../lib/guideLocale.js';
+import { GUIDE_DATA_ARCHIVE, GUIDE_DATA_FILES_BASE_URL, GYMS_CATALOG_URL } from '../lib/guideLocale.js';
+import { tFor, useI18n } from '../i18n/index.js';
 
 /** Byte size → de-emphasized "N KB" caption (ux-design.md Decision 7). */
 function formatKb(bytes) {
-  return `${Math.round(bytes / 1024)} KB`;
+  return Math.round(bytes / 1024) + ' KB';
 }
 
 /* Scoped styles for guide article content (pre-rendered HTML from Markdown). */
@@ -79,38 +62,31 @@ const ARTICLE_CSS = `
   }
 `;
 
-const FALLBACK_HTML = {
-  es: '<p>No se pudo cargar la guía.</p>',
-  en: '<p>Could not load the guide.</p>',
-  be: '<p>Не ўдалося загрузіць кіраўніцтва.</p>',
-};
-
 /**
  * Full-screen in-app guide overlay (spec AC2).
+ *
+ * pwa-ui-language AC8 (tech-plan.md D17): keeps its `locale` PROP for
+ * back-compat — `GuideOverlay.test.jsx` renders `<GuideOverlay locale="en"
+ * …/>` bare, with no provider, and asserts English chrome. So this builds
+ * its OWN translator from the locale it ends up rendering
+ * (`tFor(active)`), never the context's `t` directly — that would be
+ * Spanish here, since a bare render has no provider. `active` falls back to
+ * the UI locale from context only when no explicit `locale` prop is given,
+ * which is exactly how ImportScreen calls it now (AC8's whole point: the
+ * guide follows the active UI locale, not `navigator.language`).
+ *
  * Props:
- *   locale:  'es' | 'en' | 'be'
+ *   locale:  'es' | 'en' | 'be' (optional — defaults to the UI locale)
  *   onClose: () => void
  */
-export function GuideOverlay({ locale = 'es', onClose }) {
+export function GuideOverlay({ locale, onClose }) {
+  const { locale: uiLocale } = useI18n();
+  const active = locale ?? uiLocale;
+  const t = tFor(active);
   const closeRef = useRef(null);
   const [promptText, setPromptText] = useState(GUIDE_PROMPT);
   const [copied, setCopied] = useState(false);
-  const title = GUIDE_TITLE[locale] || GUIDE_TITLE.en;
-  const closeLabel = GUIDE_CLOSE[locale] || GUIDE_CLOSE.en;
-  const promptLabel = GUIDE_PROMPT_LABEL[locale] || GUIDE_PROMPT_LABEL.en;
-  const copyLabel = copied
-    ? (GUIDE_COPIED[locale] || GUIDE_COPIED.en)
-    : (GUIDE_COPY[locale] || GUIDE_COPY.en);
-  const fillHint = GUIDE_FILL_HINT[locale] || GUIDE_FILL_HINT.en;
-  const gymHint = GUIDE_GYM_HINT[locale] || GUIDE_GYM_HINT.en;
-  const gymBody = GUIDE_GYM_BODY[locale] || GUIDE_GYM_BODY.en;
-  const gymLink = GUIDE_GYM_LINK[locale] || GUIDE_GYM_LINK.en;
-  const gymAlt = GUIDE_GYM_ALT[locale] || GUIDE_GYM_ALT.en;
-  const downloadsHeading = GUIDE_DOWNLOADS_HEADING[locale] || GUIDE_DOWNLOADS_HEADING.en;
-  const downloadsBody = GUIDE_DOWNLOADS_BODY[locale] || GUIDE_DOWNLOADS_BODY.en;
-  const downloadAction = GUIDE_DOWNLOAD_ACTION[locale] || GUIDE_DOWNLOAD_ACTION.en;
-  const downloadArchiveLabel = GUIDE_DOWNLOAD_ARCHIVE_LABEL[locale] || GUIDE_DOWNLOAD_ARCHIVE_LABEL.en;
-  const html = GUIDE_HTML[locale] || GUIDE_HTML.en || FALLBACK_HTML[locale] || FALLBACK_HTML.en;
+  const html = GUIDE_HTML[active] || GUIDE_HTML.en || t('guide.fallbackHtml');
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -166,13 +142,13 @@ export function GuideOverlay({ locale = 'es', onClose }) {
             id="guide-overlay-title"
             style={{ font: 'var(--text-h4)', color: 'var(--bf-ink)' }}
           >
-            {title}
+            {t('guide.title')}
           </span>
 
           <button
             ref={closeRef}
             type="button"
-            aria-label={closeLabel}
+            aria-label={t('guide.close')}
             onClick={onClose}
             style={{
               width: 32,
@@ -215,7 +191,7 @@ export function GuideOverlay({ locale = 'es', onClose }) {
                   color: 'var(--text-muted)',
                 }}
               >
-                {promptLabel}
+                {t('guide.promptLabel')}
               </span>
               <button
                 type="button"
@@ -236,7 +212,7 @@ export function GuideOverlay({ locale = 'es', onClose }) {
                 }}
               >
                 <Icon name={copied ? 'check' : 'copy'} size={14} />
-                {copyLabel}
+                {copied ? t('guide.copied') : t('guide.copy')}
               </button>
             </div>
             <p style={{
@@ -244,7 +220,7 @@ export function GuideOverlay({ locale = 'es', onClose }) {
               color: 'var(--text-muted)',
               margin: '0 0 10px',
             }}>
-              {fillHint}
+              {t('guide.fillHint')}
             </p>
             <textarea
               id="guide-prompt-editor"
@@ -280,10 +256,10 @@ export function GuideOverlay({ locale = 'es', onClose }) {
               <Icon name="map-pin" size={18} style={{ color: 'var(--bf-purple)', marginTop: 2 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: '700 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: 4 }}>
-                  {gymHint}
+                  {t('guide.gymHint')}
                 </div>
                 <p style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)', margin: '0 0 10px' }}>
-                  {gymBody}
+                  {t('guide.gymBody')}
                 </p>
                 <a
                   href={GYMS_CATALOG_URL}
@@ -301,17 +277,17 @@ export function GuideOverlay({ locale = 'es', onClose }) {
                     textDecoration: 'none',
                   }}
                 >
-                  {gymLink}
+                  {t('guide.gymLink')}
                   <Icon name="external-link" size={14} />
                 </a>
                 <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '8px 0 0' }}>
-                  {gymAlt}{' '}
+                  {t('guide.gymAlt')}{' '}
                   <a
                     href="#/catalog"
                     onClick={() => onClose && onClose()}
                     style={{ color: 'var(--text-link)', fontWeight: 600 }}
                   >
-                    Catálogo →
+                    {t('guide.catalogLink')}
                   </a>
                 </p>
               </div>
@@ -336,18 +312,18 @@ export function GuideOverlay({ locale = 'es', onClose }) {
               >
                 <Icon name="download" size={18} style={{ color: 'var(--bf-purple)' }} />
                 <span style={{ font: '700 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
-                  {downloadsHeading}
+                  {t('guide.downloadsHeading')}
                 </span>
               </div>
               <p style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)', margin: 0 }}>
-                {downloadsBody}
+                {t('guide.downloadsBody')}
               </p>
               <div
                 className="guide-downloads-grid"
                 style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
               >
                 <a
-                  href={`${GUIDE_DATA_FILES_BASE_URL}${GUIDE_DATA_ARCHIVE.path}`}
+                  href={GUIDE_DATA_FILES_BASE_URL + GUIDE_DATA_ARCHIVE.path}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
@@ -368,7 +344,7 @@ export function GuideOverlay({ locale = 'es', onClose }) {
                 >
                   <span className="guide-downloads-row-label" style={{ minWidth: 0 }}>
                     <span style={{ font: '600 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
-                      {downloadArchiveLabel}
+                      {t('guide.downloadArchiveLabel')}
                     </span>
                     <br />
                     <span
@@ -396,7 +372,7 @@ export function GuideOverlay({ locale = 'es', onClose }) {
                     }}
                   >
                     <Icon name="download" size={14} />
-                    {downloadAction}
+                    {t('guide.downloadAction')}
                   </span>
                 </a>
               </div>

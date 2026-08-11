@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
+import { useI18n } from '../i18n/index.js';
 
 /**
  * Fixed bottom nav — ux-design.md's deliberate departure from the
@@ -15,11 +16,11 @@ import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
  * (never wraps to multiple rows) at 280/360/390/412/768px.
  */
 const TABS = [
-  { id: 'home', label: 'Inicio', icon: 'home', path: '/', end: true },
-  { id: 'program', label: 'Programa', icon: 'dumbbell', path: '/program', end: false },
-  { id: 'catalog', label: 'Catálogo', icon: 'search', path: '/catalog', end: false },
-  { id: 'history', label: 'Historial', icon: 'bar-chart-2', path: '/history', end: false },
-  { id: 'progress', label: 'Progreso', icon: 'trending-up', path: '/progress', end: false },
+  { id: 'home', labelKey: 'tab.home', icon: 'home', path: '/', end: true },
+  { id: 'program', labelKey: 'tab.program', icon: 'dumbbell', path: '/program', end: false },
+  { id: 'catalog', labelKey: 'tab.catalog', icon: 'search', path: '/catalog', end: false },
+  { id: 'history', labelKey: 'tab.history', icon: 'bar-chart-2', path: '/history', end: false },
+  { id: 'progress', labelKey: 'tab.progress', icon: 'trending-up', path: '/progress', end: false },
 ];
 
 const linkStyle = ({ isActive }) => ({
@@ -40,9 +41,10 @@ const linkStyle = ({ isActive }) => ({
 });
 
 export function BottomTabBar() {
+  const { t } = useI18n();
   return (
     <nav
-      aria-label="Navegación principal"
+      aria-label={t('a11y.mainNav')}
       data-testid="bottom-tab-bar"
       style={{
         position: 'fixed',
@@ -64,7 +66,7 @@ export function BottomTabBar() {
           {({ isActive }) => (
             <>
               <Icon name={tab.icon} size={22} strokeWidth={isActive ? 2.4 : 2} />
-              {tab.label}
+              {t(tab.labelKey)}
             </>
           )}
         </NavLink>

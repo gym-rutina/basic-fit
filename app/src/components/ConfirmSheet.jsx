@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
+import { useI18n } from '../i18n/index.js';
 
 /**
  * Shared bottom-sheet confirm dialog — same visual pattern as the mockup's
@@ -28,13 +29,15 @@ export function ConfirmSheet({
   onPrimary,
   secondaryLabel,
   onSecondary,
-  cancelLabel = 'Cancelar',
+  cancelLabel,
   onCancel,
   danger = false,
   destructiveAction,
   busy = false,
   error,
 }) {
+  const { t } = useI18n();
+  const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
   const sheetRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
   const busyRef = useRef(busy);
@@ -133,7 +136,7 @@ export function ConfirmSheet({
           )}
           {onCancel && (
             <Button variant="ghost" disabled={busy} style={{ width: '100%' }} onClick={onCancel}>
-              {cancelLabel}
+              {resolvedCancelLabel}
             </Button>
           )}
         </div>

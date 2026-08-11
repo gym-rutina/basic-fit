@@ -4,6 +4,7 @@
  * Loading: returns null (matches HistoryScreen precedent).
  */
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { listSessions } from '../lib/db.js';
 import {
@@ -21,6 +22,7 @@ import {
 } from '../components/ProgressCharts.jsx';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
 import { collisionSuffix } from '../lib/machineLabel.js';
+import { useI18n } from '../i18n/index.js';
 
 const PAGE_STYLE = {
   background: 'var(--bf-grey-1)',
@@ -54,6 +56,8 @@ const PILL_BASE = {
 
 /** ProgressScreen renders the three chart sections for AC2/AC3/AC4. */
 export function ProgressScreen({ rutina }) {
+  const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [sessions, setSessions] = useState(null); // null = loading
   const [selectedId, setSelectedId] = useState(null);
 
@@ -90,10 +94,10 @@ export function ProgressScreen({ rutina }) {
           <Icon name="trending-up" size={36} />
         </div>
         <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 6px' }}>
-          Aún no hay progreso que mostrar
+          {t('progress.emptyTitle')}
         </h2>
         <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', maxWidth: 280 }}>
-          Completa tu primer entrenamiento para ver tus gráficas aquí.
+          {t('progress.emptyBody')}
         </p>
       </div>
     );
@@ -104,7 +108,7 @@ export function ProgressScreen({ rutina }) {
   const weightPoints = buildWeightSeries(sessions, activeId);
   const volumes = buildSessionVolumes(sessions, rutina);
   const todayKey = localDateKey();
-  const { cells } = buildFrequencyGrid(sessions, { weeks: 12, todayKey });
+  const { cells } = buildFrequencyGrid(sessions, { weeks: 12, todayKey, t });
   const stats = buildFrequencyStats(sessions, { todayKey });
 
   // exercise-level-tracking AC10: the picker selects by exercise key, so two
@@ -118,7 +122,7 @@ export function ProgressScreen({ rutina }) {
 
   return (
     <div style={PAGE_STYLE}>
-      <ScreenHeader title="Progreso" />
+      <ScreenHeader title={t('tab.progress')} onSettings={() => navigate('/settings')} />
 
       <div style={{ paddingBlock: 'var(--space-5)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 10, minWidth: 0, maxWidth: '100%', boxSizing: 'border-box' }}>
         {/* AC2 — Weight/reps per exercise */}
@@ -127,11 +131,11 @@ export function ProgressScreen({ rutina }) {
             id="progress-weight-heading"
             style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 10px' }}
           >
-            Por ejercicio
+            {t('progress.byExercise')}
           </h2>
           {exercises.length === 0 ? (
             <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-              Aún no hay ejercicios registrados.
+              {t('progress.noExercisesYet')}
             </p>
           ) : (
             <>
@@ -151,15 +155,15 @@ export function ProgressScreen({ rutina }) {
                         color: isActive ? 'var(--bf-white)' : 'var(--bf-ink)',
                       }}
                     >
-                      {ex.name}
-                      {collides ? collisionSuffix(ex.equipmentId) : ''}
+                      <span dir="auto">{ex.name}</span>
+                      {collides ? collisionSuffix(ex.equipmentId, t) : ''}
                     </button>
                   );
                 })}
               </div>
               {weightPoints.length === 0 ? (
                 <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-                  Sin datos para este ejercicio todavía.
+                  {t('progress.noDataForExercise')}
                 </p>
               ) : (
                 <WeightProgressChart points={weightPoints} />
@@ -174,11 +178,11 @@ export function ProgressScreen({ rutina }) {
             id="progress-volume-heading"
             style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 10px' }}
           >
-            Volumen
+            {t('progress.volumeTitle')}
           </h2>
           {volumes.length === 0 ? (
             <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-              Sin datos de volumen todavía.
+              {t('progress.noVolumeData')}
             </p>
           ) : (
             <VolumeBarChart bars={volumes} />
@@ -191,9 +195,9 @@ export function ProgressScreen({ rutina }) {
             id="progress-freq-heading"
             style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 10px' }}
           >
-            Frecuencia
+            {t('progress.frequencyTitle')}
           </h2>
-          <FrequencyHeatmap cells={cells} stats={stats} />
+          <FrequencyHeatmap cells={cells} stats={stats} t={t} />
         </section>
       </div>
     </div>

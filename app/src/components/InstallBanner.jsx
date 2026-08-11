@@ -2,6 +2,7 @@ import React from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { useInstallPrompt } from '../hooks/useInstallPrompt.js';
+import { useI18n } from '../i18n/index.js';
 
 /**
  * Shown when Chromium fires `beforeinstallprompt` and the app is not yet
@@ -9,6 +10,7 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt.js';
  * Render AC) instead of hiding behind the browser menu.
  */
 export function InstallBanner() {
+  const { t } = useI18n();
   const { canInstall, promptInstall, dismiss } = useInstallPrompt();
 
   if (!canInstall) return null;
@@ -16,7 +18,7 @@ export function InstallBanner() {
   return (
     <div
       role="region"
-      aria-label="Instalar aplicación"
+      aria-label={t('install.ariaLabel')}
       style={{
         background: 'var(--bf-purple-tint)',
         borderBottom: '1px solid var(--border-default)',
@@ -30,14 +32,14 @@ export function InstallBanner() {
     >
       <Icon name="smartphone" size={20} style={{ color: 'var(--bf-purple)', flexShrink: 0 }} />
       <p style={{ flex: 1, margin: 0, font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)', minWidth: 0 }}>
-        Instala la app para usarla sin conexión desde tu pantalla de inicio.
+        {t('install.body')}
       </p>
       <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
         <Button variant="primary" onClick={promptInstall} style={{ minHeight: 44 }}>
-          Instalar
+          {t('install.action')}
         </Button>
         <Button variant="ghost" onClick={dismiss} style={{ minHeight: 44 }}>
-          Ahora no
+          {t('install.dismiss')}
         </Button>
       </div>
     </div>

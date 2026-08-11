@@ -22,6 +22,8 @@
 <div id="root"></div>
 
 <script type="text/babel" src="RoutineScreen.jsx"></script>
+<script type="text/babel" src="ClubPickerSheet.jsx"></script>
+<script type="text/babel" src="EquipmentOverlaySheet.jsx"></script>
 <script type="text/babel" src="CatalogScreen.jsx"></script>
 <script type="text/babel" src="BottomTabBar.jsx"></script>
 <script type="text/babel" src="ConfirmSheet.jsx"></script>
@@ -116,6 +118,7 @@ function App() {
         <button type="button" onClick={() => { setTab("history"); go("app"); }}>App (tabs)</button>
         <button type="button" onClick={() => go("session")}>Active Session</button>
         <button type="button" onClick={() => go("export")}>Export</button>
+        <button type="button" onClick={() => { window.BF_KIT_CLUB_STORE.clear(); window.location.reload(); }} title="Clears the mock club selection + equipment exclusions (gym-directory-and-catalog)">Reset club</button>
         {route === "import" && (
           <>
             <select value={importMode} onChange={(e) => setImportMode(e.target.value)} aria-label="Import mode">

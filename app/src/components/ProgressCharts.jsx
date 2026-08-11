@@ -6,6 +6,7 @@
  * are provided by sibling DOM or per-cell attributes.
  */
 import React from 'react';
+import { defaultT } from '../i18n/index.js';
 
 const PURPLE = 'var(--bf-purple-deep, #6200ee)';
 const MUTED = 'var(--border-default, #d4d4d4)';
@@ -157,9 +158,9 @@ const HC_GAP = 2;
  * would suppress them).
  * Stats line rendered as visible text.
  *
- * @param {{ cells: Array<{date: string, filled: boolean, ariaLabel: string}>, stats: {last7: number, last30: number, streak: number} }} props
+ * @param {{ cells: Array<{date: string, filled: boolean, ariaLabel: string}>, stats: {last7: number, last30: number, streak: number}, t?: (key: string, params?: object) => string }} props
  */
-export function FrequencyHeatmap({ cells = [], stats = {} }) {
+export function FrequencyHeatmap({ cells = [], stats = {}, t = defaultT }) {
   const cols = 12;
   const rows = 7;
 
@@ -197,7 +198,7 @@ export function FrequencyHeatmap({ cells = [], stats = {} }) {
           overflowWrap: 'anywhere',
         }}
       >
-        Últimos 7 días: {stats.last7} · Últimos 30 días: {stats.last30} · Racha actual: {stats.streak}
+        {t('progress.last7Days')}: {stats.last7} · {t('progress.last30Days')}: {stats.last30} · {t('progress.currentStreak')}: {stats.streak}
       </p>
     </div>
   );

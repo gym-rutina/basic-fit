@@ -38,6 +38,14 @@ both slug to `prensa-de-pecho` and therefore share one history — including acr
 different imported programs/phases (a repeated exercise in Fase 1 and Fase 2 is one
 continuous series, not two).
 
+The same rule applies to a name written in a non-Latin script (Cyrillic, Greek, CJK,
+Arabic, Hebrew…), matching Unicode letters instead of `a-z` — so, for example, two
+differently-spelled Belarusian exercise names on the same machine produce two distinct,
+non-empty keys, the same way two differently-spelled Spanish or English names would.
+This is exercise-key data — axis-3 **user content** in the
+[three-axis language model](../README.md#languages) — and is unaffected by which UI
+language is active.
+
 Because the key is derived from the exercise's **name**, keep the spelling identical
 across phases when it's the same exercise — a respelled name (`"Press de Pecho"` instead
 of `"Prensa de Pecho"`) is a *different* key with its own empty history. See the
@@ -88,20 +96,40 @@ Sesiones sin completar:
 - One block per **exercise** (equipment + name pair) that was logged at least once — a
   single `equipmentId` may now head **several** blocks, one per exercise performed on
   that piece of equipment.
-- Entries are in chronological order (oldest → newest), one line each.
-- Difficulty values: `fácil` / `normal` / `difícil` (always lowercase Spanish).
-- Exercises appear in the order they were first logged across all sessions.
+- Entries within a block are in chronological order (oldest → newest), one line each.
+- **Blocks themselves are ordered alphabetically by exercise name**, locale-aware
+  (`localeCompare` under the active UI language) — not by when the exercise was first
+  logged. Two exports of the same session history are therefore byte-identical
+  regardless of the order sessions happened to be logged in. (The JSON export's key
+  order is different and unaffected by this — see [JSON export](#json-export) below.)
 - The `(equipmentId)` parenthetical is **omitted** for a bodyweight exercise (no
   `equipmentId`) — the header is just the exercise name, e.g. `Plancha`.
 - Exercises from abandoned sessions are **excluded** from the per-exercise blocks
   (they were never completed, so no weight/difficulty was recorded). Abandoned sessions
-  are called out in a trailing `Sesiones sin completar:` section instead.
+  are called out in a trailing, **localized** heading instead (`Sesiones sin
+  completar:` / `Unfinished sessions:` / `Незавершаныя сесіі:`), each line marked with a
+  localized `(abandonada)` / `(abandoned)` / `(пакінута)`.
 - Exercises whose [exercise key](#exercise-key) is `null` (no `equipmentId` and an
   unslugifiable name) are excluded — there is nothing stable to group them under.
-- If there are no logged sessions, the output is the single line:
-  `Sin sesiones registradas todavía.`
+- If there are no logged sessions, the output is a single **localized** line:
+  `Sin sesiones registradas todavía.` / `No sessions recorded yet.` /
+  `Пакуль няма запісаных сесій.`
+
+Difficulty is printed as a **localized, lowercased word** — `fácil`/`normal`/`difícil`,
+`easy`/`just right`/`hard`, or `лёгка`/`у самы раз`/`цяжка` — following whatever UI
+language was active when you tapped **Exportar progreso**. This is display chrome and
+is distinct from the JSON export's frozen `easy`/`normal`/`hard` tokens below. Every
+heading, label and the difficulty word above is chrome; exercise names, day labels,
+weights and dates are user content and are copied verbatim regardless of UI language —
+see [Languages](../README.md#languages) in the main README.
 
 ### Worked example
+
+> Shown here as it renders with the Spanish UI chrome (`Sesiones sin completar:`,
+> `abandonada`, and the `fácil`/`normal`/`difícil` difficulty words) — the default,
+> since the exercises below are themselves authored in Spanish. Exporting the same
+> history under the English or Belarusian UI changes only those chrome strings; the
+> exercise names, weights and dates render identically either way.
 
 Given three sessions:
 - 2026-07-01 — Lunes (abandoned, nothing logged)
@@ -113,13 +141,6 @@ Given three sessions:
 The Markdown export is:
 
 ```
-Prensa de Pecho (g3-s10)
-  · 32kg / difícil
-  · 32kg / normal
-
-Press de Hombro (g3-s10)
-  · 18kg / normal
-
 Jalón al Pecho (g3-s30)
   · 45kg / normal
   · 48kg / fácil
@@ -127,13 +148,22 @@ Jalón al Pecho (g3-s30)
 Plancha
   · 0kg / normal
 
+Prensa de Pecho (g3-s10)
+  · 32kg / difícil
+  · 32kg / normal
+
+Press de Hombro (g3-s10)
+  · 18kg / normal
+
 Sesiones sin completar:
   · Lunes — 2026-07-01 (abandonada)
 ```
 
 Note that `g3-s10` heads **two** blocks — Prensa de Pecho and Press de Hombro are tracked
-independently even though they share a machine — and that Plancha's header has no
-parenthetical because it has no `equipmentId`.
+independently even though they share a machine — that Plancha's header has no
+parenthetical because it has no `equipmentId` — and that the blocks are alphabetical
+(Jalón, Plancha, Prensa, Press), not in the order the exercises were first logged
+(which was Prensa/Press, then Jalón, then Plancha across the three sessions above).
 
 ---
 

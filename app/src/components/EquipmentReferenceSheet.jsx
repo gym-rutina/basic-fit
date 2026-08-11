@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
+import { useI18n } from '../i18n/index.js';
 
 /**
  * Bottom-sheet overlay showing equipment reference detail.
@@ -14,7 +15,9 @@ import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
  * must match the row that opened it), so `videoLabel` is what tells the user
  * the link is scoped to a specific exercise on that machine.
  */
-export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, videoLabel = 'Ver tutorial en YouTube', onClose }) {
+export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, videoLabel, onClose }) {
+  const { t } = useI18n();
+  const resolvedVideoLabel = videoLabel ?? t('equipment.watchTutorial');
   const closeRef = useRef(null);
 
   useEffect(() => {
@@ -67,7 +70,7 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
           <button
             ref={closeRef}
             type="button"
-            aria-label="Cerrar"
+            aria-label={t('common.close')}
             onClick={onClose}
             style={{
               width: 32,
@@ -97,10 +100,10 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
 
         {steps && steps.length > 0 && (
           <div style={{ marginBottom: 16 }}>
-            <h3 style={{ font: 'var(--text-h4)', color: 'var(--bf-ink)', margin: '0 0 8px' }}>Técnica</h3>
+            <h3 style={{ font: 'var(--text-h4)', color: 'var(--bf-ink)', margin: '0 0 8px' }}>{t('common.technique')}</h3>
             <ol style={{ paddingLeft: 20, margin: 0, display: 'grid', gap: 6 }}>
               {steps.map((step, i) => (
-                <li key={i} style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink)' }}>{step}</li>
+                <li key={i} dir="auto" style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink)' }}>{step}</li>
               ))}
             </ol>
           </div>
@@ -121,8 +124,8 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
               minHeight: 44,
             }}
           >
-            {videoLabel}
-            <span className="sr-only"> (se abre en una pestaña nueva)</span>
+            {resolvedVideoLabel}
+            <span className="sr-only"> {t('common.opensNewTab')}</span>
           </a>
         )}
       </div>

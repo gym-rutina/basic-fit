@@ -1,5 +1,6 @@
 import { getEquipmentById, equipmentDisplayName } from '../data/equipment.js';
 import { slugifyExerciseName } from './exerciseKey.js';
+import { defaultT, DEFAULT_LOCALE } from '../i18n/index.js';
 
 /**
  * Disambiguation for list surfaces where the exercise key has split rows
@@ -16,13 +17,14 @@ import { slugifyExerciseName } from './exerciseKey.js';
 /**
  * @param {string|null|undefined} equipmentId
  * @param {string} exerciseName
+ * @param {string} [lang]
  * @returns {string|null} null for a bodyweight exercise (nothing to disambiguate)
  */
-export function machineLabel(equipmentId, exerciseName) {
+export function machineLabel(equipmentId, exerciseName, lang = DEFAULT_LOCALE) {
   if (!equipmentId) return null; // bodyweight — nothing to show
   const eq = getEquipmentById(equipmentId);
   if (!eq) return equipmentId; // unresolved — raw id, muted
-  const name = equipmentDisplayName(eq);
+  const name = equipmentDisplayName(eq, lang);
   if (slugifyExerciseName(name) === slugifyExerciseName(exerciseName)) return eq.modelCode; // name would be redundant
   return `${eq.modelCode} · ${name}`;
 }
@@ -35,10 +37,11 @@ export function machineLabel(equipmentId, exerciseName) {
  * orient the user to "what machine is this" the way History's sub-line does.
  *
  * @param {string|null|undefined} equipmentId
+ * @param {(key: string) => string} [t]
  * @returns {string}
  */
-export function collisionSuffix(equipmentId) {
-  if (!equipmentId) return ' · sin equipo';
+export function collisionSuffix(equipmentId, t = defaultT) {
+  if (!equipmentId) return ` · ${t('progress.noEquipment')}`;
   const eq = getEquipmentById(equipmentId);
   return eq ? ` · ${eq.modelCode}` : ` · ${equipmentId}`;
 }

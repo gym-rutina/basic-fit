@@ -8,6 +8,7 @@ import { resolveTodayDay } from '../lib/today.js';
 import { createSession } from '../lib/sessionMachine.js';
 import { getActiveSession, listSessions, saveSession } from '../lib/db.js';
 import { formatRelativeDays } from '../lib/relativeTime.js';
+import { useI18n } from '../i18n/index.js';
 
 /**
  * Active-session ownership moved up to the shell (spec.md AC10-AC13,
@@ -23,6 +24,7 @@ import { formatRelativeDays } from '../lib/relativeTime.js';
  */
 export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus, activeSession, onRetryActiveSession }) {
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [lastSession, setLastSession] = useState(null);
   const [pastSessions, setPastSessions] = useState([]);
   const [starting, setStarting] = useState(false);
@@ -46,12 +48,12 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
         <div style={{ color: 'var(--bf-danger)', marginBottom: 12 }}>
           <Icon name="alert-triangle" size={36} />
         </div>
-        <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 8px' }}>No se pudo leer tu rutina guardada</h2>
+        <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 8px' }}>{t('home.loadErrorTitle')}</h2>
         <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', maxWidth: 320, margin: '0 0 20px' }}>
-          Los datos locales parecen dañados o incompletos. Vuelve a importar tu rutina.json.
+          {t('home.loadErrorBody')}
         </p>
         <Button variant="primary" onClick={onGoImport}>
-          Importar rutina
+          {t('home.importAction')}
         </Button>
       </div>
     );
@@ -79,8 +81,9 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
   return (
     <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: 90 }}>
       <ScreenHeader
-        title={rutina.program.name}
-        trailing={<Badge tone="brand">Fase {rutina.program.phaseNumber}</Badge>}
+        title={<span dir="auto">{rutina.program.name}</span>}
+        trailing={<Badge tone="brand">{t('program.phaseLabel', { n: rutina.program.phaseNumber })}</Badge>}
+        onSettings={() => navigate('/settings')}
       />
 
       <div style={{ paddingBlock: 'var(--space-6)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 'var(--space-5)' }}>
@@ -102,10 +105,10 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
               <Icon name="alert-triangle" size={20} />
             </div>
             <p style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)', margin: '0 0 var(--space-5)' }}>
-              No se pudo comprobar si tienes un entrenamiento en curso.
+              {t('home.activeSessionErrorBody')}
             </p>
             <Button variant="outline" style={{ width: '100%' }} onClick={onRetryActiveSession}>
-              Reintentar
+              {t('common.retry')}
             </Button>
           </div>
         )}
@@ -113,14 +116,17 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
         {activeSessionStatus === 'ready' && activeSession && (
           <div style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', boxShadow: 'var(--shadow-card)' }}>
             <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--bf-purple)', marginBottom: 4 }}>
-              En curso
+              {t('home.inProgressLabel')}
             </div>
-            <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }}>{activeSession.dayLabel}</h2>
+            <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }} dir="auto">{activeSession.dayLabel}</h2>
             <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 var(--space-5)' }}>
-              {activeSession.exercises.filter((e) => e.completedAt).length} / {activeSession.exercises.length} completados
+              {t('common.completedOfSpaced', {
+                done: activeSession.exercises.filter((e) => e.completedAt).length,
+                total: activeSession.exercises.length,
+              })}
             </p>
             <Button variant="primary" size="lg" style={{ width: '100%' }} onClick={() => navigate('/session')}>
-              <Icon name="play" size={18} /> Reanudar entrenamiento
+              <Icon name="play" size={18} /> {t('home.resumeAction')}
             </Button>
           </div>
         )}
@@ -128,33 +134,40 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
         {activeSessionStatus === 'ready' && !activeSession && (
           <div style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', boxShadow: 'var(--shadow-card)' }}>
             <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
-              {today.mode === 'today' ? 'Hoy' : 'Próximo'}
+              {today.mode === 'today' ? t('home.todayLabel') : t('home.nextLabel')}
             </div>
-            <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }}>{today.day.label}</h2>
+            <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }} dir="auto">{today.day.label}</h2>
             <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 var(--space-5)' }}>
-              {today.day.intro ? `${today.day.intro} · ` : ''}
-              {exerciseCount} ejercicio{exerciseCount === 1 ? '' : 's'}
+              {today.day.intro ? (
+                <span dir="auto">{today.day.intro} · </span>
+              ) : (
+                ''
+              )}
+              {t(exerciseCount === 1 ? 'home.exerciseCountOne' : 'home.exerciseCountOther', { n: exerciseCount })}
             </p>
             <Button variant="primary" size="lg" style={{ width: '100%' }} disabled={starting} onClick={handleStart}>
-              <Icon name="play" size={18} /> Empezar entrenamiento
+              <Icon name="play" size={18} /> {t('home.startAction')}
             </Button>
           </div>
         )}
 
         {lastSession && (
           <div style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)' }}>
-            <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>Última sesión</div>
+            <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>{t('home.lastSessionLabel')}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ color: lastSession.status === 'abandoned' ? 'var(--text-muted)' : 'var(--bf-success)' }}>
                 <Icon name={lastSession.status === 'abandoned' ? 'x' : 'check'} size={20} />
               </span>
               <div>
                 <div style={{ font: '700 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
-                  {lastSession.dayLabel} · {formatRelativeDays(lastSession.startedAt)}
+                  <span dir="auto">{lastSession.dayLabel}</span> · {formatRelativeDays(lastSession.startedAt, new Date(), { locale, t })}
                 </div>
                 <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-                  {lastSession.exercises.filter((e) => e.completedAt).length}/{lastSession.exercises.length} completados
-                  {lastSession.status === 'abandoned' ? ' · sesión sin terminar' : ''}
+                  {t('common.completedOf', {
+                    done: lastSession.exercises.filter((e) => e.completedAt).length,
+                    total: lastSession.exercises.length,
+                  })}
+                  {lastSession.status === 'abandoned' ? ` · ${t('common.unfinishedSuffix')}` : ''}
                 </div>
               </div>
             </div>

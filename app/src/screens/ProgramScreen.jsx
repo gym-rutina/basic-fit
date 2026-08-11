@@ -13,6 +13,7 @@ import { getEquipmentById, mainImageUrl, equipmentDisplayName } from '../data/eq
 import { dayFocusLabels, muscleGroupLabels } from '../lib/muscleGroups.js';
 import { getActiveSession, listSessions, clearActiveRutina } from '../lib/db.js';
 import { buildVideoQuery } from '../lib/videoQuery.js';
+import { useI18n } from '../i18n/index.js';
 
 const wrap = { maxWidth: 760, margin: '0 auto', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 'var(--space-8)' };
 
@@ -29,6 +30,12 @@ function SectionTitle({ children }) {
  * table, rules, notes); "/program/:dayIndex" drills into one day's full
  * exercise render. Mirrors ux-design.md's "Program → Day list → Day detail"
  * flow, replacing the original single-page anchor-nav document.
+ *
+ * pwa-ui-language D10: the settings affordance appears on the OVERVIEW only
+ * — the day-detail header already has its own `leading` back control and is
+ * one level deep from the tab root, so it does not get a second global
+ * affordance (Q3). The overview constructs its own `navigate('/settings')`
+ * handler rather than receiving one as a prop.
  */
 export function ProgramScreen({ rutina, onGoImport, onRutinaCleared }) {
   const { dayIndex } = useParams();
@@ -39,6 +46,8 @@ export function ProgramScreen({ rutina, onGoImport, onRutinaCleared }) {
 }
 
 function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
+  const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [sheet, setSheet] = useState(null); // null | 'replace-warn' | 'remove-b' | 'remove-c' | 'remove-d'
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState(false);
@@ -79,17 +88,20 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
   const { program, phaseInfo, warmup, cooldown, days, rules, notes } = rutina;
 
   const phaseStats = [
-    ['Intensidad', phaseInfo.intensityPercent],
-    ['Descanso', `${phaseInfo.restSeconds} segundos`],
-    ['Frecuencia', `${phaseInfo.frequencyPerWeek} días/semana`],
+    [t('program.intensity'), phaseInfo.intensityPercent],
+    [t('program.rest'), t('common.secondsFull', { n: phaseInfo.restSeconds })],
+    [t('program.frequency'), t('program.perWeek', { n: phaseInfo.frequencyPerWeek })],
   ];
 
   // Generated from `days` at render time — never a separately authored
   // field (rutina.schema.json deliberately has no summaryTable property;
   // spec.md's Render AC requires this be derived, not authored).
   const summaryRows = days.map((day) => [
-    day.label + (day.intro ? ` — ${day.intro}` : ''),
-    dayFocusLabels(day.exercises).join(', ') || '—',
+    <span dir="auto">
+      {day.label}
+      {day.intro ? ' — ' + day.intro : ''}
+    </span>,
+    dayFocusLabels(day.exercises, { t }).join(', ') || '—',
     String(day.exercises.length),
   ]);
 
@@ -97,12 +109,18 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
     <>
     <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: 90 }}>
       <ScreenHeader
-        title={program.name}
-        subtitle={`${program.phaseName} · ${program.durationWeeks} semanas`}
-        badge={`Fase ${program.phaseNumber}`}
+        title={<span dir="auto">{program.name}</span>}
+        subtitle={
+          <>
+            <span dir="auto">{program.phaseName}</span>
+            {' · ' + t('program.weeksSuffix', { n: program.durationWeeks })}
+          </>
+        }
+        badge={t('program.phaseLabel', { n: program.phaseNumber })}
+        onSettings={() => navigate('/settings')}
       />
       <div style={{ ...wrap, paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
-        <SectionBanner tone="neutral" title="Objetivos de esta fase" subtitle={phaseInfo.objective}>
+        <SectionBanner tone="neutral" title={t('program.phaseObjectivesTitle')} subtitle={<span dir="auto">{phaseInfo.objective}</span>}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 10, marginTop: 16 }}>
             {phaseStats.map(([k, v]) => (
               <div key={k} style={{ background: 'var(--bf-white)', borderRadius: 8, padding: 12, boxShadow: 'var(--shadow-card)' }}>
@@ -113,15 +131,20 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
           </div>
         </SectionBanner>
 
-        <SectionBanner tone="brand" title="Calentamiento" subtitle={`Obligatorio · ${warmup.durationMinutes} minutos`} items={warmup.steps} />
+        <SectionBanner
+          tone="brand"
+          title={t('program.warmupTitle')}
+          subtitle={t('program.warmupSubtitle', { n: warmup.durationMinutes })}
+          items={warmup.steps.map((step, i) => <span key={i} dir="auto">{step}</span>)}
+        />
 
         <section style={{ display: 'grid', gap: 'var(--space-4)' }}>
-          <SectionTitle>Días de entrenamiento</SectionTitle>
+          <SectionTitle>{t('program.trainingDaysTitle')}</SectionTitle>
           <div style={{ display: 'grid', gap: 10 }}>
             {days.map((day, i) => (
               <Link
                 key={i}
-                to={`/program/${i}`}
+                to={'/program/' + i}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -136,15 +159,15 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
                 }}
               >
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
+                  <div dir="auto" style={{ font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
                     {day.label}
-                    {day.intro ? ` — ${day.intro}` : ''}
+                    {day.intro ? ' — ' + day.intro : ''}
                   </div>
-                  <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', marginTop: 2 }}>{dayFocusLabels(day.exercises).join(', ')}</div>
+                  <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', marginTop: 2 }}>{dayFocusLabels(day.exercises, { t }).join(', ')}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', flexShrink: 0 }}>
                   <span style={{ font: 'var(--text-body-sm)' }}>
-                    {day.exercises.length} ej.
+                    {t('program.exerciseAbbrev', { n: day.exercises.length })}
                   </span>
                   <Icon name="chevron-right" size={18} />
                 </div>
@@ -153,22 +176,27 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
           </div>
         </section>
 
-        <SectionBanner tone="ink" title="Enfriamiento" subtitle={`${cooldown.durationMinutes} minutos al final de cada sesión`} items={cooldown.steps} />
+        <SectionBanner
+          tone="ink"
+          title={t('program.cooldownTitle')}
+          subtitle={t('program.cooldownSubtitle', { n: cooldown.durationMinutes })}
+          items={cooldown.steps.map((step, i) => <span key={i} dir="auto">{step}</span>)}
+        />
 
         <section style={{ display: 'grid', gap: 'var(--space-4)' }}>
-          <SectionTitle>Resumen semanal</SectionTitle>
+          <SectionTitle>{t('program.weeklySummaryTitle')}</SectionTitle>
           <div style={{ overflowX: 'auto' }}>
-            <SummaryTable columns={['Día', 'Enfoque', 'Ejercicios']} rows={summaryRows} />
+            <SummaryTable columns={[t('program.colDay'), t('program.colFocus'), t('program.colExercises')]} rows={summaryRows} />
           </div>
         </section>
 
         {rules.length > 0 && (
           <section style={{ display: 'grid', gap: 'var(--space-4)' }}>
-            <SectionTitle>Reglas generales</SectionTitle>
+            <SectionTitle>{t('program.rulesTitle')}</SectionTitle>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 10 }}>
               {rules.map((rule, i) => (
                 <RuleItem key={i} icon="info">
-                  {rule}
+                  <span dir="auto">{rule}</span>
                 </RuleItem>
               ))}
             </div>
@@ -177,11 +205,11 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
 
         {notes.length > 0 && (
           <section style={{ display: 'grid', gap: 'var(--space-4)' }}>
-            <SectionTitle>Notas</SectionTitle>
+            <SectionTitle>{t('program.notesTitle')}</SectionTitle>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 10 }}>
               {notes.map((note, i) => (
-                <NoteItem key={i} title={note.title}>
-                  {note.body}
+                <NoteItem key={i} title={<span dir="auto">{note.title}</span>}>
+                  <span dir="auto">{note.body}</span>
                 </NoteItem>
               ))}
             </div>
@@ -197,7 +225,7 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
               disabled={removing}
               onClick={handleReplaceClick}
             >
-              Reemplazar programa
+              {t('program.replaceAction')}
             </Button>
             {(!sheet || sheet === 'replace-warn') && (
               <Button
@@ -206,12 +234,12 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
                 disabled={removing}
                 onClick={handleRemoveClick}
               >
-                {removing ? 'Eliminando...' : 'Eliminar programa'}
+                {removing ? t('program.removingLabel') : t('program.removeAction')}
               </Button>
             )}
             {removeError && (
               <p role="alert" style={{ font: 'var(--text-body-sm)', color: 'var(--bf-danger)', margin: 'var(--space-3) 0 0' }}>
-                Error al eliminar el programa. Inténtalo de nuevo.
+                {t('program.removeErrorBody')}
               </p>
             )}
           </div>
@@ -221,44 +249,44 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
 
     {sheet === 'replace-warn' && (
       <ConfirmSheet
-        title="Sesión en curso"
-        description="Tienes una sesión en curso. Si reemplazas el programa ahora, la sesión podría quedar desactualizada. ¿Continuar de todas formas?"
-        primaryLabel="Ir a importar"
+        title={t('program.activeSessionTitle')}
+        description={t('program.replaceWarnBody')}
+        primaryLabel={t('program.goImportAction')}
         onPrimary={() => onGoImport()}
-        cancelLabel="Cancelar"
+        cancelLabel={t('common.cancel')}
         onCancel={() => setSheet(null)}
         danger={false}
       />
     )}
     {sheet === 'remove-b' && (
       <ConfirmSheet
-        title="Eliminar programa"
-        description="Se eliminará el programa activo. Podrás importar uno nuevo en cualquier momento."
-        primaryLabel="Eliminar"
+        title={t('program.removeAction')}
+        description={t('program.removeBBody')}
+        primaryLabel={t('common.delete')}
         onPrimary={handleRemoveConfirm}
-        cancelLabel="Cancelar"
+        cancelLabel={t('common.cancel')}
         onCancel={() => setSheet(null)}
         danger={true}
       />
     )}
     {sheet === 'remove-c' && (
       <ConfirmSheet
-        title="Eliminar programa"
-        description="Se eliminará el programa activo. Tu historial de sesiones se conserva, pero ya no estará vinculado a un programa."
-        primaryLabel="Eliminar de todas formas"
+        title={t('program.removeAction')}
+        description={t('program.removeCBody')}
+        primaryLabel={t('program.removeAnyway')}
         onPrimary={handleRemoveConfirm}
-        cancelLabel="Cancelar"
+        cancelLabel={t('common.cancel')}
         onCancel={() => setSheet(null)}
         danger={true}
       />
     )}
     {sheet === 'remove-d' && (
       <ConfirmSheet
-        title="Sesión en curso"
-        description="Tienes una sesión en curso. Si eliminas el programa ahora, la sesión podría quedar desactualizada. ¿Continuar de todas formas?"
-        primaryLabel="Eliminar de todas formas"
+        title={t('program.activeSessionTitle')}
+        description={t('program.removeDBody')}
+        primaryLabel={t('program.removeAnyway')}
         onPrimary={handleRemoveConfirm}
-        cancelLabel="Cancelar"
+        cancelLabel={t('common.cancel')}
         onCancel={() => setSheet(null)}
         danger={true}
       />
@@ -269,14 +297,15 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
 
 function ProgramDayDetail({ rutina, dayIndex }) {
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const day = rutina.days[dayIndex];
 
   if (!day) {
     return (
       <div style={{ paddingBlock: 'var(--space-6)', paddingInline: 'var(--page-pad-x)' }}>
-        <p>Día no encontrado.</p>
+        <p>{t('program.dayNotFound')}</p>
         <Link to="/program" style={{ color: 'var(--text-link)' }}>
-          Volver al programa
+          {t('program.backToProgram')}
         </Link>
       </div>
     );
@@ -285,8 +314,8 @@ function ProgramDayDetail({ rutina, dayIndex }) {
   return (
     <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: 90 }}>
       <ScreenHeader
-        title={day.label}
-        subtitle={day.intro || undefined}
+        title={<span dir="auto">{day.label}</span>}
+        subtitle={day.intro ? <span dir="auto">{day.intro}</span> : undefined}
         leading={
           <button
             type="button"
@@ -303,7 +332,7 @@ function ProgramDayDetail({ rutina, dayIndex }) {
               minHeight: 44,
             }}
           >
-            <Icon name="chevron-left" size={16} /> Programa
+            <Icon name="chevron-left" size={16} /> {t('tab.program')}
           </button>
         }
       />
@@ -313,23 +342,40 @@ function ProgramDayDetail({ rutina, dayIndex }) {
           {day.exercises.map((exercise, i) => {
             const equipment = getEquipmentById(exercise.equipmentId);
             const details = [
-              { label: 'Series × Repeticiones', value: `${exercise.sets} × ${exercise.reps}` },
-              { label: 'Descanso', value: `${exercise.restSeconds} segundos` },
+              {
+                label: t('program.setsReps'),
+                value: (
+                  <>
+                    {exercise.sets} × <span dir="auto">{exercise.reps}</span>
+                  </>
+                ),
+              },
+              { label: t('program.rest'), value: t('common.secondsFull', { n: exercise.restSeconds }) },
             ];
-            if (exercise.intensity) details.push({ label: 'Intensidad', value: exercise.intensity });
+            if (exercise.intensity)
+              details.push({ label: t('program.intensity'), value: <span dir="auto">{exercise.intensity}</span> });
+
+            const equipmentSeriesPrefix = equipment && equipment.series ? 'Matrix ' + equipment.series + ' ' : '';
+            const equipmentLabel = equipment
+              ? equipmentSeriesPrefix + equipment.modelCode + ' — ' + equipmentDisplayName(equipment, locale)
+              : exercise.equipmentId;
+            const videoHref = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(buildVideoQuery(exercise, equipment, locale));
 
             return (
               <ExerciseCard
                 key={i}
                 number={i + 1}
                 name={exercise.name}
-                muscles={muscleGroupLabels(exercise.muscleGroups)}
+                muscles={muscleGroupLabels(exercise.muscleGroups, t)}
                 details={details}
-                equipment={equipment ? `${equipment.series ? `Matrix ${equipment.series} ` : ''}${equipment.modelCode} — ${equipmentDisplayName(equipment)}` : exercise.equipmentId}
+                equipment={equipmentLabel}
                 imageUrl={equipment ? mainImageUrl(equipment) : undefined}
                 steps={exercise.technique || []}
-                videoHref={`https://www.youtube.com/results?search_query=${encodeURIComponent(buildVideoQuery(exercise, equipment))}`}
-                videoLabel={`Ver técnica de «${exercise.name}» en YouTube`}
+                videoHref={videoHref}
+                videoLabel={t('program.watchTechnique', { name: exercise.name })}
+                equipmentLabel={t('program.equipmentLabel')}
+                alternativeLabel={t('program.alternativeLabel')}
+                techniqueLabel={t('program.techniqueLabel')}
               />
             );
           })}

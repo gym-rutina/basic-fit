@@ -11,10 +11,12 @@ import { HistoryScreen } from './screens/HistoryScreen.jsx';
 import { ProgressScreen } from './screens/ProgressScreen.jsx';
 import { ExportScreen } from './screens/ExportScreen.jsx';
 import { CatalogScreen } from './screens/CatalogScreen.jsx';
+import { SettingsScreen } from './screens/SettingsScreen.jsx';
 import { OnboardingOverlay } from './components/OnboardingOverlay.jsx';
 import { getActiveRutina } from './lib/db.js';
 import { hasSeenOnboarding } from './lib/onboardingStorage.js';
 import { useActiveSession } from './hooks/useActiveSession.js';
+import { I18nProvider } from './i18n/index.js';
 
 /**
  * Inner shell that has access to location (must be inside HashRouter).
@@ -109,6 +111,7 @@ function Shell() {
             />
             <Route path="/export" element={<ExportScreen />} />
             <Route path="/catalog" element={<CatalogScreen />} />
+            <Route path="/settings" element={<SettingsScreen />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
@@ -121,8 +124,10 @@ function Shell() {
 
 export default function App() {
   return (
-    <HashRouter>
-      <Shell />
-    </HashRouter>
+    <I18nProvider>
+      <HashRouter>
+        <Shell />
+      </HashRouter>
+    </I18nProvider>
   );
 }

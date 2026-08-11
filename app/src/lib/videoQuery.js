@@ -1,5 +1,6 @@
 import { equipmentDisplayName } from '../data/equipment.js';
 import { slugifyExerciseName } from './exerciseKey.js';
+import { tFor, DEFAULT_LOCALE } from '../i18n/index.js';
 
 /**
  * Composes the YouTube search query for an exercise's tutorial link
@@ -12,22 +13,26 @@ import { slugifyExerciseName } from './exerciseKey.js';
  * `equipmentDisplayName` is a pure function over `{names:{…}}` (see
  * app/src/data/equipment.js), so this module can be driven by plain
  * fixtures in tests without loading the real catalog.
+ *
+ * pwa-ui-language: the machine/technique words now come from the shared
+ * catalog (`equipment.machineWord`/`equipment.techniqueWord`) instead of a
+ * locally hardcoded map — the words themselves are Spanish/English/Belarusian
+ * text, and AC9's stray-literal scanner correctly flags hardcoded copy
+ * outside `i18n/`.
  */
-
-const MACHINE_WORD = { es: 'máquina', en: 'machine', be: 'трэнажор' };
-const TECHNIQUE_WORD = { es: 'técnica', en: 'form', be: 'тэхніка' };
 
 /**
  * @param {{name?: string, equipmentId?: string|null, videoQuery?: string}} exercise
  * @param {object|null} equipment - catalog entry (or a plain `{names}` fixture), or null when unresolved
- * @param {string} [lang='es']
+ * @param {string} [lang]
  * @returns {string}
  */
-export function buildVideoQuery(exercise, equipment, lang = 'es') {
+export function buildVideoQuery(exercise, equipment, lang = DEFAULT_LOCALE) {
   if (exercise?.videoQuery) return exercise.videoQuery;
 
-  const machineWord = MACHINE_WORD[lang] || MACHINE_WORD.es;
-  const techniqueWord = TECHNIQUE_WORD[lang] || TECHNIQUE_WORD.es;
+  const t = tFor(lang);
+  const machineWord = t('equipment.machineWord');
+  const techniqueWord = t('equipment.techniqueWord');
 
   const parts = [exercise?.name];
   const label = equipmentDisplayName(equipment, lang);

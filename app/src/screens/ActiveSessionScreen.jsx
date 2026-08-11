@@ -7,10 +7,11 @@ import { ConfirmSheet } from '../components/ConfirmSheet.jsx';
 import { EquipmentReferenceSheet } from '../components/EquipmentReferenceSheet.jsx';
 import { sessionReducer } from '../lib/sessionMachine.js';
 import { getActiveRutina, getActiveSession, saveSession, getLastWeight, deleteSessions } from '../lib/db.js';
-import { DIFFICULTY_LEVELS, difficultyLabel } from '../lib/difficulty.js';
+import { difficultyLevels, difficultyLabel } from '../lib/difficulty.js';
 import { getEquipmentById, mainImageUrl, equipmentDisplayName } from '../data/equipment.js';
 import { exerciseKey } from '../lib/exerciseKey.js';
 import { buildVideoQuery } from '../lib/videoQuery.js';
+import { useI18n } from '../i18n/index.js';
 
 /**
  * Joins this day's prescription (rutina) with the session's tracking record
@@ -33,10 +34,10 @@ function mergeExercises(rutinaExercises, sessionExercises) {
 }
 
 /** Text-only difficulty picker — no emoji/icon (project's no-emoji-as-icons policy; a11y: difficulty is never color/icon-only). */
-function DifficultyPicker({ value, onChange }) {
+function DifficultyPicker({ value, onChange, t }) {
   return (
-    <div role="radiogroup" aria-label="¿Cómo fue el ejercicio?" style={{ display: 'flex', gap: 8 }}>
-      {DIFFICULTY_LEVELS.map((d) => {
+    <div role="radiogroup" aria-label={t('session.difficultyQuestion')} style={{ display: 'flex', gap: 8 }}>
+      {difficultyLevels(t).map((d) => {
         const selected = value === d.id;
         return (
           <button
@@ -79,7 +80,7 @@ function DifficultyPicker({ value, onChange }) {
  * buildVideoQuery, so the sheet always has a video, and the old "resolved +
  * sparse → plain text" branch is unreachable and has been removed (D8).
  */
-function EquipmentRow({ ex }) {
+function EquipmentRow({ ex, locale, t }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const triggerRef = useRef(null);
 
@@ -94,10 +95,11 @@ function EquipmentRow({ ex }) {
   }
 
   const imageUrl = mainImageUrl(eq);
-  const displayName = `${eq.series ? `Matrix ${eq.series} ` : ''}${eq.modelCode} — ${equipmentDisplayName(eq)}`;
+  const seriesPrefix = eq.series ? 'Matrix ' + eq.series + ' ' : '';
+  const displayName = seriesPrefix + eq.modelCode + ' — ' + equipmentDisplayName(eq, locale);
   const steps = ex.technique || [];
-  const videoHref = `https://www.youtube.com/results?search_query=${encodeURIComponent(buildVideoQuery(ex, eq))}`;
-  const videoLabel = `Ver técnica de «${ex.name}» en YouTube`;
+  const videoHref = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(buildVideoQuery(ex, eq, locale));
+  const videoLabel = t('program.watchTechnique', { name: ex.name });
 
   return (
     <>
@@ -153,14 +155,14 @@ function EquipmentRow({ ex }) {
  * completed card shows ITS OWN logged value, never the lastWeights lookup,
  * so there is no "loading"/"empty" distinction to make once it is done.
  */
-function prefillCaption(prefillState, isDone) {
-  if (isDone) return 'Peso registrado para este ejercicio.';
-  if (prefillState === 'loading') return 'El peso se guarda por ejercicio.';
-  if (prefillState === 'filled') return 'Prellenado con tu último peso en este ejercicio.';
-  return 'Sin registros de este ejercicio todavía.';
+function prefillCaption(prefillState, isDone, t) {
+  if (isDone) return t('session.weightRecorded');
+  if (prefillState === 'loading') return t('session.weightSavedPerExercise');
+  if (prefillState === 'filled') return t('session.weightPrefilled');
+  return t('session.weightNoRecords');
 }
 
-function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, onUndo }) {
+function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, onUndo, locale, t }) {
   const isDone = Boolean(ex.completedAt);
   const [weight, setWeight] = useState(ex.weightUsed ?? '');
   const [difficulty, setDifficulty] = useState(ex.difficulty ?? null);
@@ -169,8 +171,8 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
   // and rendering the "Prellenado…" claim before the lookup resolves would
   // be false for one frame.
   const [prefillState, setPrefillState] = useState('loading');
-  const weightInputId = `weight-${ex.exerciseIndex}-${ex.equipmentId ?? 'x'}`;
-  const captionId = `${weightInputId}-caption`;
+  const weightInputId = 'weight-' + ex.exerciseIndex + '-' + (ex.equipmentId ?? 'x');
+  const captionId = weightInputId + '-caption';
 
   // Prefill: an already-done exercise being reopened shows ITS OWN logged
   // values (correction); a not-yet-done exercise becoming current prefills
@@ -243,40 +245,47 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
           {isDone ? <Icon name="check" size={14} strokeWidth={3} /> : null}
         </span>
         <span style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
-          <div style={{ font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{ex.name}</div>
+          <div dir="auto" style={{ font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{ex.name}</div>
           {isDone && !isExpanded && (
             <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-              {ex.weightUsed != null ? `${ex.weightUsed} kg · ` : ''}
-              {difficultyLabel(ex.difficulty)}
+              {ex.weightUsed != null ? ex.weightUsed + ' kg · ' : ''}
+              {difficultyLabel(ex.difficulty, t)}
             </div>
           )}
           {!isDone && !isExpanded && (
             <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-              {ex.sets} × {ex.reps}
+              {ex.sets} × <span dir="auto">{ex.reps}</span>
             </div>
           )}
         </span>
         {isNextPending && !isDone && !isExpanded && (
-          <span style={{ font: '700 11px/1 var(--font-sans)', color: 'var(--bf-purple)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Actual</span>
+          <span style={{ font: '700 11px/1 var(--font-sans)', color: 'var(--bf-purple)', textTransform: 'uppercase', letterSpacing: '.04em' }}>{t('session.currentBadge')}</span>
         )}
       </button>
 
       {isExpanded && (
         <div style={{ marginTop: 'var(--space-4)', display: 'grid', gap: 'var(--space-4)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: 8 }}>
-            <DetailItem label="Series × Reps" value={`${ex.sets} × ${ex.reps}`} />
-            <DetailItem label="Descanso" value={`${ex.restSeconds} seg`} />
-            {ex.intensity && <DetailItem label="Intensidad" value={ex.intensity} />}
+            <DetailItem
+              label={t('session.setsReps')}
+              value={
+                <>
+                  {ex.sets} × <span dir="auto">{ex.reps}</span>
+                </>
+              }
+            />
+            <DetailItem label={t('program.rest')} value={t('session.restSecondsAbbrev', { n: ex.restSeconds })} />
+            {ex.intensity && <DetailItem label={t('program.intensity')} value={<span dir="auto">{ex.intensity}</span>} />}
           </div>
 
-          <EquipmentRow ex={ex} />
+          <EquipmentRow ex={ex} locale={locale} t={t} />
 
           <div>
             <label
               htmlFor={weightInputId}
               style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}
             >
-              Peso usado (kg)
+              {t('session.weightUsedLabel')}
             </label>
             <input
               id={weightInputId}
@@ -297,13 +306,13 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
               }}
             />
             <div id={captionId} style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', marginTop: 4 }}>
-              {prefillCaption(prefillState, isDone)}
+              {prefillCaption(prefillState, isDone, t)}
             </div>
           </div>
 
           <div>
-            <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>¿Cómo fue?</div>
-            <DifficultyPicker value={difficulty} onChange={setDifficulty} />
+            <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>{t('session.howWasItLabel')}</div>
+            <DifficultyPicker value={difficulty} onChange={setDifficulty} t={t} />
           </div>
 
           <Button
@@ -319,11 +328,11 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
               })
             }
           >
-            <Icon name="check" size={16} /> Marcar completado
+            <Icon name="check" size={16} /> {t('session.markCompleteAction')}
           </Button>
           {isDone && (
             <Button variant="ghost" onClick={() => onUndo(ex.exerciseIndex)}>
-              Deshacer
+              {t('common.undo')}
             </Button>
           )}
         </div>
@@ -334,6 +343,7 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
 
 export function ActiveSessionScreen({ onSessionEnded }) {
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [rutina, setRutina] = useState(undefined);
   const [session, setSession] = useState(undefined); // undefined = loading, null = none found
   const [expandedIndex, setExpandedIndex] = useState(null);
@@ -404,8 +414,13 @@ export function ActiveSessionScreen({ onSessionEnded }) {
     persist(next);
 
     const completedEx = next.exercises[exerciseIndex];
-    const label = completedEx?.name || name || 'Ejercicio';
-    setAnnouncement(`${label} completado${weightUsed != null ? `, ${weightUsed} kilos` : ''}, ${difficultyLabel(difficulty).toLowerCase()}`);
+    const label = completedEx?.name || name || '';
+    const diffLabel = difficultyLabel(difficulty, t).toLowerCase();
+    setAnnouncement(
+      weightUsed != null
+        ? t('session.completedAnnouncementWithWeight', { label, weight: weightUsed, difficulty: diffLabel })
+        : t('session.completedAnnouncementNoWeight', { label, difficulty: diffLabel })
+    );
 
     const nextMerged = mergeExercises(day.exercises, next.exercises);
     const nextPending = nextMerged.find((e) => !e.completedAt);
@@ -449,7 +464,7 @@ export function ActiveSessionScreen({ onSessionEnded }) {
       navigate('/');
     } catch {
       setDiscardBusy(false);
-      setDiscardError('No se pudo descartar la sesión.');
+      setDiscardError(t('session.discardError'));
     }
   }
 
@@ -461,48 +476,50 @@ export function ActiveSessionScreen({ onSessionEnded }) {
 
       <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bf-white)', borderBottom: '1px solid var(--border-default)', paddingBlock: 'var(--space-4)', paddingInline: 'var(--page-pad-x)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <button aria-label="Terminar sesión" onClick={() => setShowEndDialog(true)} style={{ all: 'unset', cursor: 'pointer', color: 'var(--bf-ink)', padding: 8 }}>
+          <button aria-label={t('session.endSessionTitle')} onClick={() => setShowEndDialog(true)} style={{ all: 'unset', cursor: 'pointer', color: 'var(--bf-ink)', padding: 8 }}>
             <Icon name="x" size={20} />
           </button>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ font: '700 15px/1.2 var(--font-sans)', color: 'var(--bf-ink)' }}>{session.dayLabel}</div>
+            <div dir="auto" style={{ font: '700 15px/1.2 var(--font-sans)', color: 'var(--bf-ink)' }}>{session.dayLabel}</div>
             <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-              {doneCount} / {total} completados
+              {t('common.completedOfSpaced', { done: doneCount, total })}
             </div>
           </div>
           <span style={{ width: 36 }} />
         </div>
         <div style={{ height: 4, background: 'var(--bf-grey-2)', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${total ? (doneCount / total) * 100 : 0}%`, background: 'var(--bf-purple)', transition: 'width var(--motion-base)' }} />
+          <div style={{ height: '100%', width: (total ? (doneCount / total) * 100 : 0) + '%', background: 'var(--bf-purple)', transition: 'width var(--motion-base)' }} />
         </div>
       </div>
 
       <div style={{ paddingBlock: 'var(--space-4)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 10 }}>
         {merged.map((ex) => (
           <ExerciseLogCard
-            key={`${ex.exerciseIndex}-${ex.equipmentId ?? 'x'}`}
+            key={ex.exerciseIndex + '-' + (ex.equipmentId ?? 'x')}
             ex={ex}
             isExpanded={expandedIndex === ex.exerciseIndex}
             isNextPending={firstPendingIndex === ex.exerciseIndex}
             onToggle={() => setExpandedIndex(expandedIndex === ex.exerciseIndex ? null : ex.exerciseIndex)}
             onComplete={handleComplete}
             onUndo={handleUndo}
+            locale={locale}
+            t={t}
           />
         ))}
       </div>
 
       {showEndDialog && (
         <ConfirmSheet
-          title="Terminar sesión"
-          description={`${doneCount} de ${total} ejercicios completados.`}
-          primaryLabel="Finalizar sesión"
+          title={t('session.endSessionTitle')}
+          description={t('session.endSessionDesc', { done: doneCount, total })}
+          primaryLabel={t('session.finishAction')}
           onPrimary={handleFinish}
-          secondaryLabel="Sesión terminada sin completar"
+          secondaryLabel={t('session.finishIncompleteAction')}
           onSecondary={handleAbandon}
-          cancelLabel="Cancelar"
+          cancelLabel={t('common.cancel')}
           onCancel={() => setShowEndDialog(false)}
           destructiveAction={{
-            label: 'Descartar sin guardar',
+            label: t('session.discardWithoutSaving'),
             onClick: () => {
               setShowEndDialog(false);
               setDiscardError(null);
@@ -514,11 +531,11 @@ export function ActiveSessionScreen({ onSessionEnded }) {
 
       {showDiscardConfirm && (
         <ConfirmSheet
-          title="¿Descartar el entrenamiento?"
-          description="No se guardará nada: esta sesión no aparecerá en el historial ni en tu progreso, y los pesos anotados no se recordarán. No se puede deshacer."
-          primaryLabel={discardBusy ? 'Descartando…' : 'Sí, descartar'}
+          title={t('session.discardTitle')}
+          description={t('session.discardBody')}
+          primaryLabel={discardBusy ? t('session.discardingLabel') : t('session.discardConfirm')}
           onPrimary={handleDiscard}
-          cancelLabel="Volver"
+          cancelLabel={t('common.back')}
           onCancel={() => {
             setShowDiscardConfirm(false);
             setShowEndDialog(true);

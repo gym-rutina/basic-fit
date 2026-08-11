@@ -4,6 +4,7 @@ import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { listSessions } from '../lib/db.js';
 import { buildExportPayload } from '../lib/exportFormat.js';
+import { useI18n } from '../i18n/index.js';
 
 function isoDateDaysAgo(days, now = new Date()) {
   const d = new Date(now);
@@ -14,6 +15,7 @@ function isoDateDaysAgo(days, now = new Date()) {
 /** States: success | error (clipboard write failure) — ux-design.md. Unreachable with zero sessions (History hides the button); redirects defensively if reached anyway. */
 export function ExportScreen() {
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [sessions, setSessions] = useState(null); // null = loading
   const [range, setRange] = useState('all');
   const [clipboardError, setClipboardError] = useState(false);
@@ -36,8 +38,8 @@ export function ExportScreen() {
   const { json, markdown } = useMemo(() => {
     if (!sessions) return { json: { exercises: {} }, markdown: '' };
     const from = range === '30d' ? isoDateDaysAgo(30) : undefined;
-    return buildExportPayload(sessions, { from });
-  }, [sessions, range]);
+    return buildExportPayload(sessions, { from }, { t, locale });
+  }, [sessions, range, t, locale]);
 
   if (!sessions || sessions.length === 0) return null;
 
@@ -68,7 +70,7 @@ export function ExportScreen() {
 
   async function handleShare() {
     try {
-      await navigator.share({ title: 'Progreso de rutina', text: markdown });
+      await navigator.share({ title: t('export.shareTitle'), text: markdown });
     } catch {
       // user cancelled the share sheet or it failed silently — not an error state worth surfacing
     }
@@ -77,14 +79,14 @@ export function ExportScreen() {
   return (
     <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: 100 }}>
       <div style={{ background: 'var(--bf-white)', borderBottom: '1px solid var(--border-default)', paddingBlock: 'var(--space-6) var(--space-5)', paddingInline: 'var(--page-pad-x)' }}>
-        <h1 style={{ font: 'var(--text-h2)', textTransform: 'uppercase', color: 'var(--bf-ink)', margin: 0 }}>Exportar progreso</h1>
-        <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '6px 0 0' }}>Copia o descarga tu historial para pegarlo en tu próxima conversación con un LLM.</p>
+        <h1 style={{ font: 'var(--text-h2)', textTransform: 'uppercase', color: 'var(--bf-ink)', margin: 0 }}>{t('export.title')}</h1>
+        <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('export.subtitle')}</p>
       </div>
 
       <div style={{ paddingBlock: 'var(--space-5)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 'var(--space-5)' }}>
         <div>
           <label htmlFor="export-range" style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
-            Rango
+            {t('export.rangeLabel')}
           </label>
           <select
             id="export-range"
@@ -92,14 +94,15 @@ export function ExportScreen() {
             onChange={(e) => setRange(e.target.value)}
             style={{ width: '100%', boxSizing: 'border-box', font: '600 14px/1.4 var(--font-sans)', color: 'var(--bf-ink)', border: '1px solid var(--border-control)', borderRadius: 'var(--radius-control)', padding: '10px 12px' }}
           >
-            <option value="all">Todo el historial</option>
-            <option value="30d">Últimos 30 días</option>
+            <option value="all">{t('export.rangeAll')}</option>
+            <option value="30d">{t('export.range30d')}</option>
           </select>
         </div>
 
         <div>
-          <label style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>Vista previa (Markdown)</label>
+          <label style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>{t('export.previewLabel')}</label>
           <pre
+            dir="auto"
             style={{
               margin: 0,
               background: 'var(--bf-white)',
@@ -118,20 +121,20 @@ export function ExportScreen() {
 
         {clipboardError && (
           <div role="alert" style={{ background: 'var(--bf-danger-tint)', border: '1px solid var(--bf-danger)', borderRadius: 'var(--radius-md)', padding: '10px 14px', font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)' }}>
-            No se pudo copiar al portapapeles. Prueba a descargar el archivo.
+            {t('export.clipboardError')}
           </div>
         )}
 
         <div style={{ display: 'grid', gap: 10 }}>
           <Button variant="primary" style={{ width: '100%' }} onClick={handleCopy}>
-            {copied ? '¡Copiado!' : 'Copiar al portapapeles'}
+            {copied ? t('export.copiedLabel') : t('export.copyAction')}
           </Button>
           <Button variant="outline" style={{ width: '100%' }} onClick={handleDownload}>
-            <Icon name="download" size={16} /> Descargar .json
+            <Icon name="download" size={16} /> {t('export.downloadAction')}
           </Button>
           {canShare && (
             <Button variant="ghost" style={{ width: '100%' }} onClick={handleShare}>
-              <Icon name="external-link" size={16} /> Compartir
+              <Icon name="external-link" size={16} /> {t('export.shareAction')}
             </Button>
           )}
         </div>
