@@ -113,3 +113,31 @@ describe('Catálogo chrome is migrated (AC6)', () => {
     expect(screen.queryByRole('button', { name: 'Todas' })).not.toBeInTheDocument();
   });
 });
+
+describe('category pills always render a real label (Build A / Bagnik code-QA fix #2)', () => {
+  /**
+   * CatalogScreen.jsx derives its category pills from the DATA
+   * (`new Set(EQUIPMENT.map(e => e.category))`) but labels them from a
+   * HARDCODED CATEGORY_KEYS map. Adding a category to the data without
+   * adding its key here ships a pill whose i18n lookup key is `undefined`
+   * — `t()` does not throw on a missing key, it falls back through the
+   * chain to the key itself, so the pill would render the literal text
+   * "undefined". This test exists so that failure class cannot recur
+   * silently the next time a category is added to the data.
+   */
+  it('renders no pill whose text is "undefined" or a raw i18n key', () => {
+    renderCatalog('es');
+    const buttons = screen.getAllByRole('button');
+    for (const button of buttons) {
+      const text = button.textContent.trim();
+      expect(text).not.toBe('undefined');
+      expect(text).not.toMatch(/^catalog\./);
+    }
+  });
+
+  it('renders a real pill for both S2-added categories (free-weights, accessories)', () => {
+    renderCatalog('es');
+    expect(screen.getByRole('button', { name: 'Peso libre' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Accesorios' })).toBeInTheDocument();
+  });
+});

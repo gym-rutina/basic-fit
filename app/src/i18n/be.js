@@ -153,6 +153,8 @@ export default {
   'catalog.categoryArms': 'Рукі',
   'catalog.categoryCore': 'Корпус',
   'catalog.categoryLegs': 'Ногі',
+  'catalog.categoryFreeWeights': 'Свабодныя вагі',
+  'catalog.categoryAccessories': 'Аксэсуары',
   'catalog.noResults': 'Няма вынікаў',
 
   // ── home (HomeScreen.jsx) ────────────────────────────────────────────────

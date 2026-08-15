@@ -1,20 +1,19 @@
 {
   "metadata": {
-    "lastUpdated": "2026-07-29",
-    "source": "BasicFit Malaga + Matrix Catalog",
+    "lastUpdated": "2026-08-15",
+    "source": "BasicFit standard hardware line — Matrix machines + ZIVA free weights, benches and accessories",
     "languages": [
       "en",
       "es",
       "be"
     ],
-    "totalEquipment": 27
+    "totalEquipment": 48
   },
   "equipment": [
     {
       "id": "g3-s10",
       "modelCode": "G3-S10",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "chest",
       "muscleGroup": {
         "primary": [
@@ -93,21 +92,13 @@
           "adjustable-handles"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s30",
       "modelCode": "G3-S30",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "back",
       "muscleGroup": {
         "primary": [
@@ -186,21 +177,13 @@
           "multiple-grip-positions"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s70",
       "modelCode": "G3-S70",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "legs",
       "muscleGroup": {
         "primary": [
@@ -280,21 +263,13 @@
           "large-footplate"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s12",
       "modelCode": "G3-S12",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "chest",
       "muscleGroup": {
         "primary": [
@@ -372,21 +347,13 @@
           "adjustable-handles"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s13",
       "modelCode": "G3-S13",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "chest",
       "muscleGroup": {
         "primary": [
@@ -465,21 +432,13 @@
           "converging-handles"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s20",
       "modelCode": "G3-S20",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "shoulders",
       "muscleGroup": {
         "primary": [
@@ -559,21 +518,13 @@
           "adjustable-handles"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s21",
       "modelCode": "G3-S21",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "shoulders",
       "muscleGroup": {
         "primary": [
@@ -651,21 +602,13 @@
           "adjustable-resistance"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s22",
       "modelCode": "G3-S22",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "shoulders",
       "muscleGroup": {
         "primary": [
@@ -744,21 +687,13 @@
           "adjustable-seat"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s23",
       "modelCode": "G3-S23",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "shoulders",
       "muscleGroup": {
         "primary": [
@@ -837,21 +772,13 @@
           "converging-handles"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s31",
       "modelCode": "G3-S31",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "back",
       "muscleGroup": {
         "primary": [
@@ -932,21 +859,13 @@
           "foot-platform"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s33",
       "modelCode": "G3-S33",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "back",
       "muscleGroup": {
         "primary": [
@@ -1025,21 +944,13 @@
           "diverging-handles"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s34",
       "modelCode": "G3-S34",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "back",
       "muscleGroup": {
         "primary": [
@@ -1119,21 +1030,13 @@
           "diverging-handles"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s40",
       "modelCode": "G3-S40",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "arms",
       "muscleGroup": {
         "primary": [
@@ -1212,21 +1115,13 @@
           "adjustable-seat"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s42",
       "modelCode": "G3-S42",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "arms",
       "muscleGroup": {
         "primary": [
@@ -1304,21 +1199,13 @@
           "adjustable-seat"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s45",
       "modelCode": "G3-S45",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "arms",
       "muscleGroup": {
         "primary": [
@@ -1389,21 +1276,13 @@
           "adjustable-seat"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s50",
       "modelCode": "G3-S50",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "core",
       "muscleGroup": {
         "primary": [
@@ -1481,21 +1360,13 @@
           "foot-platform"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s51",
       "modelCode": "G3-S51",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "core",
       "muscleGroup": {
         "primary": [
@@ -1573,21 +1444,13 @@
           "adjustable-resistance"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s52",
       "modelCode": "G3-S52",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "core",
       "muscleGroup": {
         "primary": [
@@ -1666,21 +1529,13 @@
           "leg-securing"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s55",
       "modelCode": "G3-S55",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "core",
       "muscleGroup": {
         "primary": [
@@ -1758,21 +1613,13 @@
           "rotational-movement"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s60",
       "modelCode": "G3-S60",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "core",
       "muscleGroup": {
         "primary": [
@@ -1853,21 +1700,13 @@
           "dual-function"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s71",
       "modelCode": "G3-S71",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "legs",
       "muscleGroup": {
         "primary": [
@@ -1943,21 +1782,13 @@
           "shin-pad"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s72",
       "modelCode": "G3-S72",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "legs",
       "muscleGroup": {
         "primary": [
@@ -2035,21 +1866,13 @@
           "leg-pad"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s73",
       "modelCode": "G3-S73",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "legs",
       "muscleGroup": {
         "primary": [
@@ -2128,21 +1951,13 @@
           "leg-pad"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s74",
       "modelCode": "G3-S74",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "legs",
       "muscleGroup": {
         "primary": [
@@ -2220,21 +2035,13 @@
           "adjustable-seat"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "smith-machine",
       "modelCode": "G1-FW161",
       "series": "Free Weights",
-      "gymZone": "pesos-libres",
       "category": "legs",
       "muscleGroup": {
         "primary": [
@@ -2303,21 +2110,13 @@
           "safety-hooks"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "perfect-squat",
       "modelCode": "VY-400",
       "series": "Varsity",
-      "gymZone": "pesos-libres",
       "category": "legs",
       "muscleGroup": {
         "primary": [
@@ -2386,21 +2185,13 @@
           "pad-support"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
     },
     {
       "id": "g3-s75",
       "modelCode": "G3-S75",
       "series": "Aura",
-      "gymZone": "strength",
       "category": "legs",
       "muscleGroup": {
         "primary": [
@@ -2480,15 +2271,1407 @@
           "privacy-shield"
         ]
       },
-      "gyms": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ]
+      "verifiedAt": [],
+      "kind": "machine"
+    },
+    {
+      "id": "g3-ms24",
+      "modelCode": "G3-MS24",
+      "series": "Aura",
+      "category": "free-weights",
+      "kind": "machine",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "latissimus-dorsi",
+          "triceps"
+        ],
+        "secondary": [
+          "biceps",
+          "anterior-deltoid"
+        ]
+      },
+      "names": {
+        "en": "Aura Adjustable Pulley",
+        "es": "Poleas Ajustables Aura",
+        "be": "Рэгулюемыя блокі Aura"
+      },
+      "descriptions": {
+        "en": "The Aura G3-MS24 Adjustable Pulley has a unique modular design that can be easily customized to fit any space, offering an eight-position, one-hand adjustment and a 2:1 pulley ratio for a wide range of cable exercises.",
+        "es": "La Polea Ajustable Aura G3-MS24 tiene un diseño modular único que se puede personalizar fácilmente para cualquier espacio, con ajuste de una mano en ocho posiciones y una relación de poleas de 2:1 para una amplia variedad de ejercicios con cable.",
+        "be": "Рэгулюемыя блокі Aura G3-MS24 маюць унікальны модульны дызайн, які лёгка наладзіць пад любую прастору: рэгуліроўка адной рукой у восьмі пазіцыях і суадносіны блокаў 2:1 для шырокага спектра практыкаванняў з тросам."
+      },
+      "images": [
+        {
+          "url": "https://images.jhtassets.com/17182a1a18eaaf9ad84baeeda5ba6cae1217a7d9/transformed/w_300",
+          "source": "Hero image (PNG Hero)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Aura%20Adjustable%20Pulley%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Aura Adjustable Pulley"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20poleas%20ajustables%20Aura",
+            "type": "instruction",
+            "title": "Cómo usar poleas ajustables Aura"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%80%D1%8D%D0%B3%D1%83%D0%BB%D1%8E%D0%B5%D0%BC%D1%8B%D1%8F%20%D0%B1%D0%BB%D0%BE%D0%BA%D1%96%20Aura%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць рэгулюемыя блокі Aura"
+          }
+        ]
+      },
+      "manuals": [
+        {
+          "url": "https://www.jhtsupport.com/eng/matrix/manuals",
+          "language": "en",
+          "type": "pdf",
+          "searchTerm": "G3-MS24"
+        }
+      ],
+      "instructions": {
+        "en": "<ol><li>Select the desired attachment and adjust the pulley to one of the eight positions</li><li>Set the resistance on the weight stack</li><li>Perform the movement (row, pulldown, press or curl) with a controlled tempo</li><li>Return slowly to the starting position</li><li>Repeat for desired reps</li></ol>",
+        "es": "<ol><li>Seleccione el accesorio deseado y ajuste la polea a una de las ocho posiciones</li><li>Ajuste la resistencia en la pila de pesas</li><li>Realice el movimiento (remo, jalón, press o curl) con un ritmo controlado</li><li>Regrese lentamente a la posición inicial</li><li>Repita las repeticiones deseadas</li></ol>",
+        "be": "<ol><li>Абярыце патрэбны насадак і адрэгулюйце блок у адну з васьмі пазіцый</li><li>Усталюйце супраціў на стэку важкасцяў</li><li>Выканайце рух (цяга, жым ці згінанне) у кантраляваным тэмпе</li><li>Павольна вярніцеся ў зыходнае становішча</li><li>Паўтарыце патрэбную колькасць разоў</li></ol>"
+      },
+      "specifications": {
+        "weightStack": "selectorized",
+        "features": [
+          "2:1-pulley-ratio",
+          "eight-position-one-hand-adjustment",
+          "modular-design"
+        ],
+        "attachments": [
+          {
+            "name": "Performance Hard Chrome Short Lat Bar with PU Grip — 76 cm",
+            "modelCode": "ZXP-PLBR-6512"
+          },
+          {
+            "name": "Performance Hard Chrome Straight Tricep Bar with PU Grip — 43 cm",
+            "modelCode": "ZXP-TCSB-6616"
+          },
+          {
+            "name": "Performance Hard Chrome Angled Tricep Bar with PU Grip",
+            "modelCode": "ZXP-ATCB-6620"
+          },
+          {
+            "name": "Performance Hard Chrome Multi-Exercise Bar with PU Grip",
+            "modelCode": "ZXP-MTBR-6514"
+          },
+          {
+            "name": "Performance Hard Chrome Seated Row Double Handle",
+            "modelCode": "ZXP-SRDH-6619"
+          },
+          {
+            "name": "Strap Handle",
+            "modelCode": "ZXP-STHD-1437"
+          },
+          {
+            "name": "ZVO Olympic Monster Clamp Collars",
+            "modelCode": "ZXP-OBCC-0436"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mg-pl13",
+      "modelCode": "MG-PL13",
+      "series": "Magnum",
+      "category": "free-weights",
+      "kind": "machine",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "pectoralis-major"
+        ],
+        "secondary": [
+          "triceps",
+          "anterior-deltoid"
+        ]
+      },
+      "names": {
+        "en": "Magnum Supine Bench Press",
+        "es": "Prensa de Banco Supino Magnum",
+        "be": "Жым лежачы канвергентны Magnum"
+      },
+      "descriptions": {
+        "en": "Tone and build pectorals with the Magnum Supine Bench Press. Converging independent arms provide a natural path of motion, dual grip positions offer greater training variety, and two storage horns provide ample room for plates.",
+        "es": "Tonifica y desarrolla los pectorales con la Prensa de Banco Supino Magnum. Los brazos independientes convergentes ofrecen una trayectoria de movimiento natural, las dos posiciones de agarre añaden variedad de entrenamiento, y dos soportes de almacenamiento ofrecen espacio de sobra para los discos.",
+        "be": "Тонус і развіццё грудных мышцаў з дапамогай жыму лежачы Magnum. Незалежныя рукі, што сыходзяцца разам, забяспечваюць натуральную траекторыю руху, два варыянты хвату дадаюць разнастайнасць трэніровак, а два трымальнікі для дыскаў эканомяць месца."
+      },
+      "images": [
+        {
+          "url": "https://images.jhtassets.com/deb8fa9814eb6d30df7da5ee2c0b67e0b53dc5d0/transformed/w_300",
+          "source": "Hero image (PNG Hero)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Magnum%20Supine%20Bench%20Press%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Magnum Supine Bench Press"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20prensa%20de%20banco%20supino%20Magnum",
+            "type": "instruction",
+            "title": "Cómo usar prensa de banco supino Magnum"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%B6%D1%8B%D0%BC%20%D0%BB%D0%B5%D0%B6%D0%B0%D1%87%D1%8B%20Magnum%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць жым лежачы Magnum"
+          }
+        ]
+      },
+      "manuals": [
+        {
+          "url": "https://www.jhtsupport.com/eng/matrix/manuals",
+          "language": "en",
+          "type": "pdf",
+          "searchTerm": "MG-PL13"
+        }
+      ],
+      "instructions": {
+        "en": "<ol><li>Load the desired weight plates onto both converging arms evenly</li><li>Lie on the bench and choose one of the two grip positions</li><li>Press the handles forward until arms are almost fully extended</li><li>Slowly return to the starting position</li><li>Repeat for desired reps</li></ol>",
+        "es": "<ol><li>Cargue los discos deseados en ambos brazos convergentes de forma equilibrada</li><li>Túmbese en el banco y elija una de las dos posiciones de agarre</li><li>Empuje las manijas hacia adelante hasta que los brazos estén casi completamente extendidos</li><li>Regrese lentamente a la posición inicial</li><li>Repita las repeticiones deseadas</li></ol>",
+        "be": "<ol><li>Раўнамерна нагрузіце дыскі на абодва рукавы, што сыходзяцца</li><li>Лягце на лаўку і абярыце адзін з двух варыянтаў хвату</li><li>Выціскайце рукаяткі наперад да амаль поўнага выпрамлення рук</li><li>Павольна вярніцеся ў зыходнае становішча</li><li>Паўтарыце патрэбную колькасць разоў</li></ol>"
+      },
+      "specifications": {
+        "weightStack": "plate-loaded",
+        "features": [
+          "converging-arms",
+          "dual-grip-positions",
+          "two-storage-horns"
+        ]
+      }
+    },
+    {
+      "id": "zvo-dbpu-1648",
+      "modelCode": "ZVO-DBPU-1648",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Solid Steel Urethane Dumbbells",
+        "es": "Mancuernas ZVO de Acero Sólido con Uretano",
+        "be": "Гантэлі ZVO са сталёвым цэнтрам і ўрэтанавым пакрыццём"
+      },
+      "descriptions": {
+        "en": "ZIVA ZVO Solid Steel Urethane Dumbbells use a classic, iconic dumbbell design and are made as a single, ultra-durable piece of solid steel. Long-lasting urethane-coated heads deliver unparalleled durability and are UV-, corrosion-, and tear-resistant, with scratch-proof chrome-finished handles and grip-assisting hill knurling.",
+        "es": "Las mancuernas de uretano de acero sólido ZIVA® ZVO utilizan el diseño clásico e icónico de mancuernas y están fabricadas como una sola pieza de acero sólido ultraduradera. Los cabezales recubiertos de uretano ofrecen una durabilidad incomparable, son resistentes a los rayos UV, la corrosión y el desgarro, con manijas cromadas a prueba de arañazos y moleteado que facilita el agarre.",
+        "be": "Гантэлі ZIVA® ZVO са сталёвым цэнтрам і ўрэтанавым пакрыццём маюць класічны дызайн і выраблены з адной звыштрывалай дэталі сталі. Доўгатэрміновае ўрэтанавае пакрыццё галовак забяспечвае выключную трываласць, устойлівасць да УФ-прамянёў, карозіі і разрываў, а хромаваныя ручкі з насечкай для лепшага хвату не драпаюцца."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F01-free-weights%2FZVO-DBPU-1648-GY_V2.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=ZVO%20dumbbells%20how%20to",
+            "type": "instruction",
+            "title": "How to Use ZVO dumbbells"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20mancuernas%20ZVO",
+            "type": "instruction",
+            "title": "Cómo usar mancuernas ZVO"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%B3%D0%B0%D0%BD%D1%82%D1%8D%D0%BB%D1%96%20ZVO%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць гантэлі ZVO"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the appropriate dumbbell weight from the rack</li><li>Perform the exercise with a controlled tempo through the full range of motion</li><li>Return the dumbbells to the rack after use</li></ol>",
+        "es": "<ol><li>Seleccione el peso de mancuerna adecuado del soporte</li><li>Realice el ejercicio con un ritmo controlado a través de todo el rango de movimiento</li><li>Devuelva las mancuernas al soporte después de usarlas</li></ol>",
+        "be": "<ol><li>Абярыце патрэбную вагу гантэляў са стэлажа</li><li>Выконвайце практыкаванне ў кантраляваным тэмпе праз поўную амплітуду руху</li><li>Пасля выкарыстання вярніце гантэлі на стэлаж</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-putf-3078",
+      "modelCode": "ZVO-PUTF-3078",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Urethane Functional Tribells",
+        "es": "Tribells Funcionales de Uretano ZVO",
+        "be": "Функцыянальныя трыбэлы ZVO"
+      },
+      "descriptions": {
+        "en": "The innovative and iconic ZIVA tribell design offers a sleek look while keeping the bells from rolling away. With an ultra-durable, scratch-, tear-, and scuff-resistant urethane coating, the ZVO Urethane Functional Tribell is compact, stable and sticks in sweaty hands thanks to grippy urethane knurling.",
+        "es": "El diseño innovador e icónico del tribell ZIVA® ofrece un aspecto elegante y evita que las pesas se desplacen. Con un revestimiento de uretano ultraduradero, resistente a rayones, rasgaduras y rozaduras, el Tribell funcional de uretano ZVO es compacto y estable, con moleteado de uretano que se adhiere incluso a manos sudorosas.",
+        "be": "Інавацыйны дызайн трыбэлаў ZIVA® мае стыльны выгляд і не дазваляе снарадам адкочвацца. Звыштрывалае ўрэтанавае пакрыццё, устойлівае да драпін, разрываў і сцірання, робіць трыбэл ZVO кампактным і ўстойлівым, а насечка добра трымаецца нават у мокрых руках."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F01-free-weights%2FZVO-PUTF-3078.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=ZVO%20functional%20tribell%20how%20to",
+            "type": "instruction",
+            "title": "How to Use ZVO functional tribell"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20tribell%20funcional%20ZVO",
+            "type": "instruction",
+            "title": "Cómo usar tribell funcional ZVO"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%84%D1%83%D0%BD%D0%BA%D1%86%D1%8B%D1%8F%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%20%D1%82%D1%80%D1%8B%D0%B1%D1%8D%D0%BB%20ZVO%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць функцыянальны трыбэл ZVO"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the appropriate tribell weight</li><li>Grip using the top handle, side handles, or bell body depending on the movement</li><li>Perform the exercise (swing, squat, press) with control</li><li>Return the tribell to its place after use</li></ol>",
+        "es": "<ol><li>Seleccione el peso de tribell adecuado</li><li>Sujete por el mango superior, los mangos laterales o el cuerpo de la pesa según el movimiento</li><li>Realice el ejercicio (swing, sentadilla, press) con control</li><li>Devuelva el tribell a su lugar después de usarlo</li></ol>",
+        "be": "<ol><li>Абярыце патрэбную вагу трыбэла</li><li>Трымайце за верхнюю ручку, бакавыя ручкі або корпус у залежнасці ад руху</li><li>Выконвайце практыкаванне (мах, прысяд, жым) кантралявана</li><li>Пасля выкарыстання вярніце трыбэл на месца</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-bspu-1619",
+      "modelCode": "ZVO-BSPU-1619",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Solid Steel Urethane Barbells",
+        "es": "Barras ZVO de Acero Sólido con Uretano",
+        "be": "Штангі ZVO са сталёвым цэнтрам і ўрэтанавым пакрыццём"
+      },
+      "descriptions": {
+        "en": "ZVO Solid Steel Urethane Barbells take the classic straight barbell design and craft it with premium materials. Each barbell is cast from a single piece of solid steel with a tear-, UV-, and water-resistant urethane coat, a scratch-resistant hard chrome finish, and grip-assisting knurling on the sides with a knurl-free center.",
+        "es": "Las barras de uretano de acero sólido ZIVA® ZVO incorporan el clásico diseño de barra recta y están fabricadas con materiales de primera calidad. Cada barra está fundida en una sola pieza de acero sólido con un revestimiento de uretano resistente al desgarro, los rayos UV y el agua, acabado de cromo duro resistente a arañazos y moleteado lateral con centro liso.",
+        "be": "Штангі ZIVA® ZVO са сталёвым цэнтрам маюць класічны прамы дызайн і вырабляюцца з матэрыялаў высокай якасці. Кожная штанга — адна цэльная дэталь сталі з урэтанавым пакрыццём, устойлівым да разрываў, УФ-прамянёў і вады, з цвёрдым хромаваным пакрыццём і насечкай па баках без насечкі ў цэнтры."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F01-free-weights%2FZVO-BSPU-1619-GY-zvo-solid-steel-urethane-barbell.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=ZVO%20barbell%20how%20to",
+            "type": "instruction",
+            "title": "How to Use ZVO barbell"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20barra%20ZVO",
+            "type": "instruction",
+            "title": "Cómo usar barra ZVO"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%88%D1%82%D0%B0%D0%BD%D0%B3%D0%B0%20ZVO%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць штанга ZVO"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the appropriate fixed-weight barbell from the rack</li><li>Perform the exercise with a controlled tempo through the full range of motion</li><li>Return the barbell to the rack after use</li></ol>",
+        "es": "<ol><li>Seleccione la barra de peso fijo adecuada del soporte</li><li>Realice el ejercicio con un ritmo controlado a través de todo el rango de movimiento</li><li>Devuelva la barra al soporte después de usarla</li></ol>",
+        "be": "<ol><li>Абярыце патрэбную штангу фіксаванай вагі са стэлажа</li><li>Выконвайце практыкаванне ў кантраляваным тэмпе праз поўную амплітуду руху</li><li>Пасля выкарыстання вярніце штангу на стэлаж</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-bcpu-1606",
+      "modelCode": "ZVO-BCPU-1606",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Solid Steel Urethane EZ Curl Barbells",
+        "es": "Barras EZ Curl ZVO de Acero Sólido con Uretano",
+        "be": "EZ-штангі ZVO са сталёвым цэнтрам"
+      },
+      "descriptions": {
+        "en": "ZVO Solid Steel Urethane EZ Curl Barbells take the classic EZ barbell design and craft it with premium materials. Each barbell is cast from a single piece of solid steel with a tear-, UV-, and water-resistant urethane coat, a scratch-resistant hard chrome finish, and grip-assisting knurling on the sides with a knurl-free center.",
+        "es": "Las barras ZIVA® ZVO de acero sólido de uretano EZ Curl incorporan el clásico diseño de barra EZ y están fabricadas con materiales de primera calidad. Cada barra está fabricada a partir de una sola pieza de acero sólido con revestimiento de uretano resistente al desgarro, los rayos UV y el agua, acabado de cromo duro y moleteado lateral con centro liso.",
+        "be": "EZ-штангі ZIVA® ZVO са сталёвым цэнтрам маюць класічны выгнуты дызайн і вырабляюцца з матэрыялаў высокай якасці. Кожная штанга — цэльная дэталь сталі з урэтанавым пакрыццём, устойлівым да разрываў, УФ-прамянёў і вады, з цвёрдым хромаваным пакрыццём і бакавой насечкай.\""
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F01-free-weights%2FZVO-BCPU-1606-GY-V2.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=ZVO%20EZ%20curl%20barbell%20how%20to",
+            "type": "instruction",
+            "title": "How to Use ZVO EZ curl barbell"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20barra%20EZ%20curl%20ZVO",
+            "type": "instruction",
+            "title": "Cómo usar barra EZ curl ZVO"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=EZ-%D1%88%D1%82%D0%B0%D0%BD%D0%B3%D0%B0%20ZVO%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць EZ-штанга ZVO"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the appropriate fixed-weight EZ curl barbell from the rack</li><li>Grip the angled bar and perform the exercise with control</li><li>Return the barbell to the rack after use</li></ol>",
+        "es": "<ol><li>Seleccione la barra EZ curl de peso fijo adecuada del soporte</li><li>Agarre la barra angulada y realice el ejercicio con control</li><li>Devuelva la barra al soporte después de usarla</li></ol>",
+        "be": "<ol><li>Абярыце патрэбную EZ-штангу фіксаванай вагі са стэлажа</li><li>Вазьміцеся за выгнутую штангу і выконвайце практыкаванне кантралявана</li><li>Пасля выкарыстання вярніце штангу на стэлаж</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-dcpu-1616",
+      "modelCode": "ZVO-DCPU-1616",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Urethane Grip Discs",
+        "es": "Discos de Agarre de Uretano ZVO",
+        "be": "Урэтанавыя дыскі ZVO"
+      },
+      "descriptions": {
+        "en": "The ZVO Urethane Grip Disc, made to fit any standard Olympic bar, is a precision cast disc with easy ID numbering, beveled edges, three handles for easy pick up from any angle, and an ultra-long-lasting UV-, water-, and tear-resistant urethane coating.",
+        "es": "El disco de agarre de uretano ZVO, fabricado para adaptarse a cualquier barra olímpica estándar, es un disco fundido con precisión con numeración de fácil identificación, bordes biselados, tres asas para recogerlo fácilmente desde cualquier ángulo, y un revestimiento de uretano ultra duradero resistente a los rayos UV, al agua y al desgarro.",
+        "be": "Урэтанавы дыск ZVO, разлічаны на любую стандартную алімпійскую штангу, дакладна адліты, мае лёгкую нумарацыю, скошаныя краі, тры ручкі для зручнага падымання з любога боку і звыштрывалае ўрэтанавае пакрыццё, устойлівае да УФ-прамянёў, вады і разрываў."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F01-free-weights%2FZVO-DCPU-1616-GY.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=ZVO%20grip%20discs%20how%20to",
+            "type": "instruction",
+            "title": "How to Use ZVO grip discs"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20discos%20de%20agarre%20ZVO",
+            "type": "instruction",
+            "title": "Cómo usar discos de agarre ZVO"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%B4%D1%8B%D1%81%D0%BA%D1%96%20ZVO%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць дыскі ZVO"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the appropriate weight discs</li><li>Load them evenly onto the barbell and secure with collars</li><li>Perform the exercise with control</li><li>Unload and return the discs after use</li></ol>",
+        "es": "<ol><li>Seleccione los discos de peso adecuados</li><li>Cárguelos de forma equilibrada en la barra y asegúrelos con topes</li><li>Realice el ejercicio con control</li><li>Descargue y devuelva los discos después de usarlos</li></ol>",
+        "be": "<ol><li>Абярыце патрэбныя дыскі</li><li>Раўнамерна нагрузіце іх на штангу і зафіксуйце заціскачамі</li><li>Выконвайце практыкаванне кантралявана</li><li>Пасля выкарыстання зніміце і вярніце дыскі</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zmt-ctkb-5626",
+      "modelCode": "ZMT-CTKB-5626",
+      "series": "ZMT",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "Signature Steel Competition Kettlebells",
+        "es": "Pesas Rusas de Competición Signature Steel",
+        "be": "Гіры Signature Steel для спаборніцтваў"
+      },
+      "descriptions": {
+        "en": "The Signature Steel Competition Kettlebells by Steve Cotter are made to be absolutely unbreakable, with a crack-, corrosion-, and scratch-resistant black powder coating, vibrant yellow easy ID numbering, and a full steel handle and bell.",
+        "es": "Las pesas rusas de competición de acero ZIVA® Signature de Steve Cotter están diseñadas para ser absolutamente irrompibles. Cuentan con un recubrimiento de polvo negro resistente a grietas, corrosión y arañazos, numeración amarilla de fácil identificación, y un mango y campana de acero completo.",
+        "be": "Гіры Signature Steel для спаборніцтваў ад Стыва Котэра распрацаваны так, каб быць практычна непашкоджанымі: пакрыццё чорным парашковым фарбавальнікам, устойлівае да трэшчын, карозіі і драпін, яркая жоўтая нумарацыя і суцэльная сталёвая ручка і корпус."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZMT-CTKB-5626-BK_V2.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=competition%20kettlebell%20how%20to",
+            "type": "instruction",
+            "title": "How to Use competition kettlebell"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20pesa%20rusa%20de%20competici%C3%B3n",
+            "type": "instruction",
+            "title": "Cómo usar pesa rusa de competición"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%B3%D1%96%D1%80%D0%B0%20%D0%B4%D0%BB%D1%8F%20%D1%81%D0%BF%D0%B0%D0%B1%D0%BE%D1%80%D0%BD%D1%96%D1%86%D1%82%D0%B2%D0%B0%D1%9E%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць гіра для спаборніцтваў"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the appropriate kettlebell weight</li><li>Grip the handle with both hands or one hand depending on the movement</li><li>Perform the exercise (swing, clean, snatch) with control</li><li>Return the kettlebell to the rack after use</li></ol>",
+        "es": "<ol><li>Seleccione el peso de pesa rusa adecuado</li><li>Agarre el mango con ambas manos o una mano según el movimiento</li><li>Realice el ejercicio (swing, clean, snatch) con control</li><li>Devuelva la pesa rusa al soporte después de usarla</li></ol>",
+        "be": "<ol><li>Абярыце патрэбную вагу гіры</li><li>Вазьміцеся за ручку адной ці дзвюма рукамі ў залежнасці ад руху</li><li>Выконвайце практыкаванне (мах, узяцце, рывок) кантралявана</li><li>Пасля выкарыстання вярніце гірю на стэлаж</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-lbhc-2953",
+      "modelCode": "ZVO-LBHC-2953",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Olympic Bars",
+        "es": "Barras Olímpicas ZVO",
+        "be": "Алімпійскія штангі ZVO"
+      },
+      "descriptions": {
+        "en": "ZVO Olympic Bars come in a variety of shapes and sizes, each suited to different exercises yet versatile enough for a broad range of uses, made from alloy steel with a chromed or black oxide surface finish and knurled grip handles.",
+        "es": "Las barras olímpicas ZVO están fabricadas en acero de aleación con acabado cromado o de óxido negro y mangos moleteados, y vienen en una variedad de formas y tamaños adecuados para diferentes ejercicios.",
+        "be": "Алімпійскія штангі ZVO вырабляюцца з леграванай сталі з хромаваным або чорнаакісленым пакрыццём і насечкай на ручках, у розных формах і памерах пад розныя практыкаванні."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZVO-LBHC-2953-olympic-bar-1.8.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Olympic%20bar%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Olympic bar"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20barra%20ol%C3%ADmpica",
+            "type": "instruction",
+            "title": "Cómo usar barra olímpica"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%B0%D0%BB%D1%96%D0%BC%D0%BF%D1%96%D0%B9%D1%81%D0%BA%D0%B0%D1%8F%20%D1%88%D1%82%D0%B0%D0%BD%D0%B3%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць алімпійская штанга"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the Olympic bar and load the desired weight plates evenly, securing with collars</li><li>Perform the exercise with a controlled tempo</li><li>Unload and return the bar after use</li></ol>",
+        "es": "<ol><li>Seleccione la barra olímpica y cargue los discos deseados de forma equilibrada, asegurándolos con topes</li><li>Realice el ejercicio con un ritmo controlado</li><li>Descargue y devuelva la barra después de usarla</li></ol>",
+        "be": "<ol><li>Абярыце алімпійскую штангу і раўнамерна нагрузіце дыскі, зафіксаваўшы заціскачамі</li><li>Выконвайце практыкаванне ў кантраляваным тэмпе</li><li>Пасля выкарыстання зніміце дыскі і вярніце штангу</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-hcob-2966",
+      "modelCode": "ZVO-HCOB-2966",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Olympic EZ Curl Bar 1.2 m",
+        "es": "Barra EZ Curl Olímpica ZVO 1,2 m",
+        "be": "Алімпійская EZ-штанга ZVO 1,2 м"
+      },
+      "descriptions": {
+        "en": "The ZVO Olympic EZ Curl Bar is made from alloy steel with a chromed surface finish and knurled grip handles, sized at 1.2 m with a 30 mm diameter for curls and other angled-grip exercises.",
+        "es": "La barra EZ curl olímpica ZVO está fabricada en acero de aleación con acabado cromado y mangos moleteados, con una longitud de 1,2 m y un diámetro de 30 mm, pensada para curls y otros ejercicios de agarre angulado.",
+        "be": "Алімпійская EZ-штанга ZVO вырабляецца з леграванай сталі з хромаваным пакрыццём і насечкай, даўжынёй 1,2 м і дыяметрам 30 мм, для згінанняў і іншых практыкаванняў з выгнутым хватам."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZVO-HCOB-2966-olympic-ez-curl-bar.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Olympic%20EZ%20curl%20bar%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Olympic EZ curl bar"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20barra%20EZ%20curl%20ol%C3%ADmpica",
+            "type": "instruction",
+            "title": "Cómo usar barra EZ curl olímpica"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%B0%D0%BB%D1%96%D0%BC%D0%BF%D1%96%D0%B9%D1%81%D0%BA%D0%B0%D1%8F%20EZ-%D1%88%D1%82%D0%B0%D0%BD%D0%B3%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць алімпійская EZ-штанга"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the EZ curl bar and load the desired weight plates evenly, securing with collars</li><li>Grip the angled sections and perform the exercise with control</li><li>Unload and return the bar after use</li></ol>",
+        "es": "<ol><li>Seleccione la barra EZ curl y cargue los discos deseados de forma equilibrada, asegurándolos con topes</li><li>Agarre las secciones anguladas y realice el ejercicio con control</li><li>Descargue y devuelva la barra después de usarla</li></ol>",
+        "be": "<ol><li>Абярыце EZ-штангу і раўнамерна нагрузіце дыскі, зафіксаваўшы заціскачамі</li><li>Вазьміцеся за выгнутыя ўчасткі і выконвайце практыкаванне кантралявана</li><li>Пасля выкарыстання зніміце дыскі і вярніце штангу</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "length-1.2m",
+          "diameter-30mm"
+        ]
+      }
+    },
+    {
+      "id": "zft-hcob-2965",
+      "modelCode": "ZFT-HCOB-2965",
+      "series": "ZFT",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Olympic Tricep Bar 76 cm",
+        "es": "Barra de Tríceps Olímpica ZVO 76 cm",
+        "be": "Алімпійская трыцэпс-штанга ZVO 76 см"
+      },
+      "descriptions": {
+        "en": "The ZVO Olympic 76 cm Tricep Bar is made from alloy steel with a chromed or black oxide surface finish and knurled grip handles, sized for close-grip pressing and triceps-focused movements.",
+        "es": "La barra de tríceps olímpica ZVO de 76 cm está fabricada en acero de aleación con acabado cromado o de óxido negro y mangos moleteados, pensada para press con agarre cerrado y movimientos enfocados en el tríceps.",
+        "be": "Алімпійская трыцэпс-штанга ZVO даўжынёй 76 см вырабляецца з леграванай сталі з хромаваным або чорнаакісленым пакрыццём і насечкай, для жыму вузкім хватам і практыкаванняў на трыцэпс."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F04-studio%2FZFT-HCOB-2965-tricep-bar.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Olympic%20tricep%20bar%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Olympic tricep bar"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20barra%20de%20tr%C3%ADceps%20ol%C3%ADmpica",
+            "type": "instruction",
+            "title": "Cómo usar barra de tríceps olímpica"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%82%D1%80%D1%8B%D1%86%D1%8D%D0%BF%D1%81-%D1%88%D1%82%D0%B0%D0%BD%D0%B3%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць трыцэпс-штанга"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the tricep bar and load the desired weight plates evenly, securing with collars</li><li>Grip the parallel handles and perform the exercise with control</li><li>Unload and return the bar after use</li></ol>",
+        "es": "<ol><li>Seleccione la barra de tríceps y cargue los discos deseados de forma equilibrada, asegurándolos con topes</li><li>Agarre las manijas paralelas y realice el ejercicio con control</li><li>Descargue y devuelva la barra después de usarla</li></ol>",
+        "be": "<ol><li>Абярыце трыцэпс-штангу і раўнамерна нагрузіце дыскі, зафіксаваўшы заціскачамі</li><li>Вазьміцеся за паралельныя ручкі і выконвайце практыкаванне кантралявана</li><li>Пасля выкарыстання зніміце дыскі і вярніце штангу</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "length-76cm"
+        ]
+      }
+    },
+    {
+      "id": "zvo-pbhc-2936",
+      "modelCode": "ZVO-PBHC-2936",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Olympic Hex Trap Bar",
+        "es": "Barra Hexagonal Olímpica ZVO",
+        "be": "Алімпійская шасцікутная штанга ZVO"
+      },
+      "descriptions": {
+        "en": "The ZVO Olympic Hex Trap Bar, 1.4 m with a 25 mm diameter, is made from alloy steel with a chromed surface finish and knurled grip handles, letting the lifter stand inside the frame for a more natural deadlift and shrug path.",
+        "es": "La barra hexagonal olímpica ZVO, de 1,4 m y 25 mm de diámetro, está fabricada en acero de aleación con acabado cromado y mangos moleteados, permitiendo al usuario situarse dentro del marco para una trayectoria más natural en el peso muerto y encogimientos.",
+        "be": "Алімпійская шасцікутная штанга ZVO даўжынёй 1,4 м і дыяметрам 25 мм вырабляецца з леграванай сталі з хромаваным пакрыццём і насечкай, дазваляе стаяць унутры рамы для больш натуральнай траекторыі станавой цягі і паднімання плячэй."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZVO-PBHC-2936-olympic-hex-trap-bar.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=hex%20trap%20bar%20how%20to",
+            "type": "instruction",
+            "title": "How to Use hex trap bar"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20barra%20hexagonal",
+            "type": "instruction",
+            "title": "Cómo usar barra hexagonal"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%88%D0%B0%D1%81%D1%86%D1%96%D0%BA%D1%83%D1%82%D0%BD%D0%B0%D1%8F%20%D1%88%D1%82%D0%B0%D0%BD%D0%B3%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць шасцікутная штанга"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Load the desired weight plates evenly onto both sides, securing with collars</li><li>Step inside the frame and grip the side handles</li><li>Perform the deadlift or shrug with control</li><li>Unload and return the bar after use</li></ol>",
+        "es": "<ol><li>Cargue los discos deseados de forma equilibrada en ambos lados, asegurándolos con topes</li><li>Colóquese dentro del marco y agarre las manijas laterales</li><li>Realice el peso muerto o encogimiento con control</li><li>Descargue y devuelva la barra después de usarla</li></ol>",
+        "be": "<ol><li>Раўнамерна нагрузіце дыскі з абодвух бакоў, зафіксаваўшы заціскачамі</li><li>Станьце ўнутры рамы і вазьміцеся за бакавыя ручкі</li><li>Выканайце станавую цягу або паднiманне плячэй кантралявана</li><li>Пасля выкарыстання зніміце дыскі і вярніце штангу</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "length-1.4m",
+          "diameter-25mm"
+        ]
+      }
+    },
+    {
+      "id": "zvo-pbhc-2933",
+      "modelCode": "ZVO-PBHC-2933",
+      "series": "ZVO",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "Multi-Grip Swiss Bar",
+        "es": "Barra Suiza Multiagarre",
+        "be": "Швейцарская штанга з некалькімі хватамі"
+      },
+      "descriptions": {
+        "en": "The Multi-Grip Swiss Bar is a heavy-duty specialty barbell with a black oxide-coated grip area, hard chromed sleeves, and knurled grips at multiple angles for muscle isolation, rated to 200 kg loading with a limited lifetime warranty.",
+        "es": "La barra suiza multiagarre es una barra especializada de alta resistencia con área de agarre recubierta en óxido negro, mangas cromadas y agarres moleteados en múltiples ángulos para aislar grupos musculares, con capacidad de carga de 200 kg y garantía limitada de por vida.",
+        "be": "Швейцарская штанга з некалькімі хватамі — трывалая спецыялізаваная штанга з чорнаакісленай зонай хвату, хромаванымі рукавамі і насечкай пад рознымі вугламі для ізаляцыі мышцаў, разлічаная на нагрузку да 200 кг."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2FStrength%2FZVO-PBHC-2933.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=multi-grip%20Swiss%20bar%20how%20to",
+            "type": "instruction",
+            "title": "How to Use multi-grip Swiss bar"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20barra%20suiza%20multiagarre",
+            "type": "instruction",
+            "title": "Cómo usar barra suiza multiagarre"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%88%D0%B2%D0%B5%D0%B9%D1%86%D0%B0%D1%80%D1%81%D0%BA%D0%B0%D1%8F%20%D1%88%D1%82%D0%B0%D0%BD%D0%B3%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць швейцарская штанга"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Load the desired weight plates evenly onto both sides, securing with collars</li><li>Choose one of the multiple grip angles</li><li>Perform the press or row with control</li><li>Unload and return the bar after use</li></ol>",
+        "es": "<ol><li>Cargue los discos deseados de forma equilibrada en ambos lados, asegurándolos con topes</li><li>Elija uno de los múltiples ángulos de agarre</li><li>Realice el press o remo con control</li><li>Descargue y devuelva la barra después de usarla</li></ol>",
+        "be": "<ol><li>Раўнамерна нагрузіце дыскі з абодвух бакоў, зафіксаваўшы заціскачамі</li><li>Абярыце адзін з некалькіх вуглоў хвату</li><li>Выканайце жым або цягу кантралявана</li><li>Пасля выкарыстання зніміце дыскі і вярніце штангу</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "weight-loading-200kg",
+          "multiple-grip-angles"
+        ]
+      }
+    },
+    {
+      "id": "zex-icbp-tp08",
+      "modelCode": "ZEX-ICBP-TP08",
+      "series": "ZEX",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "EX Olympic Incline Bench",
+        "es": "Banco Inclinado Olímpico EX",
+        "be": "Нахільная алімпійская лаўка EX"
+      },
+      "descriptions": {
+        "en": "The EX Olympic Incline Bench has a heavy-duty steel tube structure with a rust- and scratch-resistant black powder coat, set at a precise 45-degree angle with an adjustable, foam-padded seat and 6 built-in chrome-coated storage posts for weight plates.",
+        "es": "El banco inclinado olímpico EX tiene una estructura de tubo de acero resistente con acabado en polvo negro resistente al óxido y a los arañazos, colocado en un ángulo preciso de 45 grados, con asiento acolchado ajustable y 6 postes cromados incorporados para placas de pesas.",
+        "be": "Нахільная алімпійская лаўка EX мае трывалую канструкцыю са сталёвых труб з чорным парашковым пакрыццём, устаноўленая пад дакладным вуглом 45 градусаў, з рэгулюемым мяккім сядзеннем і 6 убудаванымі хромаванымі трымальнікамі для дыскаў."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F01-free-weights%2F2025%2FZEX-ICBP-TP08.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Olympic%20incline%20bench%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Olympic incline bench"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20banco%20inclinado%20ol%C3%ADmpico",
+            "type": "instruction",
+            "title": "Cómo usar banco inclinado olímpico"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%BD%D0%B0%D1%85%D1%96%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F%20%D0%BB%D0%B0%D1%9E%D0%BA%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць нахільная лаўка"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Adjust the seat to a comfortable position under the fixed 45-degree back pad</li><li>Lie back and perform the pressing exercise with a spotter if using heavy loads</li><li>Rack the bar on the built-in storage posts after use</li></ol>",
+        "es": "<ol><li>Ajuste el asiento a una posición cómoda bajo el respaldo fijo de 45 grados</li><li>Recuéstese y realice el ejercicio de press con un ayudante si usa cargas pesadas</li><li>Coloque la barra en los postes de almacenamiento incorporados después de usarla</li></ol>",
+        "be": "<ol><li>Адрэгулюйце сядзенне пад фіксаваным нахілам 45 градусаў</li><li>Лягце і выканайце жым, пры вялікай вазе — з падстрахоўкай</li><li>Пасля выкарыстання пакладзіце штангу на ўбудаваныя трымальнікі</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "45-degree-incline",
+          "six-storage-posts"
+        ]
+      }
+    },
+    {
+      "id": "zex-xfid-6762",
+      "modelCode": "ZEX-XFID-6762",
+      "series": "ZEX",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "EX F-I-D Bench 2.0",
+        "es": "Banco F-I-D 2.0 EX",
+        "be": "Шматпазіцыйная лаўка EX F-I-D 2.0"
+      },
+      "descriptions": {
+        "en": "The EX F-I-D Bench 2.0 is a versatile, stable and comfortable bench with two points of adjustment at the seat bottom and back, letting users perform a wide variety of chest, shoulder and other exercises with high-durability double-stitched cushioning.",
+        "es": "El Banco F-I-D 2.0 EX es un banco versátil, estable y cómodo con dos puntos de ajuste en el asiento y el respaldo, que permite a los usuarios realizar una amplia variedad de ejercicios de pecho, hombro y otros con un acolchado de alta durabilidad de doble costura.",
+        "be": "Шматпазіцыйная лаўка EX F-I-D 2.0 — універсальная, устойлівая і зручная лаўка з дзвюма кропкамі рэгуліроўкі сядзення і спінкі, дазваляе выконваць шырокі спектр практыкаванняў на грудзі, плечы і іншыя мышцы."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F01-free-weights%2FZEX-XFID-6762_V2.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=F-I-D%20bench%20how%20to",
+            "type": "instruction",
+            "title": "How to Use F-I-D bench"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20banco%20F-I-D",
+            "type": "instruction",
+            "title": "Cómo usar banco F-I-D"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%88%D0%BC%D0%B0%D1%82%D0%BF%D0%B0%D0%B7%D1%96%D1%86%D1%8B%D0%B9%D0%BD%D0%B0%D1%8F%20%D0%BB%D0%B0%D1%9E%D0%BA%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць шматпазіцыйная лаўка"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Adjust the seat and backrest to the desired flat, incline or decline position</li><li>Lie or sit on the bench and perform the exercise with control</li><li>Return the bench to a neutral position after use</li></ol>",
+        "es": "<ol><li>Ajuste el asiento y el respaldo a la posición plana, inclinada o declinada deseada</li><li>Túmbese o siéntese en el banco y realice el ejercicio con control</li><li>Devuelva el banco a una posición neutral después de usarlo</li></ol>",
+        "be": "<ol><li>Адрэгулюйце сядзенне і спінку ў патрэбнае становішча — плоскае, нахільнае ці адхільнае</li><li>Лягце або сядзьце на лаўку і выконвайце практыкаванне кантралявана</li><li>Пасля выкарыстання вярніце лаўку ў нейтральнае становішча</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "flat-incline-decline-adjustable"
+        ]
+      }
+    },
+    {
+      "id": "zex-xflt-6752",
+      "modelCode": "ZEX-XFLT-6752",
+      "series": "ZEX",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "EX Flat Bench 2.0",
+        "es": "Banco Plano 2.0 EX",
+        "be": "Плоская лаўка EX 2.0"
+      },
+      "descriptions": {
+        "en": "The EX Flat Bench 2.0 has a high quality double-stitched cushion and a supremely stable structure, featuring a 3 mm thick steel frame with scratch-, rust-, and wear-resistant black powder coating.",
+        "es": "El banco plano 2.0 EX cuenta con un cojín de doble costura de alta calidad y una estructura sumamente estable, con un marco de acero de 3 mm de espesor y recubrimiento en polvo negro resistente a rayones, óxido y desgaste.",
+        "be": "Плоская лаўка EX 2.0 мае якасную двайную прашыўку і вельмі ўстойлівую канструкцыю: сталёвая рама таўшчынёй 3 мм з чорным парашковым пакрыццём, устойлівым да драпін, іржы і зносу."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F01-free-weights%2FZEX-XFLT-6752_V2.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=flat%20bench%20how%20to",
+            "type": "instruction",
+            "title": "How to Use flat bench"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20banco%20plano",
+            "type": "instruction",
+            "title": "Cómo usar banco plano"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%BF%D0%BB%D0%BE%D1%81%D0%BA%D0%B0%D1%8F%20%D0%BB%D0%B0%D1%9E%D0%BA%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць плоская лаўка"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Lie on the bench with feet flat on the floor</li><li>Perform the pressing or dumbbell exercise with control</li><li>Rack the weights safely after use</li></ol>",
+        "es": "<ol><li>Túmbese en el banco con los pies apoyados en el suelo</li><li>Realice el ejercicio de press o con mancuernas con control</li><li>Guarde las pesas de forma segura después de usarlas</li></ol>",
+        "be": "<ol><li>Лягце на лаўку, ногі паставьце на падлогу</li><li>Выканайце жым або практыкаванне з гантэлямі кантралявана</li><li>Пасля выкарыстання бяспечна пакладзіце важкасці</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "3mm-steel-frame"
+        ]
+      }
+    },
+    {
+      "id": "zsl-tdym-0250",
+      "modelCode": "ZSL-TDYM-0250",
+      "series": "ZSL",
+      "category": "accessories",
+      "kind": "accessory",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "TPE Deluxe Yoga Mats",
+        "es": "Esterillas de Yoga Deluxe TPE",
+        "be": "Дэлюкс-кілімкі для ёгі TPE"
+      },
+      "descriptions": {
+        "en": "The TPE Deluxe Yoga Mat gives users a comfy cushion while preventing slippage of hands and feet thanks to a wavy textured surface, stays secure with a high-traction textured bottom, and its closed-cell formulation prevents absorption of liquid.",
+        "es": "La esterilla de yoga ZIVA® TPE Deluxe ofrece a los usuarios una cómoda amortiguación que evita el deslizamiento de manos y pies gracias a su superficie con textura ondulada, se mantiene segura gracias a su base texturizada de alta tracción, y su fórmula de celdas cerradas evita la absorción de líquidos.",
+        "be": "Дэлюкс-кілімок для ёгі TPE забяспечвае зручную амартызацыю і не дазваляе рукам і нагам слізгаць дзякуючы хвалістай тэкстуры паверхні, трымаецца на месцы дзякуючы тэкстураванай ніжняй частцы з высокім счапленнем, а закрытаячэйкавая структура не ўбірае вадкасць."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZSL-TDYM-0250-deluxe-yoga-mat.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=yoga%20mat%20how%20to",
+            "type": "instruction",
+            "title": "How to Use yoga mat"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20esterilla%20de%20yoga",
+            "type": "instruction",
+            "title": "Cómo usar esterilla de yoga"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%BA%D1%96%D0%BB%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B4%D0%BB%D1%8F%20%D1%91%D0%B3%D1%96%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць кілімок для ёгі"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Unroll the mat on a flat, clean surface</li><li>Perform floor exercises, stretches or yoga poses on the textured surface</li><li>Wipe down and return the mat to storage after use</li></ol>",
+        "es": "<ol><li>Desenrolle la esterilla sobre una superficie plana y limpia</li><li>Realice ejercicios de suelo, estiramientos o posturas de yoga sobre la superficie texturizada</li><li>Limpie y guarde la esterilla después de usarla</li></ol>",
+        "be": "<ol><li>Раскачайце кілімок на роўнай чыстай паверхні</li><li>Выконвайце практыкаванні на падлозе, расцяжку ці позы ёгі на тэкстураванай паверхні</li><li>Пасля выкарыстання пратрыце і прыбярыце кілімок</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-spsb-6882",
+      "modelCode": "ZVO-SPSB-6882",
+      "series": "ZVO",
+      "category": "accessories",
+      "kind": "accessory",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Slam Balls",
+        "es": "Balones Slam Ball ZVO",
+        "be": "М’ячы Slam Ball ZVO"
+      },
+      "descriptions": {
+        "en": "The ZVO Slam Ball features a weighted, sand-filled center wrapped in a tough PVC shell with gripping tire tread skin, made to be thrown with abandon for overhead slams, woodchoppers, Russian twists and other full-body exercises.",
+        "es": "El Slam Ball ZVO cuenta con un centro lastrado y relleno de arena, envuelto en una resistente carcasa de PVC con una banda de rodadura de neumático de gran agarre, diseñado para lanzarse repetidamente en slams por encima de la cabeza, leñadores, giros rusos y otros ejercicios de cuerpo completo.",
+        "be": "М’яч Slam Ball ZVO мае цяжкі пясочны цэнтр, абгорнуты трывалай абалонкай з ПВХ з рэльефнай паверхняй для добрага хвату, прызначаны для кідкоў зверху, паваротаў і іншых практыкаванняў на ўсё цела."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZVO-SPSB-6882_V2.jpg",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=slam%20ball%20how%20to",
+            "type": "instruction",
+            "title": "How to Use slam ball"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20bal%C3%B3n%20slam%20ball",
+            "type": "instruction",
+            "title": "Cómo usar balón slam ball"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%BC%D1%8F%D1%87%20slam%20ball%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць мяч slam ball"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the appropriate slam ball weight</li><li>Lift the ball overhead and slam it to the floor with control</li><li>Pick it up and repeat, or return it to storage after use</li></ol>",
+        "es": "<ol><li>Seleccione el peso de balón slam ball adecuado</li><li>Levante el balón por encima de la cabeza y golpéelo contra el suelo con control</li><li>Recójalo y repita, o devuélvalo a su lugar después de usarlo</li></ol>",
+        "be": "<ol><li>Абярыце патрэбную вагу мяча</li><li>Падыміце мяч над галавой і кантралявана кіньце яго на падлогу</li><li>Падыміце і паўтарыце, ці пасля выкарыстання вярніце мяч на месца</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-sppb-6387",
+      "modelCode": "ZVO-SPPB-6387",
+      "series": "ZVO",
+      "category": "accessories",
+      "kind": "accessory",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Premium Power Core Bags 2.0",
+        "es": "Bolsas Power Core Premium 2.0 ZVO",
+        "be": "Мяшкі Power Core Premium 2.0 ZVO"
+      },
+      "descriptions": {
+        "en": "The ZVO Premium Power Core Bag features a rugged synthetic leather outer coating, premium quality high-strength stitching, and heavy-duty nylon straps with ergonomic handles, available in 2.5 kg increments from 5-25 kg plus a 30 kg size.",
+        "es": "La bolsa Power Core Premium ZVO cuenta con un recubrimiento exterior de piel sintética reforzado, costuras y bordados de calidad premium, y correas de nailon de gran durabilidad con asas ergonómicas, disponible en incrementos de 2,5 kg desde 5 hasta 25 kg además de una versión de 30 kg.",
+        "be": "Мяшок Power Core Premium ZVO мае трывалае знешняе пакрыццё з сінтэтычнай скуры, якасныя трывалыя швы і трывалыя нейлонавыя рамяні з эрганомічнымі ручкамі, у варыянтах вагі ад 5 да 25 кг з крокам 2,5 кг, а таксама 30 кг."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZVO-SPPB-6387-premium-power-core-bag.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=power%20core%20bag%20how%20to",
+            "type": "instruction",
+            "title": "How to Use power core bag"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20bolsa%20power%20core",
+            "type": "instruction",
+            "title": "Cómo usar bolsa power core"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%BC%D1%8F%D1%88%D0%BE%D0%BA%20power%20core%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць мяшок power core"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Select the appropriate power bag weight</li><li>Grip the straps or handles depending on the movement</li><li>Perform compound exercises (cleans, presses, throws) with control</li><li>Return the bag to storage after use</li></ol>",
+        "es": "<ol><li>Seleccione el peso de bolsa adecuado</li><li>Sujete las correas o asas según el movimiento</li><li>Realice ejercicios compuestos (cleans, press, lanzamientos) con control</li><li>Devuelva la bolsa a su lugar después de usarla</li></ol>",
+        "be": "<ol><li>Абярыце патрэбную вагу мяшка</li><li>Вазьміцеся за рамяні ці ручкі ў залежнасці ад руху</li><li>Выконвайце комплексныя практыкаванні кантралявана</li><li>Пасля выкарыстання вярніце мяшок на месца</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zmt-glpy-5671",
+      "modelCode": "ZMT-GLPY-5671",
+      "series": "ZMT",
+      "category": "accessories",
+      "kind": "accessory",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "ZVO Glute Plyo Box",
+        "es": "Cajón Pliométrico para Glúteos ZVO",
+        "be": "Плайа-бокс ZVO для сядзічных мышцаў"
+      },
+      "descriptions": {
+        "en": "The ZVO Glute Plyo Box is specially designed to emphasize glute and calf activation with a sloping surface, covered in a high-durability PVC coat, that forces the feet, ankles and legs into optimal positions.",
+        "es": "El cajón pliométrico ZIVA® ZVO Glute Plyo Box está especialmente diseñado para enfatizar la activación de glúteos y pantorrillas con una superficie inclinada, recubierta con una capa de PVC de alta durabilidad, que coloca los pies, tobillos y piernas en las posiciones óptimas.",
+        "be": "Плайа-бокс ZIVA® ZVO для сядзічных мышцаў спецыяльна распрацаваны для актывацыі сядзічных і ікраножных мышцаў дзякуючы нахільнай паверхні з трывалым ПВХ-пакрыццём, якая ставіць ногі і галёнкі ў аптымальнае становішча."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZMT-GLPY-5671-glute-plyo-box.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=glute%20plyo%20box%20how%20to",
+            "type": "instruction",
+            "title": "How to Use glute plyo box"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20caj%C3%B3n%20pliom%C3%A9trico%20para%20gl%C3%BAteos",
+            "type": "instruction",
+            "title": "Cómo usar cajón pliométrico para glúteos"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%BF%D0%BB%D0%B0%D0%B9%D0%B0-%D0%B1%D0%BE%D0%BA%D1%81%20%D0%B4%D0%BB%D1%8F%20%D1%81%D1%8F%D0%B4%D0%B7%D1%96%D1%87%D0%BD%D1%8B%D1%85%20%D0%BC%D1%8B%D1%88%D1%86%D0%B0%D1%9E%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць плайа-бокс для сядзічных мышцаў"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Place the box on a flat, non-slip surface</li><li>Perform step-ups, hip thrusts or plyometric jumps using the sloped surface</li><li>Return the box to storage after use</li></ol>",
+        "es": "<ol><li>Coloque el cajón sobre una superficie plana y antideslizante</li><li>Realice subidas, hip thrusts o saltos pliométricos usando la superficie inclinada</li><li>Devuelva el cajón a su lugar después de usarlo</li></ol>",
+        "be": "<ol><li>Пастаўце бокс на роўную неслізготкую паверхню</li><li>Выконвайце ўскокі, hip thrust ці плайаметрычныя скачкі, выкарыстоўваючы нахільную паверхню</li><li>Пасля выкарыстання вярніце бокс на месца</li></ol>"
+      },
+      "specifications": {}
+    },
+    {
+      "id": "zvo-bubl-0564",
+      "modelCode": "ZVO-BUBL-0564",
+      "series": "ZVO",
+      "category": "accessories",
+      "kind": "accessory",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "Balance Ball 2.0",
+        "es": "Balón de Equilibrio 2.0",
+        "be": "Балансавы мяч 2.0"
+      },
+      "descriptions": {
+        "en": "The Balance Ball 2.0 is crafted with long-lasting, durable PVC for the ball surface and a tough PP platform and edging on the bottom, providing a commercial-grade functional training tool for low-impact, stress-reducing core and stabilizer exercises.",
+        "es": "El balón de equilibrio ZIVA® XP está fabricado con PVC duradero y resistente en la superficie de la pelota, y una plataforma y borde de PP resistente en la base, ofreciendo una herramienta de entrenamiento funcional de calidad comercial para ejercicios de bajo impacto que fortalecen el core y los músculos estabilizadores.",
+        "be": "Балансавы мяч ZIVA® XP выраблены з трывалага ПВХ на паверхні мяча і трывалай платформай з ПП па краях, — гэта функцыянальны трэнажор камерцыйнага ўзроўню для практыкаванняў з нізкай нагрузкай на мышцы кора і стабілізатары."
+      },
+      "images": [
+        {
+          "url": "https://res.cloudinary.com/dy1ralqpm/image/fetch/f_auto,c_limit,w_300,q_auto/https%3A%2F%2Fassets01.eu.ziva.com%2Fcommercial%2F02-functional-training%2FZVO-BUBL-0564-balance-ball_2.webp",
+          "source": "Hero image (Cloudinary fetch, w_300)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=balance%20ball%20how%20to",
+            "type": "instruction",
+            "title": "How to Use balance ball"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20bal%C3%B3n%20de%20equilibrio",
+            "type": "instruction",
+            "title": "Cómo usar balón de equilibrio"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%B1%D0%B0%D0%BB%D0%B0%D0%BD%D1%81%D0%B0%D0%B2%D1%8B%20%D0%BC%D1%8F%D1%87%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць балансавы мяч"
+          }
+        ]
+      },
+      "manuals": [],
+      "instructions": {
+        "en": "<ol><li>Place the balance ball platform on a flat, stable surface</li><li>Stand or sit on the ball to engage core and stabilizer muscles</li><li>Perform the exercise with control, using support nearby if needed</li><li>Return the ball to storage after use</li></ol>",
+        "es": "<ol><li>Coloque la plataforma del balón de equilibrio sobre una superficie plana y estable</li><li>Póngase de pie o siéntese sobre el balón para activar el core y los músculos estabilizadores</li><li>Realice el ejercicio con control, usando apoyo cercano si es necesario</li><li>Devuelva el balón a su lugar después de usarlo</li></ol>",
+        "be": "<ol><li>Пастаўце платформу балансавага мяча на роўную ўстойлівую паверхню</li><li>Устаньце ці сядзьце на мяч, каб задзейнічаць мышцы кора і стабілізатары</li><li>Выконвайце практыкаванне кантралявана, пры неабходнасці трымаючыся за апору</li><li>Пасля выкарыстання вярніце мяч на месца</li></ol>"
+      },
+      "specifications": {}
     }
   ]
 }

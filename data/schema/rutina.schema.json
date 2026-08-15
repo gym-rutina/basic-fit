@@ -31,9 +31,17 @@
           "description": "Sequential phase number, e.g. 1, 2, 3."
         },
         "gymId": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Numeric id joining data/gyms.json — identifies which gym's equipment subset this program was authored for."
+          "description": "Identifies which club this program was authored for. Accepts EITHER the legacy numeric id (1..7, joining the original 7 hand-entered Malaga gyms via LEGACY_CLUBS) OR a 32-hex club GUID from data/gyms/<CC>.json (D3) — both resolve to a club record, so a rutina.json exported before this feature keeps validating unmodified.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{32}$"
+            }
+          ]
         },
         "durationWeeks": {
           "type": "integer",
@@ -140,7 +148,7 @@
               "type": "object",
               "additionalProperties": false,
               "description": "One exercise: name, targeted muscle groups, equipment reference, and prescription.",
-              "required": ["name", "muscleGroups", "equipmentId", "sets", "reps", "restSeconds"],
+              "required": ["name", "muscleGroups", "sets", "reps", "restSeconds"],
               "properties": {
                 "name": {
                   "type": "string",
@@ -156,8 +164,8 @@
                   }
                 },
                 "equipmentId": {
-                  "type": "string",
-                  "description": "Equipment reference by id/modelCode — MUST exist in data/equipment.json. Never a free-text equipment name. Validated by scripts/validate-rutina.js's cross-check pass (not expressible in JSON Schema alone)."
+                  "type": ["string", "null"],
+                  "description": "Equipment reference by id — MUST exist in data/equipment.json OR this rutina's extraEquipment[] (R4.1). Never a free-text equipment name. Optional: absent or null means bodyweight (R3.2, X2) — the UI shows the exercise name only. Cross-checked by scripts/lib/rutina-validator.js (not expressible in JSON Schema alone)."
                 },
                 "sets": {
                   "type": "integer",
@@ -219,6 +227,61 @@
           "body": {
             "type": "string",
             "description": "Note body text."
+          }
+        }
+      }
+    },
+    "extraEquipment": {
+      "type": "array",
+      "description": "Per-rutina, LLM-proposed gear with no manufacturer identity (a band, a foam roller, a towel) — R3.3. Optional, no maxItems cap (DD-001). Ids in here plus the catalog's own ids form the valid equipmentId union for this rutina's exercises (R4.1); a gear id colliding with a catalog id is a validation error (AC23, checked by scripts/lib/rutina-validator.js, not expressible in JSON Schema alone).",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "names"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "Kebab-case slug. Must not collide with a catalog id in data/equipment.json (AC23)."
+          },
+          "kind": {
+            "const": "gear",
+            "description": "Always the literal string \"gear\" — the value equipment.schema.json deliberately rejects (M11, AC44c)."
+          },
+          "names": {
+            "type": "object",
+            "required": ["en", "es", "be"],
+            "properties": {
+              "en": { "type": "string", "minLength": 1 },
+              "es": { "type": "string", "minLength": 1 },
+              "be": { "type": "string", "minLength": 1 }
+            }
+          },
+          "category": {
+            "type": "string",
+            "description": "Optional free-text category — gear does not have to fit the catalog's 8-value enum."
+          },
+          "muscleGroup": {
+            "type": "object",
+            "properties": {
+              "primary": { "type": "array", "items": { "type": "string" } },
+              "secondary": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "descriptions": {
+            "type": "object",
+            "properties": {
+              "en": { "type": "string" },
+              "es": { "type": "string" },
+              "be": { "type": "string" }
+            }
+          },
+          "instructions": {
+            "type": "object",
+            "properties": {
+              "en": { "type": "string" },
+              "es": { "type": "string" },
+              "be": { "type": "string" }
+            }
           }
         }
       }

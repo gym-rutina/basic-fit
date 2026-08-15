@@ -151,6 +151,8 @@ export default {
   'catalog.categoryArms': 'Arms',
   'catalog.categoryCore': 'Core',
   'catalog.categoryLegs': 'Legs',
+  'catalog.categoryFreeWeights': 'Free weights',
+  'catalog.categoryAccessories': 'Accessories',
   'catalog.noResults': 'No results',
 
   // ── home (HomeScreen.jsx) ────────────────────────────────────────────────

@@ -71,6 +71,28 @@
             "Tirar con la espalda, no con los brazos"
           ],
           "videoQuery": "tutorial jalón al pecho"
+        },
+        {
+          "name": "Band Pull-Apart",
+          "muscleGroups": ["rear-deltoid", "rhomboids"],
+          "equipmentId": "resistance-band",
+          "sets": 3,
+          "reps": "15-20",
+          "restSeconds": 45,
+          "technique": [
+            "Brazos extendidos, separar la banda a la altura del pecho"
+          ]
+        },
+        {
+          "name": "Plancha",
+          "muscleGroups": ["core"],
+          "equipmentId": null,
+          "sets": 3,
+          "reps": "30s",
+          "restSeconds": 45,
+          "technique": [
+            "Cuerpo en línea recta, sin hundir la cadera"
+          ]
         }
       ]
     }
@@ -83,6 +105,13 @@
     {
       "title": "Progresión",
       "body": "Si completas todas las series con buena técnica y RIR > 3, sube el peso la próxima sesión."
+    }
+  ],
+  "extraEquipment": [
+    {
+      "id": "resistance-band",
+      "kind": "gear",
+      "names": { "en": "Resistance Band", "es": "Banda de Resistencia", "be": "Эластычная стужка" }
     }
   ]
 }

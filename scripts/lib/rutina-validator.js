@@ -64,22 +64,36 @@ function formatSchemaError(err) {
 }
 
 /**
- * Cross-check every days[].exercises[].equipmentId against a known-good
- * set of equipment ids. Null-safe on purpose: this must produce useful
- * output even when the input already failed schema validation and
- * `days`/`exercises` are missing, malformed, or not arrays at all.
+ * Cross-check every days[].exercises[].equipmentId against the union of the
+ * catalog and this rutina's own extraEquipment (R4.1). Null-safe on
+ * purpose: this must produce useful output even when the input already
+ * failed schema validation and `days`/`exercises`/`extraEquipment` are
+ * missing, malformed, or not arrays at all.
+ *
+ * tech-plan.md D10: `equipmentId` is now OPTIONAL (R3.2, X2 — bodyweight
+ * exercises). Both `undefined` (absent) and `null` (explicit) mean
+ * bodyweight and are skipped — not "not found". Today's early return
+ * covered only `undefined`; `null` used to fall through to `validIds.has(null)`
+ * and be wrongly reported as unresolved.
+ *
+ * The third parameter defaults to `data?.extraEquipment` so existing call
+ * sites — in particular `app/src/lib/validateImport.js`'s two-argument
+ * `validateRutina(parsed, equipmentData.equipment)` — keep working
+ * unchanged; the rutina's own extraEquipment is picked up automatically.
  *
  * @param {*} data - parsed rutina.json contents (may be structurally invalid)
  * @param {Array} equipmentArray - parsed data.equipment array from equipment.json
+ * @param {Array} [extraEquipment] - this rutina's own extraEquipment[]; defaults to data?.extraEquipment
  * @returns {string[]} one formatted error per unresolved equipmentId
  */
-function crossCheckEquipmentIds(data, equipmentArray) {
+function crossCheckEquipmentIds(data, equipmentArray, extraEquipment = data && data.extraEquipment) {
   const errors = [];
-  const validIds = new Set(
-    (Array.isArray(equipmentArray) ? equipmentArray : [])
+  const idsOf = (arr) =>
+    (Array.isArray(arr) ? arr : [])
       .map((item) => item && item.id)
-      .filter((id) => id !== undefined)
-  );
+      .filter((id) => id !== undefined);
+
+  const validIds = new Set([...idsOf(equipmentArray), ...idsOf(extraEquipment)]);
 
   const days = data && Array.isArray(data.days) ? data.days : [];
   days.forEach((day, dayIndex) => {
@@ -87,14 +101,49 @@ function crossCheckEquipmentIds(data, equipmentArray) {
     exercises.forEach((exercise, exerciseIndex) => {
       if (!exercise || typeof exercise !== 'object') return;
       const id = exercise.equipmentId;
-      if (id === undefined) return; // a missing id is already a schema error
+      if (id === undefined || id === null) return; // bodyweight (R3.2, X2, D10) — not "not found"
       if (!validIds.has(id)) {
         errors.push(
-          `days[${dayIndex}].exercises[${exerciseIndex}].equipmentId "${id}" not found in data/equipment.json`
+          `days[${dayIndex}].exercises[${exerciseIndex}].equipmentId "${id}" not found in data/equipment.json or extraEquipment`
         );
       }
     });
   });
+
+  return errors;
+}
+
+/**
+ * Detect extraEquipment ids that collide with an existing catalog id, or
+ * that are declared more than once within the same rutina (AC23). A
+ * collision is a validation error, not a silent shadow — a rutina that
+ * "redefines" `g3-s10` as gear would make every prior exercise referencing
+ * the real g3-s10 ambiguous.
+ *
+ * @param {Array} extraEquipment
+ * @param {Array} equipmentArray - parsed data.equipment array from equipment.json
+ * @returns {string[]}
+ */
+function findExtraEquipmentCollisions(extraEquipment, equipmentArray) {
+  const errors = [];
+  const catalogIds = new Set(
+    (Array.isArray(equipmentArray) ? equipmentArray : [])
+      .map((item) => item && item.id)
+      .filter((id) => id !== undefined)
+  );
+
+  const seen = new Set();
+  for (const gearItem of Array.isArray(extraEquipment) ? extraEquipment : []) {
+    const id = gearItem && gearItem.id;
+    if (id === undefined) continue;
+    if (catalogIds.has(id)) {
+      errors.push(`extraEquipment id "${id}" collides with an existing catalog id`);
+    }
+    if (seen.has(id)) {
+      errors.push(`extraEquipment id "${id}" is declared more than once`);
+    }
+    seen.add(id);
+  }
 
   return errors;
 }
@@ -136,6 +185,7 @@ function validateRutina(data, equipmentArray) {
 
   // Always run, even when schema validation failed above.
   errors.push(...crossCheckEquipmentIds(data, equipmentArray));
+  errors.push(...findExtraEquipmentCollisions(data && data.extraEquipment, equipmentArray));
 
   const { dayCount, exerciseCount } = countDaysAndExercises(data);
 
@@ -150,5 +200,6 @@ function validateRutina(data, equipmentArray) {
 module.exports = {
   validateRutina,
   crossCheckEquipmentIds,
+  findExtraEquipmentCollisions,
   formatSchemaError,
 };

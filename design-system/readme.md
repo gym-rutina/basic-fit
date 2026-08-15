@@ -6,7 +6,7 @@ A design system for building **training-routine SPAs** (rutina pages, equipment 
 
 - **Brand reference:** https://www.basic-fit.com/es-es/home (public marketing site, es-ES locale). Palette, tone and layout conventions were derived from it.
 - **Attached codebase:** `basicfit-rutina/` (local mount) — a personal multilingual (EN/ES/BE) toolset for BasicFit gyms:
-  - `equipment-catalog.html` — filterable catalog of 27 Matrix Aura machines (language switch EN/ES/BE, category filters, equipment cards with images, muscle tags, instructions, video/manual links, gym badges).
+  - `equipment-catalog.html` (historical) — the filterable catalog of 27 Matrix Aura machines this design system's `EquipmentCard`/catalog patterns were originally derived from (language switch EN/ES/BE, category filters, equipment cards with images, muscle tags, instructions, video/manual links, gym badges). **Deleted from the source repo** in the 2026-08-09 gym-directory-and-catalog feature — its 48-item, 8-category successor now lives only in the PWA's `app/src/screens/CatalogScreen.jsx` + `EquipmentCard.jsx`. The patterns below still hold; the file they were traced from no longer exists on disk.
   - `data/equipment.json`, `data/gyms.json`, `data/user-weights.json` — the data model these apps embed.
 - Equipment imagery comes from the Matrix CDN (`images.jhtassets.com`); it is hot-linked, not stored locally.
 
@@ -63,4 +63,4 @@ Basic-Fit's proprietary web typeface was not provided. **Archivo / Archivo Expan
 - `SKILL.md` — agent skill entry point.
 
 ### Intentional additions
-None beyond the source inventory. All components map 1:1 to patterns in `rutina_*.html` / `equipment-catalog.html`.
+None beyond the source inventory. All components map 1:1 to patterns in `rutina_*.html` and (historically) `equipment-catalog.html` — see the provenance note under Context & sources above; the equipment-catalog patterns now live on in the PWA's `CatalogScreen.jsx` + `EquipmentCard.jsx` instead of a standalone HTML file.

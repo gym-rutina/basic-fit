@@ -19,6 +19,8 @@ const CATEGORY_KEYS = {
   arms: 'catalog.categoryArms',
   core: 'catalog.categoryCore',
   legs: 'catalog.categoryLegs',
+  'free-weights': 'catalog.categoryFreeWeights',
+  accessories: 'catalog.categoryAccessories',
 };
 const CATEGORIES = ['all', ...new Set(EQUIPMENT.map((e) => e.category))];
 

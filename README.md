@@ -1,22 +1,24 @@
 # BasicFit Rutina
 
-A multilingual (EN/ES/BE) equipment catalog and training-routine PWA for BasicFit gyms featuring Matrix Aura series strength machines. Includes an offline-capable React PWA for tracking workouts, a static HTML catalog viewer, and an LLM-based routine authoring workflow.
+A multilingual (EN/ES/BE) equipment catalog and training-routine PWA for BasicFit gyms, covering Matrix Aura series strength machines plus ZIVA free weights and accessories. Includes an offline-capable React PWA for tracking workouts, a set of legacy static routine pages, and an LLM-based routine authoring workflow.
 
 ## Overview
 
-27 Matrix equipment items (25 Aura series + Smith Machine + Perfect Squat) across BasicFit locations. Each entry includes multilingual names and instructions (English, Spanish, Belarusian), product images, video links, PDF manuals, and muscle-group targeting.
+48 equipment items (29 machines, 14 free weights, 5 accessories — spanning the Matrix Aura line plus ZIVA free weights and accessories) across BasicFit locations. Each entry includes multilingual names and instructions (English, Spanish, Belarusian), product images, video links, PDF manuals, and muscle-group targeting.
 
 The **Rutina PWA** (`app/`) lets you import a `rutina.json` training program, log workout sessions with per-exercise weight and difficulty, review history, and export progress — all offline, no backend.
 
 ## Quick Start
 
-### Static catalog (no build required)
+### Static pages (no build required)
 
 ```bash
 npm install
 npm run serve
-# open http://localhost:3000/equipment-catalog.html
+# open http://localhost:3000/gyms.html or /rutina_*.html
 ```
+
+The standalone `equipment-catalog.html` viewer and its `npm run build-catalog` script were removed — the equipment catalog now lives only in the PWA's **Catálogo** tab. `data/equipment.json` still gets a maintenance pass via `npm run normalize-equipment` (see NPM Scripts below), it just no longer generates a static page.
 
 ### PWA (development)
 
@@ -60,7 +62,7 @@ basicfit-rutina/
 │       │   ├── HistoryScreen.jsx   # Past sessions + per-exercise trend
 │       │   ├── ProgressScreen.jsx  # Weight/volume/frequency progress charts
 │       │   ├── ExportScreen.jsx    # JSON + Markdown export
-│       │   └── CatalogScreen.jsx   # Equipment catalog (27 items, EN/ES/BE)
+│       │   └── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE)
 │       ├── lib/
 │       │   ├── db.js               # IndexedDB wrapper (idb): activeRutina, sessions, lastWeights
 │       │   ├── sessionMachine.js   # Pure session-state reducer
@@ -75,21 +77,26 @@ basicfit-rutina/
 │       └── data/
 │           └── equipment.js        # Imports data/equipment.json at build time
 ├── data/
-│   ├── equipment.json              # Complete equipment catalog (27 items)
-│   ├── gyms.json                   # BasicFit locations
+│   ├── equipment.json              # Complete equipment catalog (48 items: 29 machine / 14 free-weight / 5 accessory)
+│   ├── gyms.json                   # Legacy 7 hand-entered Malaga gyms (still the app's only club source pre-Build B)
+│   ├── gyms/                       # Scraped multi-country club directory — NOT YET GENERATED, see below
+│   │   ├── index.json              #   (produced by `npm run scrape-gyms`; does not exist until a maintainer runs it)
+│   │   └── <CC>.json               #   one file per country (NL/BE/FR/LU/ES/DE)
 │   ├── user-weights.json           # Default weights per equipment
 │   ├── examples/
-│   │   └── phase1-monday.json      # Example rutina.json for first-run import
+│   │   └── phase1-monday.json      # Example rutina.json for first-run import (incl. a gear + a bodyweight exercise)
 │   └── schema/
 │       ├── equipment.schema.json
 │       └── rutina.schema.json      # Schema for training programs
 ├── design-system/                  # Component library (tokens, primitives, composites)
 ├── scripts/                        # Node.js build and scraping scripts
 │   ├── lib/
-│   │   └── rutina-validator.js     # Shared rutina.json validator (isomorphic, used by PWA)
-│   ├── build-catalog.js            # Embeds equipment data into equipment-catalog.html
+│   │   ├── rutina-validator.js     # Shared rutina.json validator (isomorphic, used by PWA)
+│   │   └── gym-scrape-core.js      # Pure scraper core (parsing/pagination/city grouping) — no fs/path/process, unit-tested with no network
+│   ├── scrape-gyms.js              # I/O shell for the club directory scrape — network + writes data/gyms/ (see below)
+│   ├── normalize-equipment.js      # Fixup pass over data/equipment.json — writes only when content actually changes
 │   ├── build-rutina.js             # Embeds data into legacy rutina_*.html files
-│   ├── validate-data.js            # Schema validation for equipment.json
+│   ├── validate-data.js            # Schema + directory validation for equipment.json and data/gyms/
 │   └── validate-rutina.js          # CLI validator for rutina.json files
 ├── tests/
 │   └── viewport-check.js           # Puppeteer: no horizontal scroll + tab-bar row-wrap at 280/360/390/412/768px
@@ -100,7 +107,6 @@ basicfit-rutina/
 │   ├── llm-rutina-prompt.es.md         # Spanish / Español
 │   └── llm-rutina-prompt.be.md         # Belarusian / Беларуская
 ├── gyms.html                           # Static gym list (id + name + address)
-├── equipment-catalog.html          # Static catalog (data embedded, works offline)
 ├── rutina_*.html                   # Legacy static routine pages
 ├── vite.config.js                  # Vite + React + vite-plugin-pwa config
 └── vitest.config.js                # Vitest config (jsdom, app/src/**/*.test.{js,jsx})
@@ -116,10 +122,11 @@ basicfit-rutina/
 | `npm test` | Run Vitest test suites (lib modules + component tests) |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run test:viewport` | Puppeteer viewport regression: 280/360/390/412/768px × routes (requires `npm run preview` running) |
-| `npm run validate-data` | Validate `data/equipment.json` against its schema |
-| `npm run validate-rutina -- <path>` | Validate a `rutina.json` file against its schema + cross-check `equipmentId` values |
+| `npm run validate-data` | Validate `data/equipment.json` (and `data/gyms/`, when present) against their required shape |
+| `npm run validate-rutina -- <path>` | Validate a `rutina.json` file against its schema + cross-check `equipmentId`/`extraEquipment` values |
 | `npm run serve` | Serve the repo root on port 3000 (for static HTML pages) |
-| `npm run build-catalog` | Embed equipment data into `equipment-catalog.html` |
+| `npm run normalize-equipment` | Fixup pass over `data/equipment.json` (resolves video-search placeholders, rewrites dead JHT manual URLs). Writes the file **only when something actually changed** — safe to run repeatedly, and a no-op run prints a message instead of rewriting the file. |
+| `npm run scrape-gyms` | Scrapes the BasicFit club directory (6 countries) from `basic-fit.com`'s internal storefront endpoints and writes `data/gyms/index.json` + one file per country. Network-only — nothing in the test suite runs it. **Has not been run in this repo yet** (see "Data maintenance scripts" below). |
 | `npm run build-rutina` | Embed equipment + weights into legacy `rutina_*.html` files |
 | `npm run extract-images` | Scrape equipment images from Matrix product pages (Puppeteer) |
 
@@ -159,8 +166,8 @@ npm run test:viewport    # verify no horizontal overflow and tab-bar stays singl
 ### Running tests
 
 ```bash
-npm test                 # Vitest suites: sessionMachine, exportFormat, today, db, validateImport, ProgramScreen, ConfirmSheet, useInstallPrompt
-npm run validate-data    # data integrity gate (27 equipment items)
+npm test                 # Vitest suites: sessionMachine, exportFormat, today, db, validateImport, ProgramScreen, ConfirmSheet, useInstallPrompt, scraper/normalize/validator scripts
+npm run validate-data    # data integrity gate (48 equipment items; also validates data/gyms/ when present)
 ```
 
 ### Installing the PWA
@@ -168,6 +175,48 @@ npm run validate-data    # data integrity gate (27 equipment items)
 After `npm run preview` (or deploying `dist/`), open the app in Chrome/Edge on Android or Safari on iOS and use the browser's "Add to Home Screen" / "Install" prompt. The manifest at `app/public/manifest.json` uses a relative `start_url` and `scope` so it works on any static host.
 
 On Chromium-based browsers (Chrome, Edge, Samsung Internet), the app also shows an **InstallBanner** at the top of the screen when the browser fires the `beforeinstallprompt` event. Tap **Instalar** to trigger the native install dialog without needing the browser menu. Tap **Ahora no** to dismiss it for the session; the banner won't reappear once the app is installed.
+
+## Data maintenance scripts
+
+Two Node scripts keep `data/` current. Both replace the old `scripts/build-catalog.js` (deleted, along with `equipment-catalog.html` and the `build-catalog` npm script — it used to do double duty as an equipment-data fixup pass *and* a static-page generator; those are now two independent things).
+
+### Equipment fixups — `scripts/normalize-equipment.js`
+
+```bash
+npm run normalize-equipment
+```
+
+Runs two idempotent fixups over `data/equipment.json`:
+
+- resolves `SEARCH_REQUIRED` video-URL placeholders into a YouTube search link (built from the quoted term in the video's `note`, or the equipment's own name as a fallback)
+- rewrites dead per-product JHT manual URLs to the manuals list page + a `searchTerm`
+
+It **writes the file only when the normalized content actually differs** from what's on disk — a clean run prints `normalize-equipment: no changes` and leaves the file (including `metadata.lastUpdated`) untouched, rather than re-stamping today's date on every run. Safe to run repeatedly, including in CI.
+
+### Gym directory — `scripts/scrape-gyms.js`
+
+```bash
+npm run scrape-gyms
+```
+
+Scrapes BasicFit's storefront (`basic-fit.com`'s internal `Store-FinderMap`/`Store-FinderMore` endpoints, not a public API) for every club across 6 countries — Netherlands, Belgium, France, Luxembourg, Spain, Germany — and writes:
+
+- `data/gyms/index.json` — per-country totals and per-city club counts
+- `data/gyms/<CC>.json` (one per country) — `{ id, name, cityKey, city, address, coordinates?, legacyId? }` per club. `hours` and `url` are deliberately never stored (they're ~59% of the raw payload and nothing downstream reads them).
+
+**`data/gyms/` does not exist in this repo yet** — the script has been written and unit-tested but has not been run against the live storefront. Until a maintainer runs it, the app's only club source remains the 7 hand-entered gyms in `data/gyms.json`.
+
+The script is split across two files on purpose, and that boundary matters for anyone touching it:
+
+- **`scripts/lib/gym-scrape-core.js`** — pure logic only (HTML/GeoJSON parsing, pagination, city-name grouping, sorting, the legacy-GUID table). No `fs`, `path`, `process`, or `axios` imports — this is what lets it be unit-tested against a committed fixture with zero network access. This is the same isomorphic-module rule `scripts/lib/rutina-validator.js` already follows; keep it that way if you extend either file.
+- **`scripts/scrape-gyms.js`** — the thin I/O shell: HTTP requests (axios), a custom `User-Agent`, a 400 ms politeness delay between requests, and the actual file writes. All of the "what does upstream actually say" logic goes in `scripts/lib/gym-scrape-core.js`, not here.
+
+Two safety behaviors worth knowing before running it:
+
+1. **Pagination never stops early.** BasicFit's `Store-FinderMore` endpoint returns HTTP 200 even on an incomplete page (`isComplete: false`) — a naive loop that stops at the first short-looking page silently ships a fraction of a country's clubs with no error. `paginate()` in `gym-scrape-core.js` only returns once the upstream response says `isComplete: true`; every other exit throws.
+2. **A big club-count drop refuses to write.** If a country's scraped club count falls by more than 20% versus what's already on disk, the script throws instead of overwriting `data/gyms/` — that's treated as upstream breakage, not real churn, and existing data is left exactly as it was.
+
+**Legacy club ids.** `rutina.json` files authored before this feature reference a gym by a small integer (1–7, the old hand-entered Malaga list). `gym-scrape-core.js`'s frozen `LEGACY_CLUBS` table maps each of those integers to the 32-hex club GUID that the new scraper produces, so old files keep validating unmodified. **Only one of the seven is a real, verified GUID today** (`1ec43550fd654c7d8e23bc6c96cd2ff0`, gymId 3 / Alameda) — the other six are structurally-valid placeholders. They stay placeholders until a maintainer runs `npm run scrape-gyms` for real and reads the correct GUIDs off the output.
 
 ## Using the PWA
 
@@ -180,7 +229,7 @@ On Chromium-based browsers (Chrome, Edge, Samsung Internet), the app also shows 
 5. **History** — past sessions with per-exercise last-3-sessions weight trend. Each card has its own delete (trash) icon; a **Seleccionar** button in the header switches to selection mode, with **Seleccionar todo** to select everything and a **Borrar (n)** bar to delete the checked sessions in one go. Both single and bulk delete ask for confirmation first and cannot be undone. Deleting a session also rolls back any weight prefills it seeded: the next time you log that exercise, the suggested starting weight falls back to your most recent remaining session instead.
 6. **Progress** — fifth bottom tab after History: per-exercise weight chart (full history), per-session volume bars (current program's sets×reps × logged weight), and a trailing 12-week training-frequency heatmap — all derived from existing session history (no new store). Volume for older sessions can shift if you later edit the active program's sets/reps.
 7. **Export** — download a JSON archive or copy Markdown to clipboard. Optional Web Share on mobile. See [`docs/export-format.md`](docs/export-format.md) for the exact format.
-8. **Catalog** — all 27 equipment items with images and instructions (EN/ES/BE).
+8. **Catalog** — all 48 equipment items with images and instructions (EN/ES/BE).
 
 All data is stored locally in IndexedDB — no account, no server.
 
@@ -261,29 +310,46 @@ Full walkthrough (shown in-app via **Import → guide link**) — pick your lang
     "es": "<ol><li>Paso 1</li></ol>",
     "be": "<ol><li>Крок 1</li></ol>"
   },
-  "gyms": [1, 2, 3, 4, 5, 6, 7]
+  "kind": "machine",
+  "verifiedAt": []
 }
 ```
+
+`gymZone` and `gyms` (a fixed 1–7 club-id array) were removed — a piece of equipment is no longer assumed present at every club by category. `verifiedAt` replaces it: an array of 32-hex club GUIDs where this item has actually been confirmed present. It's `[]` on every entry today (nothing has been confirmed yet) — an honest default, not a placeholder to fill in blindly. `kind` is the physical-type discriminator (`machine` / `free-weight` / `accessory`, optional, defaults to `machine`) used to group the in-app equipment overlay; it's a different axis from `category` — two entries (`G3-MS24`, `MG-PL13`) are `category: "free-weights"` but `kind: "machine"`, because that's the club zone they physically stand in even though they aren't loose weights.
 
 ### Rutina entry (abbreviated)
 
 ```json
 {
   "meta": { "name": "Phase 1", "language": "es", "goal": "strength" },
+  "program": { "gymId": 3 },
   "days": [
     {
       "label": "Lunes",
       "exercises": [
-        { "equipmentId": "g3-s10", "sets": 3, "reps": "10", "restSeconds": 60 }
+        { "equipmentId": "g3-s10", "sets": 3, "reps": "10", "restSeconds": 60 },
+        { "equipmentId": "resistance-band", "sets": 3, "reps": "15-20", "restSeconds": 45 },
+        { "equipmentId": null, "sets": 3, "reps": "30s", "restSeconds": 45 }
       ]
     }
+  ],
+  "extraEquipment": [
+    { "id": "resistance-band", "kind": "gear", "names": { "en": "Resistance Band", "es": "Banda de Resistencia", "be": "Эластычная стужка" } }
   ]
 }
 ```
 
+Three things changed on the rutina side:
+
+- **`program.gymId`** now accepts *either* the legacy small integer (1–7, the original hand-entered gyms) *or* a 32-hex club GUID from the scraped `data/gyms/<CC>.json` directory — both resolve to a real club, so a `rutina.json` exported before this feature keeps validating unmodified.
+- **`exercises[].equipmentId` is optional and nullable.** Omitted or `null` means a bodyweight exercise (like the plank above) — the UI shows just the exercise name, and it is not a validation failure or a broken lookup.
+- **A new root-level `extraEquipment[]`** array lets a rutina declare gear the catalog doesn't carry (a resistance band, a foam roller — no manufacturer identity). Each entry needs a kebab-case `id` that doesn't collide with a catalog id, a `kind` that's always the literal string `"gear"` (equipment.schema.json deliberately rejects `"gear"` as a `kind` value — the two schemas disagree on that one string on purpose), and trilingual `names`. An exercise's `equipmentId` can point at either the catalog or `extraEquipment[]` — they share one id namespace for lookup purposes.
+
 Full schemas: `data/schema/equipment.schema.json` and `data/schema/rutina.schema.json`.
 
 ## Equipment Catalog
+
+48 items across 8 `category` values (the `category` filter pills in the Catálogo tab) — the original 6 machine-room categories, plus two added by this feature:
 
 ### Chest (3)
 G3-S10 Chest Press · G3-S12 Pectoral Fly · G3-S13 Converging Chest Press
@@ -303,6 +369,14 @@ G3-S50 Abdominal · G3-S51 Abdominal Crunch · G3-S52 Back Extension · G3-S55 R
 ### Legs (8)
 G3-S70 Leg Press · G3-S71 Leg Extension · G3-S72 Seated Leg Curl · G3-S73 Prone Leg Curl · G3-S74 Hip Adductor · G3-S75 Hip Abductor · Smith Machine (G1-FW161) · Perfect Squat (VY-400)
 
+### Free weights (16)
+G3-MS24 Aura Adjustable Pulley · MG-PL13 Magnum Supine Bench Press · ZVO-DBPU-1648 Solid Steel Urethane Dumbbells · ZVO-PUTF-3078 Urethane Functional Tribells · ZVO-BSPU-1619 Solid Steel Urethane Barbells · ZVO-BCPU-1606 Solid Steel Urethane EZ Curl Barbells · ZVO-DCPU-1616 Urethane Grip Discs · ZMT-CTKB-5626 Signature Steel Competition Kettlebells · ZVO-LBHC-2953 Olympic Bars · ZVO-HCOB-2966 Olympic EZ Curl Bar 1.2m · ZFT-HCOB-2965 Olympic Tricep Bar 76cm · ZVO-PBHC-2936 Olympic Hex Trap Bar · ZVO-PBHC-2933 Multi-Grip Swiss Bar · ZEX-ICBP-TP08 Olympic Incline Bench · ZEX-XFID-6762 F-I-D Bench 2.0 · ZEX-XFLT-6752 Flat Bench 2.0
+
+Two of these (`G3-MS24`, `MG-PL13`) are `kind: "machine"` despite living in the `free-weights` category — see the `kind` vs `category` note in Data Format above.
+
+### Accessories (5)
+ZSL-TDYM-0250 TPE Deluxe Yoga Mats · ZVO-SPSB-6882 Slam Balls · ZVO-SPPB-6387 Premium Power Core Bags 2.0 · ZMT-GLPY-5671 Glute Plyo Box · ZVO-BUBL-0564 Balance Ball 2.0
+
 ## Gym Locations
 
 BasicFit locations:
@@ -320,9 +394,9 @@ BasicFit locations:
 To add or update equipment:
 
 1. Edit `data/equipment.json`
-2. Follow the existing structure (EN/ES/BE content required)
+2. Follow the existing structure (EN/ES/BE content required). Belarusian (`be`) content is always hand-authored — never scraped or machine-translated, even when the `en`/`es` content comes from a live product page.
 3. Run `npm run validate-data` — must pass
-4. Run `npm run build-catalog` to update the static HTML catalog
+4. Run `npm run normalize-equipment` to apply the standard fixups (video-placeholder resolution, dead manual-URL rewriting). It's a no-op if there's nothing to fix.
 
 ### Adding or changing a UI string
 
@@ -353,7 +427,7 @@ UI copy lives in `app/src/i18n/{es,en,be}.js` — flat, dotted-key objects
 
 ## License
 
-For personal use. Equipment specifications and names are based on publicly available Matrix Fitness documentation.
+For personal use. Equipment specifications and names are based on publicly available Matrix Fitness and ZIVA documentation.
 
 ## Resources
 

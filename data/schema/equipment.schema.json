@@ -43,8 +43,7 @@
           "videos",
           "manuals",
           "instructions",
-          "specifications",
-          "gyms"
+          "specifications"
         ],
         "properties": {
           "id": {
@@ -58,12 +57,12 @@
           },
           "category": {
             "type": "string",
-            "enum": ["chest", "shoulders", "back", "arms", "core", "legs"]
+            "enum": ["chest", "shoulders", "back", "arms", "core", "legs", "free-weights", "accessories"]
           },
-          "gymZone": {
+          "kind": {
             "type": "string",
-            "enum": ["pesos-libres", "strength"],
-            "description": "Sección del gimnasio: pesos-libres (zona libre) o strength (sala de máquinas)"
+            "enum": ["machine", "free-weight", "accessory"],
+            "description": "Physical-type discriminator used by the equipment overlay grouping (M11). Optional, defaults to \"machine\" when absent so the 27 pre-existing entries remain valid unedited -- but R2.2/R2.3 write it explicitly on all 48 so the counts (AC44) are assertable rather than inferred. \"gear\" is deliberately NOT a valid value here: it exists only in rutina.schema.json's extraEquipment[] (AC44c)."
           },
           "muscleGroup": {
             "type": "object",
@@ -268,11 +267,12 @@
               }
             }
           },
-          "gyms": {
+          "verifiedAt": {
             "type": "array",
+            "description": "Club GUIDs where this item was actually confirmed present, not merely assumed from the standard-line catalog (M1/M2/M15). [] on every entry at ship -- honest default, not populated by anything yet.",
             "items": {
-              "type": "integer",
-              "minimum": 1
+              "type": "string",
+              "pattern": "^[0-9a-f]{32}$"
             }
           }
         }

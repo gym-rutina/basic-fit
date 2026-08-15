@@ -1,0 +1,36 @@
+{
+  "_fixture": "Store-FinderMap (es_ES shape) — GeoJSON FeatureCollection, one feature per club, properties.ID is the 32-hex club GUID and geometry.coordinates is [lng, lat] (NOT [lat, lng]; getting that pair backwards puts every Spanish club in the Atlantic and no count check notices). Deliberately covers only 6 of the 7 tiles in the two Store-FinderMore pages: club 7f60819a… has no map feature, so the join has to keep it as a coordinate-less record rather than dropping a real club.",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "ID": "1ec43550fd654c7d8e23bc6c96cd2ff0" },
+      "geometry": { "type": "Point", "coordinates": [-4.4214, 36.7213] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "ID": "2a1b3c4d5e6f70819a2b3c4d5e6f7081" },
+      "geometry": { "type": "Point", "coordinates": [-3.7038, 40.4168] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "ID": "3b2c4d5e6f708192a3b4c5d6e7f80912" },
+      "geometry": { "type": "Point", "coordinates": [-8.4115, 43.3623] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "ID": "4c3d5e6f708192a3b4c5d6e7f8091223" },
+      "geometry": { "type": "Point", "coordinates": [-8.4089, 43.3689] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "ID": "5d4e6f708192a3b4c5d6e7f809122334" },
+      "geometry": { "type": "Point", "coordinates": [-3.4796, 40.4592] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "ID": "6e5f708192a3b4c5d6e7f80912233445" },
+      "geometry": { "type": "Point", "coordinates": [-3.4611, 40.4703] }
+    }
+  ]
+}

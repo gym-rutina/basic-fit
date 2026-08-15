@@ -157,6 +157,8 @@ export default {
   'catalog.categoryArms': 'Brazos',
   'catalog.categoryCore': 'Core',
   'catalog.categoryLegs': 'Piernas',
+  'catalog.categoryFreeWeights': 'Peso libre',
+  'catalog.categoryAccessories': 'Accesorios',
   'catalog.noResults': 'Sin resultados',
 
   // ── home (HomeScreen.jsx) ────────────────────────────────────────────────
