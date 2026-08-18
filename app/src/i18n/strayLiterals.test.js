@@ -48,6 +48,11 @@ const ALLOWLIST = [
     why: 'localStorage key, not user-visible copy — pre-existing key, predates this feature.',
   },
   {
+    file: 'lib/clubStorage.js',
+    text: 'rutina:club',
+    why: 'localStorage key, not user-visible copy — same rutina: namespace convention as rutina:uiLang / rutina:onboardingSeen (gym-directory-and-catalog D3).',
+  },
+  {
     file: 'lib/guideLocale.js',
     text: 'rutina-data-files.zip',
     why: 'static archive filename (GUIDE_DATA_ARCHIVE.filename), not user-visible prose.',

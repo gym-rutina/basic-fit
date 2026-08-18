@@ -2,7 +2,7 @@ import { openDB } from 'idb';
 import { exerciseKey } from './exerciseKey.js';
 
 /**
- * IndexedDB wrapper (db name `basicfit-rutina`, version 2). Storage schema
+ * IndexedDB wrapper (db name `basicfit-rutina`, version 3). Storage schema
  * per tech-plan.md:
  *   activeRutina  — fixed key "current": { key, rutina, importedAt }
  *   sessions      — keyPath id, indexes by-status / by-startedAt
@@ -10,6 +10,9 @@ import { exerciseKey } from './exerciseKey.js';
  *                    equipmentId, name } (exercise-level-tracking, DB_VERSION 2 —
  *                    equipmentId/name are plain, non-key fields, retained for
  *                    debuggability and a future re-key, DD-001)
+ *   clubEquipment — keyPath clubId: { clubId, excludedEquipmentIds[], updatedAt }
+ *                    (gym-directory-and-catalog, DB_VERSION 3 — tech-plan.md D4).
+ *                    The equipment overlay's per-club exclusion list (R7.4).
  *
  * Each exported function opens its own short-lived connection and closes it
  * before returning, rather than caching one module-level connection. This
@@ -35,7 +38,7 @@ import { exerciseKey } from './exerciseKey.js';
  */
 
 const DB_NAME = 'basicfit-rutina';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 /**
  * `idb`'s upgrade callback is `(db, oldVersion, newVersion, tx, event)` —
@@ -45,6 +48,14 @@ const DB_VERSION = 2;
  * `name` field, so no exercise key can be derived from it — it is
  * unmigratable. Not re-seeded (DD-002); prefill self-heals after one
  * workout per exercise. `sessions` and `activeRutina` are untouched.
+ *
+ * gym-directory-and-catalog D4 — version 3 adds `clubEquipment`, purely
+ * additively: `sessions`, `activeRutina` and `lastWeights` are untouched.
+ * The `if (!contains(...))` guard (not an `oldVersion` check) is deliberate
+ * — a BRAND-NEW install never runs the v2→v3 branch, and creating the store
+ * only inside an `oldVersion < 3` guard would leave every fresh install
+ * missing it, silently failing to persist exclusions for exactly the users
+ * least likely to report it.
  */
 function upgrade(db, oldVersion) {
   if (!db.objectStoreNames.contains('activeRutina')) {
@@ -60,6 +71,9 @@ function upgrade(db, oldVersion) {
   }
   if (!db.objectStoreNames.contains('lastWeights')) {
     db.createObjectStore('lastWeights', { keyPath: 'exerciseKey' });
+  }
+  if (!db.objectStoreNames.contains('clubEquipment')) {
+    db.createObjectStore('clubEquipment', { keyPath: 'clubId' });
   }
 }
 
@@ -242,5 +256,41 @@ export async function getLastWeight(key) {
 export async function setLastWeight(key, weight, loggedAt = new Date().toISOString(), { equipmentId, name } = {}) {
   return withDb(async (db) => {
     await db.put('lastWeights', { exerciseKey: key, weight, loggedAt, equipmentId, name });
+  });
+}
+
+/**
+ * gym-directory-and-catalog R7.4 — the equipment overlay's exclusion list
+ * for one club. Defaults to `[]` ("all present") for a club that has never
+ * been edited — never `null`-that-means-error, so the Catálogo filter can
+ * tell "no exclusions" apart from "not loaded yet" (D21's job, one layer up
+ * in useClubExclusions.js).
+ *
+ * @param {string} clubId
+ * @returns {Promise<string[]>}
+ */
+export async function getClubExclusions(clubId) {
+  return withDb(async (db) => {
+    const record = await db.get('clubEquipment', clubId);
+    return record ? record.excludedEquipmentIds : [];
+  });
+}
+
+/**
+ * Overwrites (never merges) the exclusion list for one club — re-ticking a
+ * box must actually remove the exclusion, so a merge here would make
+ * exclusions permanently un-undoable. Stamps `updatedAt` so a later refresh
+ * (M13's monthly re-scrape) can reason about staleness.
+ *
+ * @param {string} clubId
+ * @param {Iterable<string>} excludedEquipmentIds
+ */
+export async function setClubExclusions(clubId, excludedEquipmentIds) {
+  return withDb(async (db) => {
+    await db.put('clubEquipment', {
+      clubId,
+      excludedEquipmentIds: Array.from(excludedEquipmentIds || []),
+      updatedAt: new Date().toISOString(),
+    });
   });
 }

@@ -10,6 +10,8 @@ import {
   getLastWeight,
   setLastWeight,
   deleteSessions,
+  getClubExclusions,
+  setClubExclusions,
 } from './db.js';
 import { exerciseKey } from './exerciseKey.js';
 
@@ -501,7 +503,11 @@ describe('db — v1 to v2 migration (AC6)', () => {
 
     const db = await openCurrent();
     try {
-      expect(db.version).toBe(2);
+      // DB_VERSION is 3 as of gym-directory-and-catalog D4 — this migration
+      // test predates that bump. `openDB(name, DB_VERSION, {upgrade})` always
+      // runs `upgrade` from the db's actual oldVersion (1, here) straight to
+      // the current DB_VERSION in one pass, so a v1 device lands on 3, not 2.
+      expect(db.version).toBe(3);
       expect(db.transaction('lastWeights').store.keyPath).toBe('exerciseKey');
     } finally {
       db.close();
@@ -529,5 +535,219 @@ describe('db — v1 to v2 migration (AC6)', () => {
     expect(await getLastWeight('g3-s10::prensa-de-pecho')).toMatchObject({ weight: 34 });
     // The legacy session is still there and still readable.
     expect((await listSessions()).map((s) => s.id).sort()).toEqual(['legacy', 'post-upgrade']);
+  });
+});
+
+/**
+ * gym-directory-and-catalog D4 — DB_VERSION 2 → 3, additively.
+ *
+ * Third version, second consecutive feature to bump it. The migration test is
+ * strict on purpose (`toEqual`, not `toMatchObject`): the v1→v2 bump DROPPED a
+ * store, so "additive" is a claim this codebase has already violated once and
+ * must now prove each time.
+ *
+ * Harness note carried from tech-plan.md §7.3: `npm run test:viewport` lives
+ * OUTSIDE `npm test` and was broken by the LAST DB_VERSION bump (fixed in
+ * b9f98e3). A green run of this file does not imply that harness passes — it
+ * must be run separately in Build B.
+ */
+describe('db — v2 to v3 migration (D4)', () => {
+  const V2_SESSION = {
+    id: 'from-v2',
+    dayLabel: 'Martes',
+    dayIndex: 1,
+    status: 'completed',
+    startedAt: '2026-08-01T09:00:00.000Z',
+    endedAt: '2026-08-01T09:45:00.000Z',
+    exercises: [
+      {
+        equipmentId: 'g3-s10',
+        name: 'Prensa de Pecho',
+        weightUsed: 40,
+        difficulty: 'normal',
+        completedAt: '2026-08-01T09:10:00.000Z',
+      },
+    ],
+  };
+  const V2_WEIGHT = {
+    exerciseKey: 'g3-s10::prensa-de-pecho',
+    weight: 40,
+    loggedAt: '2026-08-01T09:10:00.000Z',
+    equipmentId: 'g3-s10',
+    name: 'Prensa de Pecho',
+  };
+
+  /** Recreates the shipped v2 schema exactly and seeds all three stores. */
+  async function seedV2() {
+    const { openDB } = await import('idb');
+    const db = await openDB('basicfit-rutina', 2, {
+      upgrade(d) {
+        d.createObjectStore('activeRutina', { keyPath: 'key' });
+        const sessions = d.createObjectStore('sessions', { keyPath: 'id' });
+        sessions.createIndex('by-status', 'status');
+        sessions.createIndex('by-startedAt', 'startedAt');
+        d.createObjectStore('lastWeights', { keyPath: 'exerciseKey' });
+      },
+    });
+    await db.put('activeRutina', { key: 'current', rutina: RUTINA, importedAt: '2026-08-01T00:00:00.000Z' });
+    await db.put('sessions', V2_SESSION);
+    await db.put('lastWeights', V2_WEIGHT);
+    db.close();
+  }
+
+  it('opens at version 3', async () => {
+    await seedV2();
+    await listSessions(); // any db.js call runs the upgrade
+
+    const db = await openCurrent();
+    try {
+      expect(db.version).toBe(3);
+    } finally {
+      db.close();
+    }
+  });
+
+  it('adds the clubEquipment store with keyPath clubId', async () => {
+    await seedV2();
+    await listSessions();
+
+    const db = await openCurrent();
+    try {
+      expect([...db.objectStoreNames].sort()).toEqual(
+        ['activeRutina', 'clubEquipment', 'lastWeights', 'sessions'].sort()
+      );
+      expect(db.transaction('clubEquipment').store.keyPath).toBe('clubId');
+    } finally {
+      db.close();
+    }
+  });
+
+  it('leaves v2 session data byte-for-byte intact', async () => {
+    await seedV2();
+
+    const sessions = await listSessions();
+
+    // toEqual, not toMatchObject — the v1→v2 bump dropped a store, so
+    // "additive" is a claim that has to be proven, not asserted.
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]).toEqual(V2_SESSION);
+  });
+
+  it('leaves v2 lastWeights and activeRutina untouched', async () => {
+    await seedV2();
+    await listSessions();
+
+    expect(await getLastWeight('g3-s10::prensa-de-pecho')).toEqual(V2_WEIGHT);
+    expect((await getActiveRutina()).rutina).toEqual(RUTINA);
+  });
+
+  it('starts with an empty clubEquipment store — no seeding', async () => {
+    await seedV2();
+    await listSessions();
+
+    const db = await openCurrent();
+    try {
+      expect(await db.getAll('clubEquipment')).toEqual([]);
+    } finally {
+      db.close();
+    }
+  });
+
+  it('creates clubEquipment on a fresh install too, not only on upgrade', async () => {
+    // A brand-new device never runs the v2→v3 branch. If the store is created
+    // only inside an `oldVersion < 3` guard, every new install is missing it
+    // and exclusions silently fail to persist for exactly the users least
+    // likely to report it.
+    //
+    // `beforeEach` already deleted the database, so this is a genuinely
+    // untouched install — no seedV1/seedV2 call. `openCurrent()` opens with
+    // NO version and NO upgrade callback (it just connects to whatever is
+    // already there), so it must not be the first call: a real app db.js
+    // call is what actually runs `upgrade` against a fresh, empty database.
+    await getActiveRutina();
+
+    const db = await openCurrent();
+    try {
+      expect([...db.objectStoreNames]).toContain('clubEquipment');
+    } finally {
+      db.close();
+    }
+  });
+});
+
+describe('db — clubEquipment round-trip (AC43, R7.4)', () => {
+  const CLUB_A = '1ec43550fd654c7d8e23bc6c96cd2ff0';
+  const CLUB_B = '2a1b3c4d5e6f70819a2b3c4d5e6f7081';
+
+  it('returns an empty exclusion list for a club that has never been edited', async () => {
+    // R7.4 — defaults to "all present". This must be an empty list, never
+    // null-that-means-error, or the Catálogo filter cannot tell "no
+    // exclusions" from "not loaded" (D21).
+    expect(await getClubExclusions(CLUB_A)).toEqual([]);
+  });
+
+  it('round-trips an exclusion list', async () => {
+    await setClubExclusions(CLUB_A, ['g3-s10', 'g3-ms24']);
+
+    expect(await getClubExclusions(CLUB_A)).toEqual(['g3-s10', 'g3-ms24']);
+  });
+
+  it('scopes exclusions per club (R7.4)', async () => {
+    await setClubExclusions(CLUB_A, ['g3-s10']);
+    await setClubExclusions(CLUB_B, ['mg-pl13']);
+
+    expect(await getClubExclusions(CLUB_A)).toEqual(['g3-s10']);
+    expect(await getClubExclusions(CLUB_B)).toEqual(['mg-pl13']);
+  });
+
+  it('overwrites rather than merging on a second write', async () => {
+    await setClubExclusions(CLUB_A, ['g3-s10', 'g3-ms24']);
+    await setClubExclusions(CLUB_A, ['g3-s10']);
+
+    // Re-ticking a box must actually remove the exclusion. A merge here would
+    // make exclusions permanently un-undoable.
+    expect(await getClubExclusions(CLUB_A)).toEqual(['g3-s10']);
+  });
+
+  it('survives a reload — the value is read back from a fresh connection (AC43)', async () => {
+    await setClubExclusions(CLUB_A, ['g3-s10']);
+
+    // db.js opens a short-lived connection per call, so this genuinely
+    // re-reads from storage rather than from a cached handle.
+    expect(await getClubExclusions(CLUB_A)).toEqual(['g3-s10']);
+  });
+
+  it('clears back to empty', async () => {
+    await setClubExclusions(CLUB_A, ['g3-s10']);
+    await setClubExclusions(CLUB_A, []);
+
+    expect(await getClubExclusions(CLUB_A)).toEqual([]);
+  });
+
+  it('stamps updatedAt so a later refresh can reason about staleness', async () => {
+    await setClubExclusions(CLUB_A, ['g3-s10']);
+
+    const db = await openCurrent();
+    try {
+      const row = await db.get('clubEquipment', CLUB_A);
+      expect(row.clubId).toBe(CLUB_A);
+      expect(typeof row.updatedAt).toBe('string');
+      expect(Number.isNaN(Date.parse(row.updatedAt))).toBe(false);
+    } finally {
+      db.close();
+    }
+  });
+
+  it('does not disturb sessions or lastWeights', async () => {
+    await saveSession({
+      id: 's1',
+      status: 'completed',
+      startedAt: '2026-08-02T09:00:00.000Z',
+      exercises: [{ equipmentId: 'g3-s10', name: 'Prensa de Pecho', weightUsed: 30, completedAt: '2026-08-02T09:05:00.000Z' }],
+    });
+    await setClubExclusions(CLUB_A, ['g3-s10']);
+
+    expect((await listSessions())).toHaveLength(1);
+    expect(await getLastWeight('g3-s10::prensa-de-pecho')).toMatchObject({ weight: 30 });
   });
 });

@@ -25,14 +25,13 @@ equipment files yourself.
 | Data | URL |
 |------|-----|
 | Schema (source of truth) | [rutina.schema.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/schema/rutina.schema.json) |
-| Equipment catalog | [equipment.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/equipment.json) |
-| Gyms list (for the LLM) | [gyms.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/gyms.json) |
+| Equipment catalog (optional detail reference) | [equipment.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/equipment.json) |
 | Reference example | [phase1-monday.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/examples/phase1-monday.json) |
 
 > **LLM without web access?** Use the **Download** button in this guide screen to save
-> a zip archive of all four data files directly to your device — one file, ready to
-> attach to the chat, not just an inline browser view. Prefer to fetch them yourself?
-> The table above links directly to the raw files in the repository.
+> a zip archive of the data files directly to your device — one file, ready to attach to
+> the chat, not just an inline browser view. Prefer to fetch them yourself? The table
+> above links directly to the raw files in the repository.
 
 ## Step 1 — Copy the prompt
 
@@ -40,8 +39,10 @@ Use the **Copy** button above this guide. The prompt starts with **REQUEST** —
 every numbered line (plain text, no JSON) before sending.
 
 > **Field 6 — target gym**
-> Look up your gym’s name and numeric **id** in the **[gym list →](https://bthos.github.io/gym-routine-basic-fit/gyms.html)**
-> (opens in a new tab). You can also find the same list in the Rutina app’s **Catálogo** tab.
+> Use the **Club Picker** in the Rutina app — tap the club row on the **Catálogo** tab or
+> the club row above the prompt in this guide screen. Once you pick a club, the app fills
+> in field 6 (name, city, address) and appends the club-scoped equipment list automatically.
+> If your club is not in the directory, type the gym name and address directly into field 6.
 
 | # | Field | Example | Required |
 |---|-------|---------|----------|
@@ -50,7 +51,7 @@ every numbered line (plain text, no JSON) before sending.
 | 3 | Days per week | 4 | yes |
 | 4 | Session length budget | "45-60 min" | yes |
 | 5 | Injuries / movements to avoid | "Evitar press militar por hombro derecho" | no — write "none" if none |
-| 6 | Target gym | "Avda. Andalucía, Centro Comercial Alameda (id 3)" | yes |
+| 6 | Target gym | "BasicFit Málaga Alameda — Málaga, Avda. Andalucía" (pre-filled by the Club Picker) | yes |
 | 7 | Language for the output text | "Español" | yes |
 | 8 | Prior progress export | pasted Markdown from Rutina **Historial → Exportar** | no — omit if starting a first phase |
 
@@ -92,7 +93,7 @@ npm run validate-rutina -- path/to/your-rutina.json
 3. Days per week: 4
 4. Session length budget: 45-60 min
 5. Injuries / movements to avoid: ninguna
-6. Target gym: Avda. Andalucía, Centro Comercial Alameda (id 3)
+6. Target gym: BasicFit Málaga Alameda — Málaga, Avda. Andalucía, Centro Comercial Alameda
 7. Language for the output text: Español
 8. Prior progress export (optional): (ninguna todavía, primera vez usando esto)
 ```
@@ -111,16 +112,18 @@ npm run validate-rutina -- path/to/your-rutina.json
   LLMs/browsers that can fetch directly, or you can paste file contents into the chat
   instead.
 - **The LLM's chat can't open a `.zip` attachment.** Extract the archive locally, then
-  attach or paste the individual files instead — `rutina.schema.json`, `equipment.json`,
-  `gyms.json`, `phase1-monday.json`.
+  attach or paste the individual files instead — `rutina.schema.json`, `phase1-monday.json`
+  (and `equipment.json` if the LLM needs additional muscle-group or video details).
 - **The LLM added a friendly intro or wrapped the JSON in a markdown fence.** Re-send
   with: "Output ONLY the JSON object, no markdown fence, no explanation."
 - **The reply got cut off mid-JSON (very long programs).** Ask the LLM to "continue
   from where you stopped, still outputting only JSON."
-- **Equipment id not found.** The LLM must pick ids from `equipment.json` where the `gyms`
-  array includes your gym id — not invented ids. Paste the validator error back and ask
-  it to re-read the equipment catalog.
-- **Not sure your gym's id?** Open the [gym list](https://bthos.github.io/gym-routine-basic-fit/gyms.html) or the **Catálogo** tab in the Rutina app.
+- **Equipment id not found.** The LLM must use only the ids listed in the EQUIPMENT section
+  appended to the prompt — not invented ids. Paste the validator error back and ask it to
+  re-read the equipment list.
+- **Field 6 or the equipment list is missing from the prompt.** You need to pick a club first.
+  Open the **Club Picker** on the Catálogo tab or in this guide screen; once a club is
+  selected the app fills in field 6 and appends the equipment list automatically.
 
 ---
 

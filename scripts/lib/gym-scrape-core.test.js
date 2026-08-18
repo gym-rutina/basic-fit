@@ -6,7 +6,7 @@ import {
   joinMapAndTiles,
   normalizeCityKey,
   pickCityDisplayName,
-  paginate,
+  collectTiles,
   buildCountryFile,
   buildIndex,
   countryCountDropExceeded,
@@ -33,96 +33,308 @@ import mapEs from '../fixtures/gyms/store-finder-map-es.json';
  * passes. Nothing but this file catches that.
  */
 
-const PAGES = [page1, page2];
+/**
+ * The seven club GUIDs the two tile fixtures carry between them. `collectTiles`
+ * takes this set as its completeness ORACLE (tech-plan-build-b.md D17): the map
+ * endpoint independently knows every club id, so the tile enumeration can be
+ * PROVEN complete rather than trusted.
+ */
+const ALL_IDS = new Set([
+  '1ec43550fd654c7d8e23bc6c96cd2ff0', // Málaga
+  '2a1b3c4d5e6f70819a2b3c4d5e6f7081', // Madrid
+  '3b2c4d5e6f708192a3b4c5d6e7f80912', // A Coruna
+  '4c3d5e6f708192a3b4c5d6e7f8091223', // A Coruña
+  '5d4e6f708192a3b4c5d6e7f809122334', // Torrejon de Ardoz
+  '6e5f708192a3b4c5d6e7f80912233445', // Torrejon de Ardoz
+  '7f60819a2b3c4d5e6f708192a3b4c5d6', // Torrejón de Ardoz
+]);
 
-/** Fixture-backed stand-in for the real axios call. Records what it was asked for. */
-function fixtureFetcher({ pages = PAGES } = {}) {
+const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.basic-fit.com/es-es/gimnasios/torrejon-de-ardoz</loc></url>
+  <url><loc>https://www.basic-fit.com/es-es/gimnasios/madrid</loc></url>
+  <url><loc>https://www.basic-fit.com/on/demandware.store/Sites-BFE-Site/es_ES/Search-ShowContent?fdid=vilagarc%c3%ada</loc></url>
+  <url><loc>https://www.basic-fit.com/es-es/clubs/basic-fit-malaga-alameda-1ec43550fd654c7d8e23bc6c96cd2ff0.html</loc></url>
+</urlset>`;
+
+/**
+ * Fixture-backed stand-in for the real axios call, modelling the LIVE contract
+ * (tech-plan-build-b.md §0): the unfiltered call is capped and reports
+ * `isComplete:false`; a `q` query returns just that city's tiles and reports
+ * `isComplete:true`. Records every request so the tests can assert the fast
+ * path really is one request.
+ */
+function fixtureFetcher({ unfilteredComplete = false } = {}) {
   const calls = [];
+  const tilesFor = (ids) => {
+    const all = [...parseStoreTiles(page1.storeTilesHtml), ...parseStoreTiles(page2.storeTilesHtml)];
+    const keep = all.filter((t) => ids.includes(t.id));
+    // Re-emit as html the parser can read back, mirroring the real response.
+    return keep
+      .map(
+        (t) =>
+          `<li class="store-tile" data-pid="${t.id}" data-name="${t.name}">` +
+          `<span class="store-tile-street">${t.address},</span>` +
+          `<span class="store-tile-city">${t.city}</span></li>`
+      )
+      .join('\n');
+  };
+
   return {
     calls,
-    fetchPage: async ({ start, sz }) => {
-      calls.push({ start, sz });
-      const page = pages.find((p) => p.pageStart === start);
-      if (!page) throw new Error(`fixture has no page starting at ${start}`);
-      return page;
+    fetchTiles: async ({ q, sz }) => {
+      calls.push({ q, sz });
+      if (q === undefined || q === null || q === '') {
+        // The unfiltered call — capped at the first 4 tiles unless the test
+        // asks for the small-country fast path.
+        return unfilteredComplete
+          ? { isComplete: true, pageStart: 4, pageSize: sz, storeTilesHtml: page1.storeTilesHtml + page2.storeTilesHtml }
+          : { isComplete: false, pageStart: sz, pageSize: sz, storeTilesHtml: page1.storeTilesHtml };
+      }
+      const byTerm = {
+        'torrejon-de-ardoz': ['5d4e6f708192a3b4c5d6e7f809122334', '6e5f708192a3b4c5d6e7f80912233445', '7f60819a2b3c4d5e6f708192a3b4c5d6'],
+        madrid: ['2a1b3c4d5e6f70819a2b3c4d5e6f7081'],
+        'malaga-alameda': ['1ec43550fd654c7d8e23bc6c96cd2ff0'],
+      };
+      const ids = byTerm[q] ?? [];
+      return { isComplete: true, pageStart: ids.length, pageSize: sz, storeTilesHtml: tilesFor(ids) };
+    },
+    fetchSitemap: async () => {
+      calls.push({ sitemap: true });
+      return SITEMAP_XML;
     },
   };
 }
 
-describe('paginate (R1.2, AC6, AC7 — X5, the silent-truncation guard)', () => {
-  it('keeps fetching while isComplete is false and returns every page\'s tiles', async () => {
-    const { fetchPage } = fixtureFetcher();
+describe('collectTiles — the fast path (tech-plan-build-b.md D17 phase 2)', () => {
+  it('stops after ONE request when the unfiltered call reports isComplete', async () => {
+    // NL/BE/ES/LU/DE all still take exactly this path. The fanout must be
+    // entered because the DATA says so, never from a hardcoded country list.
+    const { fetchTiles, fetchSitemap, calls } = fixtureFetcher({ unfilteredComplete: true });
 
-    const { tiles, pages } = await paginate({ fetchPage, sz: 4 });
+    const { tiles, viaFanout } = await collectTiles({ fetchTiles, fetchSitemap, mapIds: ALL_IDS });
 
-    // Page 1 alone carries 4 tiles and comes back HTTP 200. A loop that
-    // stops there returns 4 and looks completely healthy — this assertion
-    // is the whole point of the fixture spanning a page boundary.
-    expect(pages).toBe(2);
+    expect(viaFanout).toBe(false);
     expect(tiles).toHaveLength(7);
+    expect(calls).toEqual([{ q: undefined, sz: MAX_PAGE_SIZE }]);
   });
 
-  it('stops ONLY on isComplete: true', async () => {
-    const { fetchPage, calls } = fixtureFetcher();
+  it('never reads the sitemap on the fast path', async () => {
+    const { fetchTiles, fetchSitemap, calls } = fixtureFetcher({ unfilteredComplete: true });
 
-    await paginate({ fetchPage, sz: 4 });
+    await collectTiles({ fetchTiles, fetchSitemap, mapIds: ALL_IDS });
 
-    expect(calls).toEqual([
-      { start: 0, sz: 4 },
-      { start: 4, sz: 4 },
-    ]);
+    expect(calls.some((c) => c.sitemap)).toBe(false);
   });
 
-  it('throws IncompleteDirectoryError when the loop ends without isComplete: true (AC6)', async () => {
-    // France's real shape, truncated: every page reports isComplete:false and
-    // the page cap is reached. The ONLY acceptable outcome is a throw —
-    // returning what was collected is exactly the 300-instead-of-911 bug.
-    const neverComplete = async ({ start }) => ({
-      pageStart: start,
-      pageSize: 4,
-      isComplete: false,
-      storeTilesHtml: page1.storeTilesHtml,
-    });
+  it('never requests a page size above MAX_PAGE_SIZE (sz >= 350 is HTTP 500)', async () => {
+    // Corrected from the plan's assumed 400: 350, 399, 400 and 500 all 500 on
+    // fr_FR. 300 sits just under a cliff that is lower than anyone thought.
+    const { fetchTiles, fetchSitemap, calls } = fixtureFetcher({ unfilteredComplete: true });
 
-    await expect(paginate({ fetchPage: neverComplete, sz: 4, maxPages: 3 })).rejects.toBeInstanceOf(
-      IncompleteDirectoryError
-    );
-  });
-
-  it('throws rather than returning a short result when a page comes back empty', async () => {
-    const emptyThenNothing = async ({ start }) =>
-      start === 0
-        ? page1
-        : { pageStart: start, pageSize: 4, isComplete: false, storeTilesHtml: '' };
-
-    await expect(paginate({ fetchPage: emptyThenNothing, sz: 4, maxPages: 5 })).rejects.toBeInstanceOf(
-      IncompleteDirectoryError
-    );
-  });
-
-  it('never requests a page size above 300 (sz >= 400 is HTTP 500 on fr_FR)', async () => {
-    const { fetchPage, calls } = fixtureFetcher();
-
-    await paginate({ fetchPage, sz: 1000 });
+    await collectTiles({ fetchTiles, fetchSitemap, mapIds: ALL_IDS, sz: 1000 });
 
     expect(MAX_PAGE_SIZE).toBe(300);
-    for (const call of calls) {
+    for (const call of calls.filter((c) => !c.sitemap)) {
       expect(call.sz).toBeLessThanOrEqual(MAX_PAGE_SIZE);
     }
   });
+});
 
-  it('advances start by the tiles actually returned, not by the requested sz', async () => {
-    // A short page mid-run must not make the loop skip clubs. Page 1 here
-    // returns 4 tiles for a requested sz of 10; the next start must be 4.
-    const shortFirstPage = async ({ start }) => {
-      if (start === 0) return { ...page1, pageSize: 10 };
-      if (start === 4) return { ...page2, pageStart: 4, pageSize: 10 };
-      throw new Error(`unexpected start ${start}`);
-    };
+describe('collectTiles — the city fanout (D17 phases 3-4, the France path)', () => {
+  it('falls back to per-city queries when the unfiltered call is capped', async () => {
+    const { fetchTiles, fetchSitemap } = fixtureFetcher();
 
-    const { tiles } = await paginate({ fetchPage: shortFirstPage, sz: 10 });
+    const { tiles, viaFanout } = await collectTiles({ fetchTiles, fetchSitemap, mapIds: ALL_IDS });
 
-    expect(tiles).toHaveLength(7);
+    expect(viaFanout).toBe(true);
+    expect(new Set(tiles.map((t) => t.id))).toEqual(ALL_IDS);
+  });
+
+  it('reads the sitemap for city terms only on the fanout path', async () => {
+    const { fetchTiles, fetchSitemap, calls } = fixtureFetcher();
+
+    await collectTiles({ fetchTiles, fetchSitemap, mapIds: ALL_IDS });
+
+    expect(calls.some((c) => c.sitemap)).toBe(true);
+  });
+
+  it('deduplicates clubs seen in both the unfiltered call and a city query', async () => {
+    // Málaga arrives in the capped unfiltered page AND again via its own
+    // term. A union that appended blindly would double-count every club in
+    // the first 300 — inflating totalClubs and breaking AC5's per-city counts.
+    const { fetchTiles, fetchSitemap } = fixtureFetcher();
+
+    const { tiles } = await collectTiles({ fetchTiles, fetchSitemap, mapIds: ALL_IDS });
+
+    expect(tiles).toHaveLength(ALL_IDS.size);
+    expect(new Set(tiles.map((t) => t.id)).size).toBe(tiles.length);
+  });
+
+  it('never sends a request carrying a StoreID parameter (robots.txt)', async () => {
+    // robots.txt Disallows /*?StoreID=* outright. The design must not reach
+    // for a per-store route even as a fallback — and there is none anyway
+    // (q=<GUID> returns 0 tiles).
+    const { fetchTiles, fetchSitemap, calls } = fixtureFetcher();
+
+    await collectTiles({ fetchTiles, fetchSitemap, mapIds: ALL_IDS });
+
+    for (const call of calls.filter((c) => !c.sitemap)) {
+      expect(String(call.q ?? '')).not.toMatch(/StoreID/i);
+      expect(String(call.q ?? '')).not.toMatch(/^[0-9a-f]{32}$/);
+    }
+  });
+
+  it('draws every query term from an allowed source (robots.txt §0.12)', async () => {
+    /**
+     * PROVENANCE, not a forbidden value. The previous version of this test
+     * asserted no term contained `a-coruna` — but `a-coruna` is legitimately
+     * reachable: D17 phase 3 assembles terms from phase-2 tiles PLUS the
+     * sitemap, and page1 carries the cities "A Coruna" and "A Coruña", both
+     * of which normalise to exactly that. So the assertion rejected a correct
+     * implementation, and the only way to satisfy it was to drop tile-derived
+     * terms and rely on the sitemap alone — which §0.11 shows is incomplete
+     * (909 club URLs vs the map's 911). The test steered toward the design
+     * that breaks in production, under a robots.txt banner.
+     *
+     * The fix asserts where a term may COME FROM rather than what it may not
+     * be: every query term must belong to (phase-2 tile city keys) ∪
+     * (sitemap path segments from entries that are not Search-ShowContent).
+     *
+     * The fixture's disallowed entry now names `vilagarcía` — a city present
+     * in NEITHER the tiles nor any allowed sitemap path — so harvesting it is
+     * observable. It stays URL-encoded (`vilagarc%c3%ada`) so the check also
+     * catches an implementation that harvests the entry WITHOUT decoding it:
+     * the raw and decoded forms are both absent from the allowed set.
+     */
+    const { fetchTiles, fetchSitemap, calls } = fixtureFetcher();
+
+    await collectTiles({ fetchTiles, fetchSitemap, mapIds: ALL_IDS });
+
+    const fold = (s) =>
+      decodeURIComponent(String(s)).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+    // Source 1 — the cities the phase-2 tiles actually returned.
+    const tileCityKeys = parseStoreTiles(page1.storeTilesHtml).map((t) => normalizeCityKey(t.city));
+
+    // Source 2 — sitemap path segments, EXCLUDING the disallowed pipeline.
+    const allowedSitemapSegments = [...SITEMAP_XML.matchAll(/<loc>([^<]+)<\/loc>/g)]
+      .map((m) => m[1])
+      .filter((url) => !/Search-ShowContent/i.test(url))
+      .map((url) => fold(url.split('?')[0].split('/').filter(Boolean).pop() ?? ''))
+      .map((seg) => seg.replace(/\.html$/, '').replace(/-[0-9a-f]{32}$/, '').replace(/^basic-fit-/, ''));
+
+    const allowed = new Set([...tileCityKeys.map(fold), ...allowedSitemapSegments]);
+
+    const terms = calls.filter((c) => !c.sitemap && c.q).map((c) => c.q);
+    expect(terms.length).toBeGreaterThan(0); // a vacuous pass here would prove nothing
+
+    for (const term of terms) {
+      expect(term).not.toMatch(/Search-ShowContent/i);
+      expect(term).not.toMatch(/fdid/i);
+      expect({ term, allowed: allowed.has(fold(term)) }).toEqual({ term, allowed: true });
+    }
+  });
+});
+
+describe('collectTiles — the oracle (D17 phase 5, X5 in its real form)', () => {
+  it('throws IncompleteDirectoryError when the fanout cannot resolve every map id', async () => {
+    // THE test of this feature. The map says 7 clubs exist; the fanout finds
+    // 6. Returning 6 is the 300-instead-of-911 bug wearing a different hat,
+    // and every downstream count check would pass on the short result.
+    const { fetchTiles, fetchSitemap } = fixtureFetcher();
+    const oracleWithGhost = new Set([...ALL_IDS, 'deadbeefdeadbeefdeadbeefdeadbeef']);
+
+    await expect(
+      collectTiles({ fetchTiles, fetchSitemap, mapIds: oracleWithGhost })
+    ).rejects.toBeInstanceOf(IncompleteDirectoryError);
+  });
+
+  it('names the unresolved ids in the error, so a maintainer can act on it', async () => {
+    const { fetchTiles, fetchSitemap } = fixtureFetcher();
+    const oracleWithGhost = new Set([...ALL_IDS, 'deadbeefdeadbeefdeadbeefdeadbeef']);
+
+    await expect(
+      collectTiles({ fetchTiles, fetchSitemap, mapIds: oracleWithGhost })
+    ).rejects.toThrow(/deadbeefdeadbeefdeadbeefdeadbeef/);
+  });
+
+  it('refuses an empty oracle rather than passing vacuously', async () => {
+    // An empty mapIds makes "every map id was resolved" trivially true, which
+    // would turn the single most important guard in this module into a no-op.
+    // If parseMapFeatures ever regresses to returning 0 again — which is
+    // exactly what just happened in production — this is what catches it.
+    const { fetchTiles, fetchSitemap } = fixtureFetcher();
+
+    await expect(
+      collectTiles({ fetchTiles, fetchSitemap, mapIds: new Set() })
+    ).rejects.toBeInstanceOf(IncompleteDirectoryError);
+  });
+
+  it('refuses a missing oracle for the same reason', async () => {
+    const { fetchTiles, fetchSitemap } = fixtureFetcher();
+
+    await expect(collectTiles({ fetchTiles, fetchSitemap })).rejects.toBeInstanceOf(
+      IncompleteDirectoryError
+    );
+  });
+
+  it('throws when a q query comes back capped, EVEN IF its rows would complete the union', async () => {
+    /**
+     * Discrimination matters here and the obvious version of this test does
+     * not have it. If the capped query returned only SOME clubs, an
+     * implementation that ignored `isComplete` entirely would still throw at
+     * phase 5 (union short) with the same error class — so the test would
+     * pass against the broken implementation it is meant to catch.
+     *
+     * So the capped query below returns EVERY club. A correct implementation
+     * still throws, because a capped result set is unusable regardless of
+     * what it happens to contain: the storefront returned the first N of an
+     * unknown total, and treating that as authoritative is exactly the X5
+     * silent truncation one level down. An implementation that ignores
+     * `isComplete` sees a complete union and resolves — failing this test.
+     */
+    const { fetchSitemap } = fixtureFetcher();
+    const allTilesHtml = page1.storeTilesHtml + page2.storeTilesHtml;
+    const cappedButComplete = async ({ q, sz }) => ({
+      isComplete: false, // never completes, at any phase
+      pageStart: sz,
+      pageSize: sz,
+      storeTilesHtml: allTilesHtml, // …yet carries all seven clubs
+    });
+
+    await expect(
+      collectTiles({ fetchTiles: cappedButComplete, fetchSitemap, mapIds: ALL_IDS })
+    ).rejects.toBeInstanceOf(IncompleteDirectoryError);
+  });
+
+  it('distinguishes a capped query from an incomplete union in its message', async () => {
+    // The two failures need different fixes — a capped term must be
+    // subdivided; an incomplete union means the term set missed a city. An
+    // error that cannot tell a maintainer which one happened sends them to
+    // the wrong place at 3am.
+    const { fetchSitemap } = fixtureFetcher();
+    const allTilesHtml = page1.storeTilesHtml + page2.storeTilesHtml;
+    const cappedButComplete = async ({ sz }) => ({
+      isComplete: false,
+      pageStart: sz,
+      pageSize: sz,
+      storeTilesHtml: allTilesHtml,
+    });
+
+    await expect(
+      collectTiles({ fetchTiles: cappedButComplete, fetchSitemap, mapIds: ALL_IDS })
+    ).rejects.toThrow(/complete|capped|isComplete/i);
+  });
+
+  it('throws rather than fanning out unboundedly past maxTerms', async () => {
+    const { fetchTiles } = fixtureFetcher();
+    const hugeSitemap = async () =>
+      `<urlset>${Array.from({ length: 50 }, (_, i) => `<url><loc>https://www.basic-fit.com/es-es/gimnasios/city-${i}</loc></url>`).join('')}</urlset>`;
+
+    await expect(
+      collectTiles({ fetchTiles, fetchSitemap: hugeSitemap, mapIds: ALL_IDS, maxTerms: 3 })
+    ).rejects.toBeInstanceOf(IncompleteDirectoryError);
   });
 });
 
@@ -159,6 +371,50 @@ describe('parseStoreTiles (R1.6, AC3, AC4)', () => {
 
   it('returns an empty array for empty html rather than throwing', () => {
     expect(parseStoreTiles('')).toEqual([]);
+  });
+});
+
+describe('parseMapFeatures — the clusters wrapper (AC3, D17b)', () => {
+  /**
+   * This block exists because parseMapFeatures shipped in Build A returning
+   * ZERO clubs for all six locales while its unit tests stayed green. It read
+   * `geojson.features`; the live response nests the FeatureCollection at
+   * `clusters.features`. The old fixture was hand-written in the assumed
+   * shape, so the test and the bug agreed with each other.
+   *
+   * Consequence had it shipped: every club in every country written with no
+   * coordinates at all — AC3's ">= 99% carry coordinates" failing at 0% while
+   * the scraper reported success.
+   */
+  it('reads features from clusters.features, not from the top level', () => {
+    const coords = parseMapFeatures(mapEs);
+
+    expect(coords.size).toBe(6);
+    expect(coords.get('1ec43550fd654c7d8e23bc6c96cd2ff0')).toBeDefined();
+  });
+
+  it('returns nothing for a top-level features array (the shape that never existed)', () => {
+    // Pins the direction of the fix. If someone "restores" the old path as a
+    // compatibility fallback, this fails — and the fixture below stops being
+    // a real capture, which is the whole point of D17b.
+    expect(parseMapFeatures({ type: 'FeatureCollection', features: [
+      { type: 'Feature', properties: { ID: 'a'.repeat(32) }, geometry: { type: 'Point', coordinates: [1, 2] } },
+    ] }).size).toBe(0);
+  });
+
+  it('keeps the fixture in the real nested shape', () => {
+    // Guards the fixture itself against being "tidied" back into the shape
+    // that hid the bug.
+    expect(mapEs.clusters).toBeDefined();
+    expect(Array.isArray(mapEs.clusters.features)).toBe(true);
+    expect(mapEs.features).toBeUndefined();
+  });
+
+  it('degrades to an empty map for a malformed response rather than throwing', () => {
+    expect(parseMapFeatures(undefined).size).toBe(0);
+    expect(parseMapFeatures({}).size).toBe(0);
+    expect(parseMapFeatures({ clusters: {} }).size).toBe(0);
+    expect(parseMapFeatures({ clusters: { features: null } }).size).toBe(0);
   });
 });
 
@@ -230,15 +486,20 @@ describe('buildCountryFile (R1.6, AC3, AC4, AC8)', () => {
       parseMapFeatures(mapEs)
     );
 
-  it('emits only the six permitted fields plus optional legacyId (D6)', () => {
+  it('emits only the four permitted fields plus optional legacyId (D6a, cycle-9 correction)', () => {
+    // `coordinates` and `cityKey` dropped this cycle — tech-plan-build-b.md
+    // D6a. Bagnik's cycle-8 code QA measured the shipped directory (both
+    // fields present) at 604.9KB against AC4's ≤300KB cap, 2x over budget;
+    // dropping both, plus shipping the country files minified, is what
+    // brings it back under.
     const file = buildCountryFile('ES', clubsFor());
 
     expect(file.country).toBe('ES');
     for (const club of file.clubs) {
       expect(Object.keys(club).sort()).toEqual(
-        expect.arrayContaining(['address', 'city', 'cityKey', 'id', 'name'])
+        expect.arrayContaining(['address', 'city', 'id', 'name'])
       );
-      const allowed = ['id', 'legacyId', 'name', 'cityKey', 'city', 'address', 'coordinates'];
+      const allowed = ['id', 'legacyId', 'name', 'city', 'address'];
       expect(Object.keys(club).filter((k) => !allowed.includes(k))).toEqual([]);
     }
   });
@@ -260,13 +521,16 @@ describe('buildCountryFile (R1.6, AC3, AC4, AC8)', () => {
     }
   });
 
-  it('gives every club a non-empty id, name, city, cityKey and address (AC3)', () => {
+  it('gives every club a non-empty id, name, city and address (AC3, cycle-9 correction)', () => {
     for (const club of buildCountryFile('ES', clubsFor()).clubs) {
       expect(club.id).toMatch(/^[0-9a-f]{32}$/);
       expect(club.name.length).toBeGreaterThan(0);
       expect(club.city.length).toBeGreaterThan(0);
-      expect(club.cityKey).toBe(normalizeCityKey(club.city));
       expect(club.address.length).toBeGreaterThan(0);
+      // cityKey dropped this cycle (D6a) — the picker now matches a
+      // selected city to its clubs by `city` display name instead.
+      expect(club.cityKey).toBeUndefined();
+      expect(club.coordinates).toBeUndefined();
     }
   });
 
@@ -288,10 +552,25 @@ describe('buildCountryFile (R1.6, AC3, AC4, AC8)', () => {
     );
   });
 
-  it('stamps legacyId on the known Málaga clubs and on nothing else (AC10)', () => {
-    const file = buildCountryFile('ES', clubsFor());
+  it('stamps legacyId on the known legacy clubs and on nothing else (AC10, cycle-9 correction)', () => {
+    // Cycle-8 code QA (Bagnik, handoff-log.md 04:15) found the previous
+    // version of this test hardcoded the WRONG "verified" GUID
+    // (1ec43550fd654c7d8e23bc6c96cd2ff0) — that id belongs to a real club in
+    // A Coruña, 1,000km from Málaga, not to any of the seven legacy gyms.
+    // The shared map/tile fixtures (mapEs/page1/page2) predate the real
+    // 7-GUID correction and don't contain any of the corrected ids, so this
+    // constructs minimal synthetic input directly — `buildCountryFile`
+    // accepts a plain `{id, name, address, city, coordinates?}` array per
+    // its own docblock — keeping the test decoupled from the shared
+    // fixtures' unrelated content while still proving both the positive and
+    // negative stamping cases against the real, frozen `LEGACY_CLUBS`.
+    const clubs = [
+      { id: '85c4896006bc45d89f562c977651600c', name: 'Alameda', city: 'Málaga', address: 'Avda. Andalucia s/n' },
+      { id: 'f'.repeat(32), name: 'Not Legacy', city: 'Málaga', address: 'Calle Ejemplo 1' },
+    ];
+    const file = buildCountryFile('ES', clubs);
 
-    const alameda = file.clubs.find((c) => c.id === '1ec43550fd654c7d8e23bc6c96cd2ff0');
+    const alameda = file.clubs.find((c) => c.id === '85c4896006bc45d89f562c977651600c');
     expect(alameda.legacyId).toBe(3);
 
     for (const club of file.clubs) {
@@ -316,9 +595,21 @@ describe('LEGACY_CLUBS (R1.5, AC10, AC33 — tech-plan D8)', () => {
     }
   });
 
-  it('keeps the one GUID already verified in the spec pointing at gymId 3', () => {
-    // Every existing rutina with `gymId: 3` resolves through this entry.
-    expect(LEGACY_CLUBS['1ec43550fd654c7d8e23bc6c96cd2ff0']).toBe(3);
+  it('maps all seven legacy ids to their real, verified GUIDs (cycle-9 correction)', () => {
+    // Cycle-8 code QA (Bagnik, handoff-log.md 04:15) found the previous
+    // single "verified" entry (1ec43550fd654c7d8e23bc6c96cd2ff0 → 3) was
+    // wrong — that GUID belongs to a real club in A Coruña, 1,000km from
+    // Málaga. All seven were re-verified against the real scraped data
+    // (data/gyms/ES.json) by matching each pre-Build-B legacy record to its
+    // real club by name and address.
+    expect(LEGACY_CLUBS['a435aa51b62e43ea8fb5d8bb5d643a78']).toBe(1);
+    expect(LEGACY_CLUBS['e33f130aad2b423fa94bb27502b138c6']).toBe(2);
+    expect(LEGACY_CLUBS['85c4896006bc45d89f562c977651600c']).toBe(3);
+    expect(LEGACY_CLUBS['18eab10cbcc84775a1d3faa95223a56a']).toBe(4);
+    expect(LEGACY_CLUBS['ede4d9d858804c2baaac9c08e4dc269e']).toBe(5);
+    expect(LEGACY_CLUBS['faf211e37b4d4ee98493fe825cf45d67']).toBe(6);
+    expect(LEGACY_CLUBS['5c43f08f993e4e1fab21f033ebac2e51']).toBe(7);
+    expect(LEGACY_CLUBS['1ec43550fd654c7d8e23bc6c96cd2ff0']).toBeUndefined();
   });
 
   it('is frozen, so a scrape run cannot mutate the legacy mapping', () => {

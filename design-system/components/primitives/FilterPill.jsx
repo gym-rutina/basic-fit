@@ -21,7 +21,7 @@ export function FilterPill({ active = false, onClick, children, style, ...rest }
     ...style,
   };
   return (
-    <button style={s} onClick={onClick}
+    <button style={s} onClick={onClick} aria-pressed={active}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} {...rest}>
       {children}
     </button>

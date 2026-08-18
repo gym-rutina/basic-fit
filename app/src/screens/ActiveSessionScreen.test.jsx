@@ -13,10 +13,10 @@ const SPARSE_ID = 'g3-s45'; // catalog entry exists but has no images[]
 const UNRESOLVED_ID = 'mancuerna-libre-15kg';
 
 const RICH_EQ = getEquipmentById(RICH_ID);
-const RICH_NAME = `${RICH_EQ.series ? `Matrix ${RICH_EQ.series} ` : ''}${RICH_EQ.modelCode} — ${equipmentDisplayName(RICH_EQ)}`;
+const RICH_NAME = `${RICH_EQ.series ? `${RICH_EQ.series} ` : ''}${RICH_EQ.modelCode} — ${equipmentDisplayName(RICH_EQ)}`;
 
 const SPARSE_EQ = getEquipmentById(SPARSE_ID);
-const SPARSE_NAME = `${SPARSE_EQ.series ? `Matrix ${SPARSE_EQ.series} ` : ''}${SPARSE_EQ.modelCode} — ${equipmentDisplayName(SPARSE_EQ)}`;
+const SPARSE_NAME = `${SPARSE_EQ.series ? `${SPARSE_EQ.series} ` : ''}${SPARSE_EQ.modelCode} — ${equipmentDisplayName(SPARSE_EQ)}`;
 
 const RUTINA = {
   schemaVersion: 1,
@@ -192,8 +192,11 @@ describe('ActiveSessionScreen — equipment reference (AC1–AC5)', () => {
 
     // Collapsed unresolved card header exists, but not the plain-text fallback
     // (that only appears when expanded).
-    expect(screen.queryByText(UNRESOLVED_ID)).not.toBeInTheDocument();
-    expect(screen.queryByText(SPARSE_NAME)).not.toBeInTheDocument();
+    // *AllBy* → 0: `queryByText` throws on multiple matches, so a regression
+    // that rendered the fallback on several collapsed cards at once would
+    // surface as a thrown error rather than as this assertion failing.
+    expect(screen.queryAllByText(UNRESOLVED_ID)).toHaveLength(0);
+    expect(screen.queryAllByText(SPARSE_NAME)).toHaveLength(0);
   });
 });
 
@@ -555,5 +558,120 @@ describe('ActiveSessionScreen — tutorial link (AC16, AC17, AC18′)', () => {
 
     expect(href).not.toMatch(new RegExp(RICH_EQ.modelCode, 'i'));
     expect(href).not.toMatch(/aura/i);
+  });
+});
+
+/**
+ * gym-directory-and-catalog AC27 / AC29 / AC26 (spec R4.2, R4.3).
+ *
+ * The session resolver merges catalog ∪ the active rutina's `extraEquipment`
+ * for the SESSION UI only — the Catalog tab's data path is unchanged (AC28,
+ * asserted in CatalogScreen.test.jsx).
+ *
+ * AC29's point is that gear is deliberately thin: `kind: "gear"` requires no
+ * images, videos or manuals, so the row must render name-only rather than
+ * showing broken-image chrome or an empty "Técnica" section.
+ */
+describe('gear and bodyweight exercises in the session UI (AC27, AC29, AC26)', () => {
+  const GEAR_RUTINA = {
+    schemaVersion: 1,
+    program: { name: 'Gear test', phaseName: 'Fase 1', phaseNumber: 1, durationWeeks: 4 },
+    extraEquipment: [
+      { id: 'resistance-band', kind: 'gear', names: { en: 'Resistance band', es: 'Banda elástica', be: 'Гумовая стужка' } },
+    ],
+    days: [
+      {
+        label: 'Lunes',
+        exercises: [
+          { equipmentId: 'resistance-band', name: 'Face pull', sets: 3, reps: 15, restSeconds: 60 },
+          { equipmentId: null, name: 'Plancha', sets: 3, reps: 30, restSeconds: 45 },
+          { name: 'Fondos', sets: 3, reps: 10, restSeconds: 60 },
+        ],
+      },
+    ],
+  };
+
+  /** Mirrors makeSession() above, but built from GEAR_RUTINA's exercises. */
+  function makeGearSession(rutina = GEAR_RUTINA) {
+    return {
+      id: 'sess-gear',
+      dayLabel: 'Lunes',
+      dayIndex: 0,
+      status: 'active',
+      startedAt: '2026-08-01T10:00:00.000Z',
+      endedAt: null,
+      exercises: rutina.days[0].exercises.map((ex) => ({
+        equipmentId: ex.equipmentId ?? null,
+        name: ex.name,
+        weightUsed: null,
+        difficulty: null,
+        completedAt: null,
+      })),
+    };
+  }
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    db.getActiveRutina.mockResolvedValue({ rutina: GEAR_RUTINA, importedAt: '2026-08-01' });
+    db.getActiveSession.mockResolvedValue(makeGearSession());
+    db.getLastWeight.mockResolvedValue(null);
+    db.saveSession.mockResolvedValue(undefined);
+  });
+
+  it('resolves a gear display name from the rutina\'s extraEquipment (AC27)', async () => {
+    renderSession();
+    // The gear id is not in equipment.json — only the merge makes it
+    // resolvable. Without it the row falls back to the raw id.
+    expect(await screen.findByText(/Banda el[áa]stica/i)).toBeInTheDocument();
+    // queryAllByText → 0: a fallback that rendered the raw id in both the row
+    // title and a subtitle would throw on multiplicity instead of failing.
+    expect(screen.queryAllByText('resistance-band')).toHaveLength(0);
+  });
+
+  it('renders gear name-only, with no model-code or image chrome (AC29, R4.3)', async () => {
+    renderSession();
+    await screen.findByText(/Banda el[áa]stica/i);
+
+    // kind:"gear" carries no images/videos/manuals. Any machine chrome here
+    // means the renderer assumed catalog richness.
+    const images = screen.queryAllByRole('img');
+    for (const img of images) {
+      expect(img.getAttribute('src') ?? '').not.toBe('');
+    }
+    // The broadest absence regex in the suite — three vendor prefixes across a
+    // whole screen. `queryByText` throws the moment TWO model codes leak, so
+    // the worse the bug, the less this assertion could say about it.
+    expect(screen.queryAllByText(/G3-|MG-|ZV/)).toHaveLength(0);
+  });
+
+  it('renders a bodyweight exercise with no equipment chrome at all (AC26, R4.3)', async () => {
+    renderSession();
+    expect(await screen.findByText('Plancha')).toBeInTheDocument();
+  });
+
+  it('renders an exercise with an omitted equipmentId (AC26)', async () => {
+    renderSession();
+    expect(await screen.findByText('Fondos')).toBeInTheDocument();
+  });
+
+  it('never renders the literal string "undefined" for an unresolved id', async () => {
+    renderSession();
+    await screen.findByText('Plancha');
+    expect(document.body.textContent).not.toContain('undefined');
+  });
+
+  it('still resolves ordinary catalog ids after the merge (no regression)', async () => {
+    // Merging extraEquipment must not shadow the catalog. A merge written as
+    // `{...extra, ...catalog}` in the wrong order would silently win here.
+    const mixed = {
+      ...GEAR_RUTINA,
+      days: [{ label: 'Lunes', exercises: [{ equipmentId: RICH_ID, name: 'Prensa', sets: 3, reps: 10, restSeconds: 75 }] }],
+    };
+    db.getActiveRutina.mockResolvedValue({ rutina: mixed, importedAt: '2026-08-01' });
+    db.getActiveSession.mockResolvedValue(makeGearSession(mixed));
+
+    renderSession();
+
+    expect(await screen.findByRole('button', { name: new RegExp(RICH_EQ.modelCode) })).toBeInTheDocument();
   });
 });

@@ -5,15 +5,16 @@
 3. Days per week:
 4. Session length budget:
 5. Injuries / movements to avoid (write "none"/"ninguna" if none):
-6. Target gym (name or id):
+6. Target gym (pre-filled by the app's club picker — name, city, address and
+   available equipment ids are listed in the EQUIPMENT section appended below):
 7. Language for the output text:
 8. Prior progress export (optional — paste Markdown from Rutina app Export, or leave blank):
 
 ### ROLE
 You are a strength & conditioning coach. You will output ONLY a single JSON
 object — no prose, no markdown fences, no explanation — conforming exactly
-to the rutina schema (see DATA SOURCES). Never invent equipment ids; every
-equipmentId MUST exist in the equipment catalog for the user's target gym.
+to the rutina schema (see DATA SOURCES). Never invent equipment ids; use only
+the ids listed in the EQUIPMENT section appended to this prompt.
 
 ### DATA SOURCES (read before generating)
 Fetch and read each file from the public repository before writing output:
@@ -21,12 +22,10 @@ Fetch and read each file from the public repository before writing output:
 - Schema (source of truth):
   https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/schema/rutina.schema.json
 
-- Equipment catalog (each entry has a `gyms` array — use only ids whose array
-  contains the target gym id from REQUEST):
+- Equipment catalog (optional detail reference — the EQUIPMENT section below
+  already lists the ids available at your target club; fetch the full catalog
+  only if you need additional details such as muscle-group metadata or video links):
   https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/equipment.json
-
-- Gyms list (resolve gym name → numeric id for program.gymId):
-  https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/gyms.json
 
 - Reference example (validator-passing rutina.json):
   https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/examples/phase1-monday.json
@@ -34,8 +33,7 @@ Fetch and read each file from the public repository before writing output:
 Repository (browse all data files): https://github.com/bthos/gym-routine-basic-fit
 
 If you cannot fetch URLs, ask the user to attach the zip archive of data files
-(rutina-data-files.zip) — or the four individual files listed above if their
-chat can't open zip attachments.
+(rutina-data-files.zip) — or the files above if their chat can't open zip attachments.
 
 ### CONSTRAINTS
 - Do NOT include a "summaryTable" field — it does not exist in the schema and

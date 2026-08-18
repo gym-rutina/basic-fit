@@ -4,6 +4,7 @@ import Ajv from 'ajv';
 import {
   validateSchema,
   validateGyms,
+  validateGymsSize,
   REQUIRED_FIELDS,
   VALID_CATEGORIES,
   VALID_KINDS,
@@ -190,23 +191,24 @@ describe('drift between validate-data.js and equipment.schema.json (tech-plan D1
   });
 });
 
-describe('validateGyms (R1.9, AC1, AC5, AC35)', () => {
+describe('validateGyms (R1.9, AC1, AC5, AC35, D6a — cycle-9 correction)', () => {
+  // Cycle-9 (tech-plan-build-b.md D6a): club records no longer carry
+  // `cityKey` or `coordinates` — both dropped to bring the real shipped
+  // payload under AC4's ≤300KB cap (measured 604.9KB with both present,
+  // 2x over). City matching now joins on `city` (display name) against the
+  // index's `cities[].name`.
   const CLUB = {
     id: '1ec43550fd654c7d8e23bc6c96cd2ff0',
     name: 'Centro Comercial Alameda',
-    cityKey: 'malaga',
     city: 'Málaga',
     address: 'Avda. Andalucía s/n',
-    coordinates: { lat: 36.7213, lng: -4.4214 },
   };
   const OTHER = {
     ...CLUB,
     id: '2a1b3c4d5e6f70819a2b3c4d5e6f7081',
     name: 'Conangla',
-    cityKey: 'madrid',
     city: 'Madrid',
     address: 'Calle Alcalde Conangla 9',
-    coordinates: { lat: 40.4168, lng: -3.7038 },
   };
 
   const index = (cities) => ({
@@ -237,17 +239,22 @@ describe('validateGyms (R1.9, AC1, AC5, AC35)', () => {
     expect(errors.join('\n')).toMatch(/duplicate/i);
   });
 
-  it('fails on a cityKey absent from the index (AC35)', () => {
-    const errors = validateGyms(index(), files([CLUB, { ...OTHER, cityKey: 'atlantis' }]));
-    expect(errors.join('\n')).toMatch(/atlantis/);
+  it('fails on a city absent from the index (AC35)', () => {
+    const errors = validateGyms(index(), files([CLUB, { ...OTHER, city: 'Atlantis' }]));
+    expect(errors.join('\n')).toMatch(/atlantis/i);
   });
 
-  it('fails on an out-of-range coordinate (AC35)', () => {
+  it('fails when a club record carries coordinates (banned, D6a/AC4)', () => {
     const errors = validateGyms(
       index(),
-      files([CLUB, { ...OTHER, coordinates: { lat: 91, lng: -3.7 } }])
+      files([CLUB, { ...OTHER, coordinates: { lat: 40.4168, lng: -3.7038 } }])
     );
-    expect(errors.join('\n')).toMatch(/coordinate|lat/i);
+    expect(errors.join('\n')).toMatch(/coordinates/i);
+  });
+
+  it('fails when a club record carries cityKey (banned, D6a/AC4)', () => {
+    const errors = validateGyms(index(), files([CLUB, { ...OTHER, cityKey: 'madrid' }]));
+    expect(errors.join('\n')).toMatch(/cityKey/i);
   });
 
   it('fails on an empty name or address', () => {
@@ -263,11 +270,33 @@ describe('validateGyms (R1.9, AC1, AC5, AC35)', () => {
       ]),
       files()
     );
-    expect(errors.join('\n')).toMatch(/malaga/i);
+    expect(errors.join('\n')).toMatch(/m[áa]laga/i);
   });
 
   it('fails when a club record carries hours or url (AC4)', () => {
     const errors = validateGyms(index(), files([CLUB, { ...OTHER, hours: 'Mo-Su 06:00-23:00' }]));
     expect(errors.join('\n')).toMatch(/hours/i);
+  });
+});
+
+describe('validateGymsSize (AC4, D6a — cycle-9 addition)', () => {
+  // Nothing asserted the ≤300KB cap before cycle 9 — that is exactly how
+  // the directory shipped at 604.9KB, 2x over budget, with a fully green
+  // test suite (Bagnik, handoff-log.md 04:15).
+  it('passes a directory at or under the 300KB cap', () => {
+    expect(validateGymsSize({ 'index.json': 100 * 1024, 'ES.json': 199 * 1024 })).toEqual([]);
+    expect(validateGymsSize({ 'index.json': 150 * 1024, 'ES.json': 150 * 1024 })).toEqual([]);
+  });
+
+  it('fails a directory over the 300KB cap, naming the total and the breakdown', () => {
+    const errors = validateGymsSize({ 'index.json': 123 * 1024, 'FR.json': 260 * 1024 });
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatch(/300KB/);
+    expect(errors[0]).toMatch(/index\.json/);
+    expect(errors[0]).toMatch(/FR\.json/);
+  });
+
+  it('passes an empty directory', () => {
+    expect(validateGymsSize({})).toEqual([]);
   });
 });

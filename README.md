@@ -6,6 +6,8 @@ A multilingual (EN/ES/BE) equipment catalog and training-routine PWA for BasicFi
 
 48 equipment items (29 machines, 14 free weights, 5 accessories — spanning the Matrix Aura line plus ZIVA free weights and accessories) across BasicFit locations. Each entry includes multilingual names and instructions (English, Spanish, Belarusian), product images, video links, PDF manuals, and muscle-group targeting.
 
+A bundled club directory covers 1,727 BasicFit locations across 6 countries (Netherlands, Belgium, France, Luxembourg, Spain, Germany). The PWA's **Club Picker** lets you search it by country → city → club and remembers your choice; the Catálogo tab uses it to offer a "just my club's equipment" filter. See "Selecting your club" below.
+
 The **Rutina PWA** (`app/`) lets you import a `rutina.json` training program, log workout sessions with per-exercise weight and difficulty, review history, and export progress — all offline, no backend.
 
 ## Quick Start
@@ -79,8 +81,8 @@ basicfit-rutina/
 ├── data/
 │   ├── equipment.json              # Complete equipment catalog (48 items: 29 machine / 14 free-weight / 5 accessory)
 │   ├── gyms.json                   # Legacy 7 hand-entered Malaga gyms (still the app's only club source pre-Build B)
-│   ├── gyms/                       # Scraped multi-country club directory — NOT YET GENERATED, see below
-│   │   ├── index.json              #   (produced by `npm run scrape-gyms`; does not exist until a maintainer runs it)
+│   ├── gyms/                       # Scraped multi-country club directory (1,727 clubs, 6 countries) — see below
+│   │   ├── index.json              #   per-country totals + per-city club counts
 │   │   └── <CC>.json               #   one file per country (NL/BE/FR/LU/ES/DE)
 │   ├── user-weights.json           # Default weights per equipment
 │   ├── examples/
@@ -126,7 +128,7 @@ basicfit-rutina/
 | `npm run validate-rutina -- <path>` | Validate a `rutina.json` file against its schema + cross-check `equipmentId`/`extraEquipment` values |
 | `npm run serve` | Serve the repo root on port 3000 (for static HTML pages) |
 | `npm run normalize-equipment` | Fixup pass over `data/equipment.json` (resolves video-search placeholders, rewrites dead JHT manual URLs). Writes the file **only when something actually changed** — safe to run repeatedly, and a no-op run prints a message instead of rewriting the file. |
-| `npm run scrape-gyms` | Scrapes the BasicFit club directory (6 countries) from `basic-fit.com`'s internal storefront endpoints and writes `data/gyms/index.json` + one file per country. Network-only — nothing in the test suite runs it. **Has not been run in this repo yet** (see "Data maintenance scripts" below). |
+| `npm run scrape-gyms` | Scrapes the BasicFit club directory (6 countries) from `basic-fit.com`'s internal storefront endpoints and writes `data/gyms/index.json` + one file per country. Network-only — nothing in the test suite runs it. Already run once in this repo (`data/gyms/` holds real data, 1,727 clubs); re-run it any time to refresh (see "Data maintenance scripts" below). |
 | `npm run build-rutina` | Embed equipment + weights into legacy `rutina_*.html` files |
 | `npm run extract-images` | Scrape equipment images from Matrix product pages (Puppeteer) |
 
@@ -202,9 +204,9 @@ npm run scrape-gyms
 Scrapes BasicFit's storefront (`basic-fit.com`'s internal `Store-FinderMap`/`Store-FinderMore` endpoints, not a public API) for every club across 6 countries — Netherlands, Belgium, France, Luxembourg, Spain, Germany — and writes:
 
 - `data/gyms/index.json` — per-country totals and per-city club counts
-- `data/gyms/<CC>.json` (one per country) — `{ id, name, cityKey, city, address, coordinates?, legacyId? }` per club. `hours` and `url` are deliberately never stored (they're ~59% of the raw payload and nothing downstream reads them).
+- `data/gyms/<CC>.json` (one per country) — `{ id, name, city, address, legacyId? }` per club. `cityKey`, `coordinates`, `hours`, and `url` are deliberately never stored (`hours`/`url` alone are ~59% of the raw payload; `cityKey` and `coordinates` had no downstream reader).
 
-**`data/gyms/` does not exist in this repo yet** — the script has been written and unit-tested but has not been run against the live storefront. Until a maintainer runs it, the app's only club source remains the 7 hand-entered gyms in `data/gyms.json`.
+**`data/gyms/` is populated with real data** — 1,727 clubs total: NL 255, BE 243, FR 911, LU 10, ES 246, DE 62. The PWA's Club Picker (see "Selecting your club" below) reads this directory directly; it is a bundled build-time module, not a runtime fetch. There is no scheduled job re-running the scrape yet (that's a separate, not-yet-built piece) — re-run `npm run scrape-gyms` by hand whenever the directory needs a refresh. The legacy 7-gym `data/gyms.json` file still exists alongside it and still backs the frozen static `rutina_*.html` pages; the PWA no longer reads it.
 
 The script is split across two files on purpose, and that boundary matters for anyone touching it:
 
@@ -216,7 +218,7 @@ Two safety behaviors worth knowing before running it:
 1. **Pagination never stops early.** BasicFit's `Store-FinderMore` endpoint returns HTTP 200 even on an incomplete page (`isComplete: false`) — a naive loop that stops at the first short-looking page silently ships a fraction of a country's clubs with no error. `paginate()` in `gym-scrape-core.js` only returns once the upstream response says `isComplete: true`; every other exit throws.
 2. **A big club-count drop refuses to write.** If a country's scraped club count falls by more than 20% versus what's already on disk, the script throws instead of overwriting `data/gyms/` — that's treated as upstream breakage, not real churn, and existing data is left exactly as it was.
 
-**Legacy club ids.** `rutina.json` files authored before this feature reference a gym by a small integer (1–7, the old hand-entered Malaga list). `gym-scrape-core.js`'s frozen `LEGACY_CLUBS` table maps each of those integers to the 32-hex club GUID that the new scraper produces, so old files keep validating unmodified. **Only one of the seven is a real, verified GUID today** (`1ec43550fd654c7d8e23bc6c96cd2ff0`, gymId 3 / Alameda) — the other six are structurally-valid placeholders. They stay placeholders until a maintainer runs `npm run scrape-gyms` for real and reads the correct GUIDs off the output.
+**Legacy club ids.** `rutina.json` files authored before this feature reference a gym by a small integer (1–7, the old hand-entered Malaga list). `gym-scrape-core.js`'s frozen `LEGACY_CLUBS` table maps each of those integers to the 32-hex club GUID that the new scraper produces, so old files keep validating unmodified. **Six of the seven are still structurally-valid placeholders**, not real GUIDs. The seventh (`1ec43550fd654c7d8e23bc6c96cd2ff0`, `legacyId: 3`) was believed verified as "Málaga Alameda," but a direct check against the live storefront during this build found it now resolves to a *different* real club — "A Coruña Avd. Salvador de Madariaga." No test currently catches this (the resolution test only asserts `club.id`, not name/city), so a `rutina.json` with `gymId: 3` imports without error but resolves to the wrong club. Getting all 7 legacy ids onto correct, verified GUIDs is open follow-up work, not something to treat as already done.
 
 ## Using the PWA
 
@@ -229,9 +231,24 @@ Two safety behaviors worth knowing before running it:
 5. **History** — past sessions with per-exercise last-3-sessions weight trend. Each card has its own delete (trash) icon; a **Seleccionar** button in the header switches to selection mode, with **Seleccionar todo** to select everything and a **Borrar (n)** bar to delete the checked sessions in one go. Both single and bulk delete ask for confirmation first and cannot be undone. Deleting a session also rolls back any weight prefills it seeded: the next time you log that exercise, the suggested starting weight falls back to your most recent remaining session instead.
 6. **Progress** — fifth bottom tab after History: per-exercise weight chart (full history), per-session volume bars (current program's sets×reps × logged weight), and a trailing 12-week training-frequency heatmap — all derived from existing session history (no new store). Volume for older sessions can shift if you later edit the active program's sets/reps.
 7. **Export** — download a JSON archive or copy Markdown to clipboard. Optional Web Share on mobile. See [`docs/export-format.md`](docs/export-format.md) for the exact format.
-8. **Catalog** — all 48 equipment items with images and instructions (EN/ES/BE).
+8. **Catalog** — all 48 equipment items (29 machines, 14 free weights, 5 accessories) with images and instructions (EN/ES/BE). A club row at the top lets you pick your club. Once one is picked: the **"Solo mi club"** pill filters the grid to your club's equipment (using your saved exclusions), and the **"Equipamiento de tu club"** button opens the equipment sheet where you untick items your specific club does not have.
 
 All data is stored locally in IndexedDB — no account, no server.
+
+### Selecting your club
+
+Two places pick up the same club selection, stored locally (`localStorage`, key `rutina:club`) so it survives a reload without asking again:
+
+- **Catálogo tab** — the club row above the filter pills. Tap it to open the picker.
+- **LLM guide** (Import screen → guide link) — the purple "Tu club" box above the copyable prompt.
+
+The picker is three dependent fields — **country → city → club** — each filterable as you type, keyboard- and screen-reader-navigable. Picking a country enables the city field; picking a city enables the club field, listing every club in that city by name and street address (address is shown because a meaningful share of club names *are* their street, so the address is what actually disambiguates them). If your club isn't listed, the empty-results state links straight to the guide's free-text field so you're never blocked.
+
+Once a club is selected:
+
+- The Catálogo tab's **"Solo mi club"** pill filters the grid to that club's equipment (using your saved exclusions).
+- An **"Equipamiento de tu club"** button — in both the Catálogo tab and the Guide overlay — opens the equipment sheet. Untick items your specific club does not have; the list is saved per club in IndexedDB (`clubEquipment` store) and survives a reload.
+- The Guide overlay's copied prompt embeds a club-scoped equipment table (all 48 items minus your exclusions, grouped by kind: machines / free weights / accessories) and pre-fills field 6 with your club's name, city, and address automatically. No manual gym-id lookup needed.
 
 ## Languages
 
@@ -275,7 +292,7 @@ Training programs are authored by pasting a ready-made prompt into any LLM chat 
 
 1. Fill in an 8-field checklist (goal, days/week, session length, injuries, gym, output language, etc.)
 2. Copy the prompt template, paste your checklist into `REQUEST`, and send to any LLM
-3. The prompt points the LLM at public data files in this repo (schema, equipment, gyms, example) — nothing to assemble by hand. If your LLM chat can't fetch URLs (e.g. Perplexity, offline models), the in-app guide also offers a single **Download** button to save a zip archive of the data files and attach it instead.
+3. The prompt points the LLM at public data files in this repo (schema, equipment, example) — nothing to assemble by hand. If your LLM chat can't fetch URLs (e.g. Perplexity, offline models), the in-app guide also offers a single **Download** button to save a zip archive of the data files and attach it instead.
 4. Import the JSON reply into the PWA (or validate locally: `npm run validate-rutina -- path/to/rutina.json`)
 5. If validation fails, paste the error text back to the LLM and re-import
 
@@ -379,7 +396,7 @@ ZSL-TDYM-0250 TPE Deluxe Yoga Mats · ZVO-SPSB-6882 Slam Balls · ZVO-SPPB-6387 
 
 ## Gym Locations
 
-BasicFit locations:
+The 7 originally hand-entered Málaga gyms below are `data/gyms.json`'s legacy list, kept for the frozen `rutina_*.html` pages and for legacy `rutina.json` files whose `gymId` is a small integer (see "Legacy club ids" above). **For anything current, use the PWA's Club Picker** ("Selecting your club" above), which searches the full 1,727-club, 6-country directory in `data/gyms/`.
 
 1. Armengual de la Mota — Calle Armengual de la Mota 26, 29007 (Centro)
 2. Héroe de Sostoa — Calle Héroe de Sostoa 51

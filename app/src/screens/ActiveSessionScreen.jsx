@@ -69,8 +69,17 @@ function DifficultyPicker({ value, onChange, t }) {
 
 /**
  * Compact equipment reference row rendered inside the expanded exercise card.
- * Two display states: unresolved → plain text id; resolved → button that
- * opens EquipmentReferenceSheet overlay.
+ * Three display states: unresolved → plain text id; gear → plain text name
+ * (AC27, AC29, R4.2/R4.3); resolved catalog machine → button that opens
+ * EquipmentReferenceSheet overlay.
+ *
+ * gym-directory-and-catalog R4.2 — the session resolver merges the catalog
+ * with the active rutina's `extraEquipment[]`, session UI only (the Catalog
+ * tab's data path is unchanged, AC28). `getEquipmentById` never sees gear —
+ * it is scoped to `equipment.json` — so an id that misses the catalog is
+ * looked up in `extraEquipment` before falling back to the raw-id text.
+ * AC29: `kind: "gear"` carries no images/videos/manuals, so its row is
+ * name-only — no image, no model-code, no reference sheet to open.
  *
  * exercise-level-tracking AC18′ (UAT decision A2): the catalog machine video
  * fallback is DELETED here, not demoted — the machine's clip is equipment-
@@ -80,13 +89,14 @@ function DifficultyPicker({ value, onChange, t }) {
  * buildVideoQuery, so the sheet always has a video, and the old "resolved +
  * sparse → plain text" branch is unreachable and has been removed (D8).
  */
-function EquipmentRow({ ex, locale, t }) {
+function EquipmentRow({ ex, extraEquipment, locale, t }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const triggerRef = useRef(null);
 
   const eq = getEquipmentById(ex.equipmentId);
+  const gear = !eq ? (extraEquipment || []).find((g) => g && g.id === ex.equipmentId) : null;
 
-  if (!eq) {
+  if (!eq && !gear) {
     return (
       <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', padding: '4px 0' }}>
         {ex.equipmentId}
@@ -94,8 +104,16 @@ function EquipmentRow({ ex, locale, t }) {
     );
   }
 
+  if (gear) {
+    return (
+      <div dir="auto" style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink)', padding: '4px 0' }}>
+        {equipmentDisplayName(gear, locale)}
+      </div>
+    );
+  }
+
   const imageUrl = mainImageUrl(eq);
-  const seriesPrefix = eq.series ? 'Matrix ' + eq.series + ' ' : '';
+  const seriesPrefix = eq.series ? eq.series + ' ' : '';
   const displayName = seriesPrefix + eq.modelCode + ' — ' + equipmentDisplayName(eq, locale);
   const steps = ex.technique || [];
   const videoHref = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(buildVideoQuery(ex, eq, locale));
@@ -162,7 +180,7 @@ function prefillCaption(prefillState, isDone, t) {
   return t('session.weightNoRecords');
 }
 
-function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, onUndo, locale, t }) {
+function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, onUndo, locale, t, extraEquipment }) {
   const isDone = Boolean(ex.completedAt);
   const [weight, setWeight] = useState(ex.weightUsed ?? '');
   const [difficulty, setDifficulty] = useState(ex.difficulty ?? null);
@@ -278,7 +296,7 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
             {ex.intensity && <DetailItem label={t('program.intensity')} value={<span dir="auto">{ex.intensity}</span>} />}
           </div>
 
-          <EquipmentRow ex={ex} locale={locale} t={t} />
+          <EquipmentRow ex={ex} extraEquipment={extraEquipment} locale={locale} t={t} />
 
           <div>
             <label
@@ -504,6 +522,7 @@ export function ActiveSessionScreen({ onSessionEnded }) {
             onUndo={handleUndo}
             locale={locale}
             t={t}
+            extraEquipment={rutina.extraEquipment}
           />
         ))}
       </div>

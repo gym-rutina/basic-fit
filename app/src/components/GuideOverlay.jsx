@@ -1,7 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { GUIDE_HTML, GUIDE_PROMPT } from '../data/guideContent.js';
-import { GUIDE_DATA_ARCHIVE, GUIDE_DATA_FILES_BASE_URL, GYMS_CATALOG_URL } from '../lib/guideLocale.js';
+import { GUIDE_DATA_ARCHIVE, GUIDE_DATA_FILES_BASE_URL } from '../lib/guideLocale.js';
+import { readClub } from '../lib/clubStorage.js';
+import { EQUIPMENT } from '../data/equipment.js';
+import { buildPrompt } from '../lib/promptEquipment.js';
+import { useClubExclusions } from '../lib/useClubExclusions.js';
+import { ClubPickerSheet } from './ClubPickerSheet.jsx';
+import { EquipmentOverlaySheet } from './EquipmentOverlaySheet.jsx';
 import { tFor, useI18n } from '../i18n/index.js';
 
 /** Byte size → de-emphasized "N KB" caption (ux-design.md Decision 7). */
@@ -84,9 +90,42 @@ export function GuideOverlay({ locale, onClose }) {
   const active = locale ?? uiLocale;
   const t = tFor(active);
   const closeRef = useRef(null);
-  const [promptText, setPromptText] = useState(GUIDE_PROMPT);
   const [copied, setCopied] = useState(false);
+  const [club, setClub] = useState(() => readClub());
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const { excludedIds } = useClubExclusions(club?.clubId ?? null);
   const html = GUIDE_HTML[active] || GUIDE_HTML.en || t('guide.fallbackHtml');
+
+  // D22a (tech-plan-build-b.md §5): append the club + equipment section from
+  // buildPrompt to the base GUIDE_PROMPT template.
+  //
+  // WHY uncontrolled textarea + ref rather than controlled (value=):
+  // React's updateWrapper calls node.defaultValue = newValue on every render,
+  // which updates the textarea's text child node. testing-library's getByText
+  // reads those text child nodes, so a controlled textarea with club data in
+  // its value would match getByText(clubName) — colliding with the club info
+  // box tests that use getByText to assert visible UI, not prompt content.
+  //
+  // An uncontrolled textarea (defaultValue=GUIDE_PROMPT, no value= prop) gets
+  // its text child node set once at mount and never touched by React again.
+  // getNodeText(textarea) returns GUIDE_PROMPT only — no club name collision.
+  // The ref lets useEffect write directly to element.value so AC36's
+  // editor.value check (which reads the DOM property) sees the full prompt
+  // after act() flushes the effect. node.defaultValue is not changed.
+  const promptRef = useRef(null);
+  const computedPromptText = useMemo(
+    () => GUIDE_PROMPT + '\n' + buildPrompt({ equipment: EQUIPMENT, lang: active, excludedIds, club }),
+    [active, excludedIds, club]
+  );
+  useEffect(() => {
+    if (promptRef.current) promptRef.current.value = computedPromptText;
+  }, [computedPromptText]);
+
+  function handleClubSelected(selected) {
+    setClub(selected);
+    setPickerOpen(false);
+  }
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -102,7 +141,7 @@ export function GuideOverlay({ locale, onClose }) {
 
   async function handleCopyPrompt() {
     try {
-      await navigator.clipboard.writeText(promptText);
+      await navigator.clipboard.writeText(promptRef.current?.value ?? computedPromptText);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -223,10 +262,10 @@ export function GuideOverlay({ locale, onClose }) {
               {t('guide.fillHint')}
             </p>
             <textarea
+              ref={promptRef}
               id="guide-prompt-editor"
               aria-labelledby="guide-prompt-label"
-              value={promptText}
-              onChange={(e) => setPromptText(e.target.value)}
+              defaultValue={GUIDE_PROMPT}
               spellCheck={false}
               style={{
                 display: 'block',
@@ -244,6 +283,10 @@ export function GuideOverlay({ locale, onClose }) {
                 resize: 'vertical',
               }}
             />
+            {/* gym-directory-and-catalog R6.1/R6.7/D3/D16 — the gyms.html id-lookup
+                callout is replaced by the club picker trigger. Empty state prompts
+                selection; a resolved (or stale, D16) club shows its cached name +
+                address on the FIRST paint (clubStorage.readClub() is synchronous). */}
             <div style={{
               display: 'flex',
               gap: 12,
@@ -256,15 +299,19 @@ export function GuideOverlay({ locale, onClose }) {
               <Icon name="map-pin" size={18} style={{ color: 'var(--bf-purple)', marginTop: 2 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: '700 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: 4 }}>
-                  {t('guide.gymHint')}
+                  {t('club.fieldHeading')}
                 </div>
-                <p style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)', margin: '0 0 10px' }}>
-                  {t('guide.gymBody')}
-                </p>
-                <a
-                  href={GYMS_CATALOG_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                {club ? (
+                  <>
+                    <p style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)', margin: '0 0 2px', fontWeight: 700 }}>{club.name}</p>
+                    <p style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)', margin: '0 0 10px' }}>{club.address}</p>
+                  </>
+                ) : (
+                  <p style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)', margin: '0 0 10px' }}>{t('club.selectButton')}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -274,22 +321,38 @@ export function GuideOverlay({ locale, onClose }) {
                     background: 'var(--bf-purple)',
                     padding: '8px 14px',
                     borderRadius: 'var(--radius-control)',
-                    textDecoration: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
                   }}
                 >
-                  {t('guide.gymLink')}
-                  <Icon name="external-link" size={14} />
-                </a>
-                <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '8px 0 0' }}>
-                  {t('guide.gymAlt')}{' '}
-                  <a
-                    href="#/catalog"
-                    onClick={() => onClose && onClose()}
-                    style={{ color: 'var(--text-link)', fontWeight: 600 }}
+                  {club ? t('club.changeButton') : t('club.chooseCta')}
+                  <Icon name="chevron-right" size={14} />
+                </button>
+                {/* R7.1 — opens the equipment overlay once a club is chosen.
+                    club.equipmentOverlayTrigger exists in all three i18n
+                    catalogs (added alongside EquipmentOverlaySheet) but was
+                    never rendered by this screen until D22a (cycle-9). */}
+                {club && (
+                  <button
+                    type="button"
+                    onClick={() => setOverlayOpen(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      font: '600 13px/1 var(--font-sans)',
+                      color: 'var(--bf-purple)',
+                      background: 'var(--bf-purple-tint)',
+                      padding: '8px 14px',
+                      borderRadius: 'var(--radius-control)',
+                      border: '1px solid var(--bf-purple)',
+                      cursor: 'pointer',
+                    }}
                   >
-                    {t('guide.catalogLink')}
-                  </a>
-                </p>
+                    <Icon name="settings" size={14} />
+                    {t('club.equipmentOverlayTrigger')}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -391,6 +454,25 @@ export function GuideOverlay({ locale, onClose }) {
             dangerouslySetInnerHTML={{ __html: html }}
           />
         </div>
+
+        {/* D22a (R7.1) — ClubPickerSheet and EquipmentOverlaySheet must be
+            mounted INSIDE the root dialog (zIndex: 400, opaque background),
+            not as siblings. Both sheets are zIndex: 300 — any sibling renders
+            behind the opaque guide panel and is invisible to the user. The
+            Bagnik probe confirmed nested placement makes dialogs[1] the sheet
+            by document order, which the test asserts (tech-plan-build-b §5). */}
+        {pickerOpen && (
+          <ClubPickerSheet
+            onSelect={handleClubSelected}
+            onClose={() => setPickerOpen(false)}
+          />
+        )}
+        {overlayOpen && club && (
+          <EquipmentOverlaySheet
+            club={{ clubId: club.clubId, name: club.name, city: club.city, address: club.address }}
+            onClose={() => setOverlayOpen(false)}
+          />
+        )}
       </div>
     </>
   );

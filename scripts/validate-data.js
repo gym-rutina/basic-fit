@@ -171,10 +171,16 @@ function validateSchema(data, _schema) {
 
 /**
  * Validate a built gym directory (R1.9): unique club ids across the whole
- * directory, every cityKey present in the matching country's index entry,
- * coordinates in range, non-empty names/addresses, no `hours`/`url` field
- * (AC4), and index city counts agreeing with the actual per-city counts in
- * the country files (AC5).
+ * directory, every club's `city` present in the matching country's index
+ * entry, non-empty names/addresses, no `hours`/`url`/`coordinates`/`cityKey`
+ * field (AC4, D6a), and index city counts agreeing with the actual per-city
+ * counts in the country files (AC5).
+ *
+ * Cycle-9 correction (tech-plan-build-b.md D6a): club records no longer
+ * carry `cityKey` or `coordinates` — both were dropped to bring the real
+ * shipped payload under AC4's ≤300KB cap (measured at 604.9KB with both
+ * present, 2x over budget). City matching therefore joins on `city` (the
+ * display name) against the index's `cities[].name`, not on a slug key.
  *
  * @param {{countries: Array<{code:string, cities: Array<{key:string,name:string,clubCount:number}>}>}} index
  * @param {Record<string, {country:string, clubs:Array}>} files - country code -> parsed country file
@@ -203,13 +209,13 @@ function validateGyms(index, files) {
     const file = files[country.code];
     if (!file) continue;
 
-    const validCityKeys = new Set((country.cities || []).map((c) => c.key));
+    const validCityNames = new Set((country.cities || []).map((c) => c.name));
     const actualCounts = new Map();
 
     for (const club of file.clubs || []) {
-      if (!validCityKeys.has(club.cityKey)) {
+      if (!validCityNames.has(club.city)) {
         errors.push(
-          `club ${club.id} (${country.code}) has cityKey "${club.cityKey}" not present in the index`
+          `club ${club.id} (${country.code}) has city "${club.city}" not present in the index`
         );
       }
       if (!club.name || !String(club.name).trim()) {
@@ -218,36 +224,61 @@ function validateGyms(index, files) {
       if (!club.address || !String(club.address).trim()) {
         errors.push(`club ${club.id} (${country.code}) has an empty address`);
       }
-      if (club.coordinates) {
-        const { lat, lng } = club.coordinates;
-        if (typeof lat !== 'number' || lat < -90 || lat > 90) {
-          errors.push(`club ${club.id} (${country.code}) has an out-of-range coordinate: lat=${lat}`);
-        }
-        if (typeof lng !== 'number' || lng < -180 || lng > 180) {
-          errors.push(`club ${club.id} (${country.code}) has an out-of-range coordinate: lng=${lng}`);
-        }
-      }
       if ('hours' in club) {
         errors.push(`club ${club.id} (${country.code}) carries hours, which must never be stored (D6/AC4)`);
       }
       if ('url' in club) {
         errors.push(`club ${club.id} (${country.code}) carries url, which must never be stored (D6/AC4)`);
       }
+      if ('coordinates' in club) {
+        errors.push(`club ${club.id} (${country.code}) carries coordinates, which must never be stored (D6a/AC4 — dropped cycle 9 to fit the ≤300KB cap)`);
+      }
+      if ('cityKey' in club) {
+        errors.push(`club ${club.id} (${country.code}) carries cityKey, which must never be stored (D6a/AC4 — dropped cycle 9 to fit the ≤300KB cap)`);
+      }
 
-      actualCounts.set(club.cityKey, (actualCounts.get(club.cityKey) || 0) + 1);
+      actualCounts.set(club.city, (actualCounts.get(club.city) || 0) + 1);
     }
 
     for (const city of country.cities || []) {
-      const actual = actualCounts.get(city.key) || 0;
+      const actual = actualCounts.get(city.name) || 0;
       if (actual !== city.clubCount) {
         errors.push(
-          `index city count mismatch for ${city.key} (${country.code}): index says ${city.clubCount}, actual is ${actual}`
+          `index city count mismatch for ${city.name} (${country.code}): index says ${city.clubCount}, actual is ${actual}`
         );
       }
     }
   }
 
   return errors;
+}
+
+const MAX_GYMS_DIRECTORY_BYTES = 300 * 1024; // AC4 — ≤300 KB raw, uncompressed, un-gzipped
+
+/**
+ * Validates the shipped gym directory's total raw size against AC4's
+ * ≤300KB cap (tech-plan-build-b.md D6a). Nothing asserted this before cycle
+ * 9 — that is exactly how the directory shipped at 604.9KB, 2x over budget,
+ * undetected by a green test suite (Bagnik, handoff-log.md 04:15).
+ *
+ * Takes byte sizes rather than reading the filesystem itself, so it stays a
+ * pure, unit-testable function like `validateGyms` — the caller (`validate()`)
+ * is what knows the real file sizes.
+ *
+ * @param {Record<string, number>} fileSizes - filename -> byte size, e.g. { 'index.json': 123, 'ES.json': 456 }
+ * @returns {string[]}
+ */
+function validateGymsSize(fileSizes) {
+  const total = Object.values(fileSizes).reduce((sum, n) => sum + n, 0);
+  if (total > MAX_GYMS_DIRECTORY_BYTES) {
+    const breakdown = Object.entries(fileSizes)
+      .map(([f, n]) => `${f}: ${(n / 1024).toFixed(1)}KB`)
+      .join(', ');
+    return [
+      `data/gyms/ totals ${(total / 1024).toFixed(1)}KB, over AC4's ≤300KB raw cap (${breakdown})`,
+    ];
+  }
+  return [];
 }
 
 function validate() {
@@ -289,13 +320,15 @@ function validate() {
     console.log('\nValidating gym directory...');
     const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
     const files = {};
+    const fileSizes = { 'index.json': fs.statSync(indexPath).size };
     for (const country of index.countries || []) {
       const filePath = path.join(gymsDir, country.file);
       if (fs.existsSync(filePath)) {
         files[country.code] = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        fileSizes[country.file] = fs.statSync(filePath).size;
       }
     }
-    const gymErrors = validateGyms(index, files);
+    const gymErrors = validateGyms(index, files).concat(validateGymsSize(fileSizes));
     errors = errors.concat(gymErrors);
     console.log(`✓ Read data/gyms/ (${index.countries?.length ?? 0} countries)`);
   } else {
@@ -337,6 +370,7 @@ module.exports = {
   validate,
   validateSchema,
   validateGyms,
+  validateGymsSize,
   REQUIRED_FIELDS,
   VALID_CATEGORIES,
   VALID_KINDS,

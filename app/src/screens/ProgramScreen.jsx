@@ -355,7 +355,7 @@ function ProgramDayDetail({ rutina, dayIndex }) {
             if (exercise.intensity)
               details.push({ label: t('program.intensity'), value: <span dir="auto">{exercise.intensity}</span> });
 
-            const equipmentSeriesPrefix = equipment && equipment.series ? 'Matrix ' + equipment.series + ' ' : '';
+            const equipmentSeriesPrefix = equipment && equipment.series ? equipment.series + ' ' : '';
             const equipmentLabel = equipment
               ? equipmentSeriesPrefix + equipment.modelCode + ' — ' + equipmentDisplayName(equipment, locale)
               : exercise.equipmentId;

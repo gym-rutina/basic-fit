@@ -28,7 +28,13 @@ export function EquipmentCard({ name, modelCode, series, imageUrl, primaryMuscle
       <div style={{ padding: "var(--space-4)" }}>
         <h3 style={{ font: "var(--text-h3)", margin: 0 }}>{name}</h3>
         <div style={{ font: "var(--text-caption)", color: "var(--text-muted)", margin: "4px 0 10px" }}>
-          {series ? `Matrix ${series} · ` : ""}{modelCode}
+          {/* gym-directory-and-catalog X4 — equipment.json is Matrix machines
+              PLUS ZIVA free weights/benches/accessories, so hardcoding the
+              "Matrix" vendor word here would mislabel every ZIVA card. The
+              series name (shipped, vendor-agnostic) is still shown; modelCode
+              already carries the vendor signal via its own prefix
+              (G3-/MG-/ZVO-/ZMT-/...). */}
+          {series ? `${series} · ` : ""}{modelCode}
         </div>
         {(primaryMuscles.length > 0 || secondaryMuscles.length > 0) && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
