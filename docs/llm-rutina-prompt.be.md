@@ -18,15 +18,15 @@
 > `{"en": "Monday", "es": "Lunes"}`.
 
 Усе даведачныя даныя знаходзяцца ў публічным рэпазіторыі
-[github.com/bthos/gym-routine-basic-fit](https://github.com/bthos/gym-routine-basic-fit).
+[github.com/gym-rutina/basic-fit](https://github.com/gym-rutina/basic-fit).
 Prompt паказвае LLM, дзе іх чытаць — вам **не** трэба самастойна капіраваць схему ці
 файлы абсталявання.
 
 | Даныя | URL |
 |-------|-----|
-| Схема (крыніца ісціны) | [rutina.schema.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/schema/rutina.schema.json) |
-| Каталог абсталявання (неабавязковая даведка) | [equipment.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/equipment.json) |
-| Даведачны прыклад | [phase1-monday.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/examples/phase1-monday.json) |
+| Схема (крыніца ісціны) | [rutina.schema.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/schema/rutina.schema.json) |
+| Каталог абсталявання (неабавязковая даведка) | [equipment.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/equipment.json) |
+| Даведачны прыклад | [phase1-monday.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/examples/phase1-monday.json) |
 
 > **LLM без доступу да інтэрнэту?** Націсніце кнопку **Спампаваць** на гэтым экране
 > кіраўніцтва, каб захаваць zip-архіў з файламі даных непасрэдна на прыладу — адзін

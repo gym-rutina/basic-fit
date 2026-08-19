@@ -112,7 +112,7 @@ describe('GuideOverlay — data archive download', () => {
 
   const ARCHIVE_FILENAME = 'rutina-data-files.zip';
   const ARCHIVE_PATH = 'data/rutina-data-files.zip';
-  const BASE_URL = 'https://bthos.github.io/gym-routine-basic-fit/';
+  const BASE_URL = 'https://gym-rutina.github.io/basic-fit/';
   const OLD_PER_FILE_NAMES = [
     'rutina.schema.json',
     'equipment.json',

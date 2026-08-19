@@ -20,17 +20,17 @@ the ids listed in the EQUIPMENT section appended to this prompt.
 Fetch and read each file from the public repository before writing output:
 
 - Schema (source of truth):
-  https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/schema/rutina.schema.json
+  https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/schema/rutina.schema.json
 
 - Equipment catalog (optional detail reference — the EQUIPMENT section below
   already lists the ids available at your target club; fetch the full catalog
   only if you need additional details such as muscle-group metadata or video links):
-  https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/equipment.json
+  https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/equipment.json
 
 - Reference example (validator-passing rutina.json):
-  https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/examples/phase1-monday.json
+  https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/examples/phase1-monday.json
 
-Repository (browse all data files): https://github.com/bthos/gym-routine-basic-fit
+Repository (browse all data files): https://github.com/gym-rutina/basic-fit
 
 If you cannot fetch URLs, ask the user to attach the zip archive of data files
 (rutina-data-files.zip) — or the files above if their chat can't open zip attachments.

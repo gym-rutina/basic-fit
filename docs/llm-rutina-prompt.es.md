@@ -19,15 +19,15 @@ ventana de chat de navegador normal.
 > `{"en": "Monday", "es": "Lunes"}`.
 
 Todos los datos de referencia están en el repositorio público
-[github.com/bthos/gym-routine-basic-fit](https://github.com/bthos/gym-routine-basic-fit).
+[github.com/gym-rutina/basic-fit](https://github.com/gym-rutina/basic-fit).
 El prompt indica al LLM dónde leerlos — **no** necesitas copiar tú mismo el esquema ni
 los archivos de equipamiento.
 
 | Dato | URL |
 |------|-----|
-| Esquema (fuente de verdad) | [rutina.schema.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/schema/rutina.schema.json) |
-| Catálogo de equipamiento (referencia opcional) | [equipment.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/equipment.json) |
-| Ejemplo de referencia | [phase1-monday.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/examples/phase1-monday.json) |
+| Esquema (fuente de verdad) | [rutina.schema.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/schema/rutina.schema.json) |
+| Catálogo de equipamiento (referencia opcional) | [equipment.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/equipment.json) |
+| Ejemplo de referencia | [phase1-monday.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/examples/phase1-monday.json) |
 
 > **¿LLM sin acceso web?** Usa el botón **Descargar** de esta pantalla de guía para
 > guardar un archivo zip con los archivos de datos directamente en tu dispositivo — un

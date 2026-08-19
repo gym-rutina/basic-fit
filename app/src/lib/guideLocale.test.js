@@ -42,7 +42,7 @@ describe('GUIDE_DATA_ARCHIVE (LLM guide zip-download card)', () => {
 
   it('points at the production GitHub Pages origin, not raw.githubusercontent.com (AC2)', () => {
     expect(guideLocale.GUIDE_DATA_FILES_BASE_URL).toBe(
-      'https://bthos.github.io/gym-routine-basic-fit/'
+      'https://gym-rutina.github.io/basic-fit/'
     );
   });
 

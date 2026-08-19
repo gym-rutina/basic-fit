@@ -18,15 +18,15 @@ window.
 > multilingual object like `{"en": "Monday", "es": "Lunes"}`.
 
 All reference data lives in the public repository
-[github.com/bthos/gym-routine-basic-fit](https://github.com/bthos/gym-routine-basic-fit).
+[github.com/gym-rutina/basic-fit](https://github.com/gym-rutina/basic-fit).
 The prompt tells the LLM where to read it — you do **not** need to copy schema or
 equipment files yourself.
 
 | Data | URL |
 |------|-----|
-| Schema (source of truth) | [rutina.schema.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/schema/rutina.schema.json) |
-| Equipment catalog (optional detail reference) | [equipment.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/equipment.json) |
-| Reference example | [phase1-monday.json](https://cdn.jsdelivr.net/gh/bthos/gym-routine-basic-fit@main/data/examples/phase1-monday.json) |
+| Schema (source of truth) | [rutina.schema.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/schema/rutina.schema.json) |
+| Equipment catalog (optional detail reference) | [equipment.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/equipment.json) |
+| Reference example | [phase1-monday.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/examples/phase1-monday.json) |
 
 > **LLM without web access?** Use the **Download** button in this guide screen to save
 > a zip archive of the data files directly to your device — one file, ready to attach to

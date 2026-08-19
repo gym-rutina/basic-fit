@@ -18,7 +18,7 @@ export function detectGuideLocale(navLang = navigator.language) {
  * URL — so it stays here rather than folding into the i18n catalogs.
  */
 export const GYMS_CATALOG_URL =
-  'https://bthos.github.io/gym-routine-basic-fit/gyms.html';
+  'https://gym-rutina.github.io/basic-fit/gyms.html';
 
 /**
  * In-app "download data archive" card (llm-guide-zip-download; superseded
@@ -30,7 +30,7 @@ export const GYMS_CATALOG_URL =
  * localhost, even in local dev).
  */
 export const GUIDE_DATA_FILES_BASE_URL =
-  'https://bthos.github.io/gym-routine-basic-fit/';
+  'https://gym-rutina.github.io/basic-fit/';
 
 /**
  * Single zip archive replacing the four per-file downloads

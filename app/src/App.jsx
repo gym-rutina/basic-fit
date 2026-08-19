@@ -125,7 +125,7 @@ function Shell() {
 export default function App() {
   return (
     <I18nProvider>
-      <HashRouter>
+      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Shell />
       </HashRouter>
     </I18nProvider>
