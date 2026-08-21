@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildEquipmentTable, equipmentTableBytes, buildPrompt } from './promptEquipment.js';
+import { buildEquipmentTable, equipmentTableBytes, buildPrompt, composeRequestBlock, composePrompt } from './promptEquipment.js';
 import { EQUIPMENT } from '../data/equipment.js';
 
 /**
@@ -223,5 +223,168 @@ describe('buildPrompt — the instruction rewrite (AC40, AC42, R6.5, R6.6)', () 
   it('remains valid with no club selected — the flow is never blocked (R5.6)', () => {
     expect(() => prompt()).not.toThrow();
     expect(prompt()).toContain('g3-s10');
+  });
+});
+
+/**
+ * onboarding-request-fields R1.4, R6.1-R6.6, AC4, AC30-AC32, AC35 (tech-plan.md §2.2).
+ *
+ * Pending Cmok implementation — see tech-plan.md. Failures here are expected
+ * until Cmok adds composeRequestBlock/composePrompt to promptEquipment.js.
+ *
+ * composeRequestBlock is the ONE place the 8-line REQUEST block is built at
+ * runtime (the template's own copy of it is deleted — tech-plan.md §2.5).
+ * These tests pin structure (ordering, placeholder preservation, no
+ * null/undefined/NaN, continuation-line indentation) rather than exact
+ * label wording, which is Cmok/Mokash's copy to write.
+ */
+describe('composeRequestBlock — field composition (R1.4, R6.1-R6.6, AC4, AC30-AC32)', () => {
+  const BASE = { answers: {}, club: null, sessionsMarkdown: '', sessionsIncluded: false, locale: 'es' };
+
+  it('starts with the ### REQUEST heading', () => {
+    expect(composeRequestBlock(BASE)).toMatch(/^### REQUEST\n/);
+  });
+
+  it('emits exactly eight numbered REQUEST lines, 1 through 8, in order (AC30)', () => {
+    const block = composeRequestBlock(BASE);
+    const numbers = [...block.matchAll(/^(\d)\.\s/gm)].map((m) => Number(m[1]));
+    expect(numbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+  });
+
+  it('an unanswered field renders its placeholder line — no null/undefined/NaN anywhere (AC31)', () => {
+    const block = composeRequestBlock(BASE);
+    expect(block).not.toMatch(/\bnull\b/);
+    expect(block).not.toMatch(/\bundefined\b/);
+    expect(block).not.toMatch(/\bNaN\b/);
+    const field3Line = block.split('\n').find((l) => /^3\./.test(l));
+    expect(field3Line.trim()).toMatch(/:$/);
+  });
+
+  it('an answered field 1/2/4 appends the value after its label on the same line', () => {
+    const block = composeRequestBlock({
+      ...BASE,
+      answers: { field1: 'Elena — Fase 2', field2: 'Hipertrofia', field4: '45-60 min' },
+    });
+    expect(block).toMatch(/^1\..*Elena — Fase 2$/m);
+    expect(block).toMatch(/^2\..*Hipertrofia$/m);
+    expect(block).toMatch(/^4\..*45-60 min$/m);
+  });
+
+  it('field 3 renders the integer when answered', () => {
+    const block = composeRequestBlock({ ...BASE, answers: { field3: 4 } });
+    expect(block).toMatch(/^3\..*\b4\b/m);
+  });
+
+  it('field 7 is always the locale autonym — never a question, never blank (AC4)', () => {
+    for (const [locale, autonym] of [
+      ['es', 'Español'],
+      ['en', 'English'],
+      ['be', 'Беларуская'],
+    ]) {
+      const field7Line = composeRequestBlock({ ...BASE, locale })
+        .split('\n')
+        .find((l) => /^7\./.test(l));
+      expect(field7Line).toContain(autonym);
+    }
+  });
+
+  it('field 6 shows the placeholder when no club is selected (R1.3, R6.3)', () => {
+    const field6Line = composeRequestBlock(BASE)
+      .split('\n')
+      .find((l) => /^6\./.test(l));
+    expect(field6Line.trim()).toMatch(/:$/);
+  });
+
+  it('field 6 substitutes the resolved club (R1.3)', () => {
+    const block = composeRequestBlock({
+      ...BASE,
+      club: { clubId: '1', name: 'Alameda', city: 'Málaga', address: 'Av. de Andalucía 12' },
+    });
+    expect(block).toContain('Alameda');
+    expect(block).toContain('Málaga');
+    expect(block).toContain('Av. de Andalucía 12');
+  });
+
+  it('field 8 renders the export markdown only when sessionsIncluded is true (R4.1-R4.3)', () => {
+    const markdown = 'Prensa de Pecho (g3-s10)\n  · 32kg / normal';
+    expect(composeRequestBlock({ ...BASE, sessionsMarkdown: markdown, sessionsIncluded: true })).toContain('Prensa de Pecho');
+
+    const excluded = composeRequestBlock({ ...BASE, sessionsMarkdown: markdown, sessionsIncluded: false });
+    expect(excluded).not.toContain('Prensa de Pecho');
+    const field8Line = excluded.split('\n').find((l) => /^8\./.test(l));
+    expect(field8Line.trim()).toMatch(/:$/);
+  });
+
+  it('indents every continuation line of a multi-line field-5 answer, keeping "8." the last REQUEST line (AC32, R6.6)', () => {
+    const block = composeRequestBlock({
+      ...BASE,
+      answers: { field5: 'Evitar press militar.\nTambién evitar sentadilla profunda.' },
+    });
+    const lines = block.split('\n');
+    const numberedLines = lines.filter((l) => /^\d\.\s/.test(l));
+    expect(numberedLines[numberedLines.length - 1]).toMatch(/^8\./);
+
+    const continuationLine = lines.find((l) => l.includes('sentadilla'));
+    expect(continuationLine).not.toMatch(/^\d\./);
+    expect(continuationLine.startsWith(' ')).toBe(true);
+  });
+
+  it('indents every continuation line of a multi-line field-8 export markdown too, keeping "8." last (AC32, R6.6)', () => {
+    const block = composeRequestBlock({
+      ...BASE,
+      sessionsMarkdown: 'Prensa de Pecho (g3-s10)\n  · 32kg / normal\n  · 35kg / fácil',
+      sessionsIncluded: true,
+    });
+    const lines = block.split('\n');
+    for (const l of lines.filter((l) => l.includes('kg /'))) {
+      expect(l).not.toMatch(/^\d\./);
+    }
+    const numberedLines = lines.filter((l) => /^\d\.\s/.test(l));
+    expect(numberedLines[numberedLines.length - 1]).toMatch(/^8\./);
+  });
+});
+
+describe('composePrompt — the single assembly point (R6.1, AC35)', () => {
+  const guidePromptText =
+    '### ROLE\nYou are a coach.\n\n### DATA SOURCES\nschema url\n\n### SCHEMA\n{}\n\n### CONSTRAINTS\n...\n\n### OUTPUT\nReturn JSON.\n';
+
+  function compose(overrides = {}) {
+    return composePrompt({
+      answers: {},
+      equipment: EQUIPMENT,
+      lang: 'es',
+      excludedIds: [],
+      club: null,
+      sessionsMarkdown: '',
+      sessionsIncluded: false,
+      guidePromptText,
+      ...overrides,
+    });
+  }
+
+  it('assembles REQUEST, then the given guidePromptText, then the equipment section, in that order', () => {
+    const prompt = compose({ answers: { field1: 'Elena' } });
+    const requestIdx = prompt.indexOf('### REQUEST');
+    const roleIdx = prompt.indexOf('### ROLE');
+    const equipmentIdx = prompt.indexOf('g3-s10');
+    expect(requestIdx).toBeGreaterThanOrEqual(0);
+    expect(roleIdx).toBeGreaterThan(requestIdx);
+    expect(equipmentIdx).toBeGreaterThan(roleIdx);
+  });
+
+  it('composes with no club selected without throwing (AC35, R5.6)', () => {
+    expect(() => compose()).not.toThrow();
+    expect(compose()).not.toMatch(/undefined/);
+  });
+
+  it('never contains null/undefined/NaN anywhere in the fully composed prompt', () => {
+    const prompt = compose({ answers: { field3: 'not-a-number' } });
+    expect(prompt).not.toMatch(/\bnull\b/);
+    expect(prompt).not.toMatch(/\bundefined\b/);
+    expect(prompt).not.toMatch(/\bNaN\b/);
+  });
+
+  it('still embeds the club-scoped equipment table via the existing buildPrompt (AC34, unchanged)', () => {
+    expect(compose()).toContain('g3-s10');
   });
 });

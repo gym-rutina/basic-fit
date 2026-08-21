@@ -3,7 +3,11 @@
  * Converts docs/llm-rutina-prompt.{es,en,be}.md to pre-rendered HTML fragments
  * bundled by GuideOverlay (no runtime Markdown library).
  *
- * Exports GUIDE_PROMPT from docs/llm-rutina-prompt-template.txt.
+ * Exports GUIDE_PROMPT from docs/llm-rutina-prompt-template.txt, with its
+ * `{{SCHEMA_JSON}}` placeholder substituted for the rutina schema stripped
+ * of description/title/$schema (onboarding-request-fields R5.1-R5.2,
+ * tech-plan.md §2.4). `data/schema/rutina.schema.json` is only ever
+ * required/read here, never opened for writing (D3/AC26).
  *
  * Run: node scripts/build-guide-content.js
  * Hooked into predev/prebuild via package.json.
@@ -12,16 +16,22 @@
 const fs = require('fs');
 const path = require('path');
 const { marked } = require('marked');
+const { stripSchemaAnnotations } = require('./lib/stripSchema.js');
 
 const ROOT = path.join(__dirname, '..');
 const OUT = path.join(ROOT, 'app', 'src', 'data', 'guideContent.js');
 const TEMPLATE_PATH = path.join(ROOT, 'docs', 'llm-rutina-prompt-template.txt');
+const SCHEMA_PATH = path.join(ROOT, 'data', 'schema', 'rutina.schema.json');
 
 const LOCALES = ['es', 'en', 'be'];
 
 marked.setOptions({ gfm: true, breaks: false });
 
-const promptTemplate = fs.readFileSync(TEMPLATE_PATH, 'utf8');
+const rawSchema = JSON.parse(fs.readFileSync(SCHEMA_PATH, 'utf8'));
+const strippedSchema = stripSchemaAnnotations(rawSchema);
+const schemaJson = JSON.stringify(strippedSchema);
+
+const promptTemplate = fs.readFileSync(TEMPLATE_PATH, 'utf8').replace('{{SCHEMA_JSON}}', () => schemaJson);
 
 const htmlByLocale = {};
 for (const locale of LOCALES) {

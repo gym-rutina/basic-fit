@@ -82,14 +82,28 @@ describe('SettingsScreen — the language picker (AC11, a11y)', () => {
     renderSettings({ locale: 'be' });
     const checked = screen.getAllByRole('radio').filter((r) => r.getAttribute('aria-checked') === 'true');
     expect(checked).toHaveLength(1);
-    expect(checked[0]).toHaveTextContent('BE');
+    expect(checked[0]).toHaveTextContent('Беларуская');
   });
 
-  it('prints each language autonym so it is recognisable from any UI language', () => {
+  // onboarding-request-fields Rev5 (locale-code / country-code collision fix,
+  // tech-plan.md §2.10): pills themselves now render the autonym directly —
+  // l.toUpperCase() ('BE') read as Belgium's country code, visually
+  // indistinguishable from the Belarusian language pill. The now-redundant
+  // muted subtitle line that used to carry this same text a second time is
+  // REMOVED (two elements with identical text would break getByText's
+  // single-match assumption), so this test moves from asserting the subtitle
+  // to asserting the pills' own accessible names directly.
+  it('every pill shows its own language autonym as its accessible name, not a 2-letter code (Rev5)', () => {
     renderSettings({ locale: 'en' });
     for (const locale of UI_LOCALES) {
-      expect(screen.getByText(new RegExp(LOCALE_AUTONYMS[locale]))).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: LOCALE_AUTONYMS[locale] })).toBeInTheDocument();
     }
+  });
+
+  it('does not render a 2-letter code anywhere in the language picker (Rev5 — the collision this fix removes)', () => {
+    renderSettings({ locale: 'en' });
+    const group = screen.getByRole('radiogroup', { name: /language/i });
+    expect(group.textContent).not.toMatch(/\bBE\b/);
   });
 
   it('shows exactly three options — never an empty or loading state', () => {
@@ -105,7 +119,7 @@ describe('SettingsScreen — switching (AC12)', () => {
     const user = userEvent.setup();
     renderSettings();
 
-    await user.click(screen.getByRole('radio', { name: /EN/ }));
+    await user.click(screen.getByRole('radio', { name: /english/i }));
 
     expect(screen.getByTestId('pathname')).toHaveTextContent('/settings');
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
@@ -116,7 +130,7 @@ describe('SettingsScreen — switching (AC12)', () => {
     renderSettings();
     expect(screen.getByText('Inicio')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('radio', { name: /EN/ }));
+    await user.click(screen.getByRole('radio', { name: /english/i }));
 
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
@@ -124,7 +138,7 @@ describe('SettingsScreen — switching (AC12)', () => {
   it('persists the choice', async () => {
     const user = userEvent.setup();
     renderSettings();
-    await user.click(screen.getByRole('radio', { name: /BE/ }));
+    await user.click(screen.getByRole('radio', { name: /беларуская/i }));
     expect(localStorage.getItem(UI_LANG_KEY)).toBe('be');
   });
 
@@ -132,11 +146,11 @@ describe('SettingsScreen — switching (AC12)', () => {
     // ux-design.md: switching must not steal or move focus.
     const user = userEvent.setup();
     renderSettings();
-    const option = screen.getByRole('radio', { name: /EN/ });
+    const option = screen.getByRole('radio', { name: /english/i });
 
     await user.click(option);
 
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: /EN/ }));
+    expect(document.activeElement).toBe(screen.getByRole('radio', { name: /english/i }));
   });
 
   it('keeps the previous locale active, and stays silent, when persistence fails', async () => {
@@ -147,7 +161,7 @@ describe('SettingsScreen — switching (AC12)', () => {
     const user = userEvent.setup();
     renderSettings();
 
-    await user.click(screen.getByRole('radio', { name: /EN/ }));
+    await user.click(screen.getByRole('radio', { name: /english/i }));
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();

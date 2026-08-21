@@ -53,7 +53,7 @@ describe('guide copy moved into the catalogs (AC8, AC6)', () => {
     expect(source).not.toMatch(/export const GUIDE_LINK_TEXT/);
     expect(source).not.toMatch(/export const GUIDE_TITLE/);
     expect(source).toMatch(/export const GYMS_CATALOG_URL/);
-    expect(source).toMatch(/export const GUIDE_DATA_ARCHIVE/);
+    expect(source).toMatch(/export const GUIDE_SCHEMA_DOWNLOAD/);
   });
 });
 

@@ -15,6 +15,17 @@ import { readUiLocale, writeUiLocale } from '../lib/uiLangStorage.js';
  * (AC4) — this whole module plus three catalogs is in-house.
  */
 
+// Naming convention (onboarding-request-fields Rev5-D3): language codes are
+// lowercase ISO 639-1 (`es`, `en`, `be`); country codes elsewhere in the app
+// (data/gyms/index.json's `code` field, e.g. `BE` for Belgium) are UPPERCASE
+// ISO 3166-1 alpha-2. The two sets share letters for several languages (`be`
+// language vs `BE` country, later `nl`/`fr`/`de` vs `NL`/`FR`/`DE`) — casing
+// is the ONLY thing that disambiguates them, so never uppercase a language
+// code for display (SettingsScreen.jsx used to via `l.toUpperCase()`, which
+// made Belarusian's `be` pill read as Belgium's `BE` — fixed by rendering
+// `LOCALE_AUTONYMS[l]` instead) and never add a language code that collides
+// case-sensitively with an existing country code.
+
 // AC1 — the only locale list in app/src. DEC-1: matches equipment.json's
 // metadata.languages and docs/llm-rutina-prompt.{es,en,be}.md. DEC-6: `es`
 // is the authoring locale, so it leads the array.

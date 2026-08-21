@@ -22,6 +22,7 @@ export default {
   'common.completedOfSpaced': '{done} / {total} completados',
   'common.unfinishedSuffix': 'sesión sin terminar',
   'common.secondsFull': '{n} segundos',
+  'common.example': 'Ej',
 
   // ── tab (BottomTabBar) ──────────────────────────────────────────────────
   'tab.home': 'Inicio',
@@ -56,8 +57,7 @@ export default {
   'onboarding.howItWorksLink': 'Cómo funciona la app →',
   'onboarding.step1.title': 'Tu entrenador sin cuentas ni conexión',
   'onboarding.step1.body': 'Guarda tu rutina y tu historial en este dispositivo. Sin cuenta, sin clave API.',
-  'onboarding.step2.title': 'Tú creas el plan con un LLM',
-  'onboarding.step2.body':
+  'onboarding.step2.preamble':
     'Rutina no genera tu programa — tú lo creas con un chat LLM (ChatGPT, Claude, Gemini…) y lo importas aquí.',
   'onboarding.step3.title': 'Así funciona',
   'onboarding.step3.step1': 'Rellena el prompt',
@@ -66,9 +66,41 @@ export default {
   'onboarding.step3.step4': 'Impórtala en la app',
   'onboarding.step3.outcome1': '✓ pasa → listo',
   'onboarding.step3.outcome2': '✗ falla → corrige y vuelve a intentar',
-  'onboarding.step3.footnote': '(Verás el prompt completo en la guía de creación, con el paso a paso detallado.)',
-  'onboarding.step4.title': 'Ya puedes empezar',
-  'onboarding.step4.body': 'Puedes volver a ver esto cuando quieras desde la pantalla de importar.',
+  'onboarding.clubStep.title': 'Tu gimnasio',
+  'onboarding.clubStep.body': 'El asistente adaptará los ejercicios al equipamiento disponible en tu club.',
+  'onboarding.nameGoalStep.title': 'Personaliza tu programa',
+  'onboarding.nameGoalStep.body': 'Cuanto más detallado seas, más personalizada la rutina.',
+  'onboarding.scheduleStep.title': 'Tu horario',
+  'onboarding.scheduleStep.body': 'Cuántos días y cuánto tiempo tienes para entrenar cada semana.',
+  'onboarding.injuriesStep.title': 'Antes de terminar',
+  'onboarding.injuriesStep.body':
+    'El asistente excluirá los movimientos que indiques. Puedes dejarlo en blanco si no tienes restricciones.',
+  'onboarding.skipConfirm.title': '¿Salir sin terminar?',
+  'onboarding.skipConfirm.body': 'Lo que hayas escrito se guardará. Podrás completar el resto más tarde desde la guía.',
+  'onboarding.skipConfirm.confirm': 'Salir',
+  'onboarding.skipConfirm.cancel': 'Seguir aquí',
+
+  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  'promptRequest.field1.label': 'Nombre / programa',
+  'promptRequest.field1.hint': 'Puedes añadir fase, nombre propio o contexto de tu progreso.',
+  'promptRequest.field1.example': 'Elena — Fase 2 de 3 (volumen). Llevo 8 meses entrenando.',
+  'promptRequest.field2.label': 'Objetivo principal',
+  'promptRequest.field2.hint':
+    'Objetivo, ejercicios que te gustan, equipamiento preferido, canales de YouTube que sigues, qué odias, cómo entrenas...',
+  'promptRequest.field2.hintSmart': 'Tienes {cat1}, {cat2} y {cat3} en tu gym — cuéntale cuáles te gustan.',
+  'promptRequest.field2.example':
+    'Quiero más músculo en tren superior, sobre todo pecho y hombros. Me encantan las máquinas de cable y el press en Smith, los pesos libres me dan menos confianza. Sigo a Jeff Nippard en YouTube — me mola el enfoque de alta frecuencia y técnica limpia. No me gusta el cardio. Puedo ir muy intenso si hay buen descanso entre series (2-3 min).',
+  'promptRequest.field3.label': 'Días por semana',
+  'promptRequest.field3.hint': 'Elige cuántos días puedes entrenar cada semana.',
+  'promptRequest.field4.label': 'Duración de la sesión',
+  'promptRequest.field4.hint': 'Tiempo real disponible para entrenar, incluyendo variaciones entre semana/fin de semana.',
+  'promptRequest.field4.example': '45-60 min entre semana, hasta 80 min los sábados',
+  'promptRequest.field5.label': 'Lesiones o movimientos a evitar',
+  'promptRequest.field5.hint': 'Lesiones concretas, movimientos que duelen, rango de movimiento limitado, qué sí funciona.',
+  'promptRequest.field5.example':
+    'Tendinitis rotuliana en rodilla derecha (desde 2024): sin sentadilla libre ni zancadas, pero prensa con rango parcial va bien. Hombro izquierdo: impingement leve — sin press militar, el press inclinado en máquina no molesta.',
+  'promptRequest.field5.placeholder': 'ninguna',
+  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'Ver la guía de creación con LLM →',
@@ -77,11 +109,15 @@ export default {
   'guide.promptLabel': 'Prompt para el LLM',
   'guide.copy': 'Copiar',
   'guide.copied': 'Copiado',
-  'guide.fillHint': 'Rellena cada línea numerada del REQUEST (texto simple, sin JSON) antes de enviar.',
-  'guide.downloadsHeading': '¿LLM sin acceso web?',
-  'guide.downloadsBody': 'Descarga el archivo de datos (ZIP) y adjúntalo al chat manualmente.',
+  'guide.fillHint': 'Revisa y ajusta los campos antes de copiar — la app ya rellenó lo que sabe.',
+  'guide.coverageBadge': '{n}/8 campos',
+  'guide.requestEditorHeading': 'Datos del programa',
+  'guide.formOverwritesTextarea': 'Editar estos campos actualiza el prompt y descarta cualquier edición manual del texto.',
+  'guide.field8Checkbox': 'Incluir mi progreso ({n} sesiones)',
+  'guide.downloadsHeading': '¿Se truncó el prompt al pegarlo?',
+  'guide.downloadsBody': 'Descarga el esquema completo y adjúntalo al chat manualmente.',
   'guide.downloadAction': 'Descargar',
-  'guide.downloadArchiveLabel': 'Todos los archivos (ZIP)',
+  'guide.schemaDownloadLabel': 'Esquema completo (JSON)',
   'guide.noRutina': '¿No tienes un rutina.json?',
   'guide.fallbackHtml': '<p>No se pudo cargar la guía.</p>',
 
@@ -344,7 +380,7 @@ export default {
   'promptEquipment.clubHeading': 'CAMPO 6 — CLUB',
   'promptEquipment.tableHeading': 'EQUIPAMIENTO DISPONIBLE (id | modelCode | nombre | categoría | grupo muscular)',
   'promptEquipment.noClubSelected': '(sin seleccionar todavía — usa el selector de club de la guía)',
-  'promptEquipment.equipmentIdNote': 'equipmentId es opcional: omítelo o usa null para ejercicios a peso corporal.',
+  'promptEquipment.equipmentIdNote': 'equipmentId es opcional: omítelo para ejercicios a peso corporal.',
   'promptEquipment.exceptionNote':
     'extraEquipment es la EXCEPCIÓN, no la opción por defecto: con 48 ids de catálogo (incluyendo peso libre, bancos, barras y esterillas), la mayoría del equipo ya tiene un id. Declara extraEquipment SOLO para equipamiento sin identidad de fabricante (una banda, un rodillo, una toalla).',
 };

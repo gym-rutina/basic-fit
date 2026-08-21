@@ -18,6 +18,7 @@ export default {
   'common.completedOfSpaced': '{done} / {total} завершана',
   'common.unfinishedSuffix': 'сесія не завершана',
   'common.secondsFull': '{n} секунд',
+  'common.example': 'Напр',
 
   // ── tab (BottomTabBar) ──────────────────────────────────────────────────
   'tab.home': 'Галоўная',
@@ -52,8 +53,7 @@ export default {
   'onboarding.howItWorksLink': 'Як працуе прыкладанне →',
   'onboarding.step1.title': 'Ваш трэнер без уліковых запісаў і злучэння',
   'onboarding.step1.body': 'Захоўвайце сваю руціну і гісторыю на гэтай прыладзе. Без уліковага запісу, без ключа API.',
-  'onboarding.step2.title': 'Вы ствараеце план з дапамогай LLM',
-  'onboarding.step2.body':
+  'onboarding.step2.preamble':
     'Rutina не стварае вашу праграму — вы ствараеце яе ў чаце LLM (ChatGPT, Claude, Gemini…) і імпартуеце сюды.',
   'onboarding.step3.title': 'Як гэта працуе',
   'onboarding.step3.step1': 'Запоўніце prompt',
@@ -62,9 +62,41 @@ export default {
   'onboarding.step3.step4': 'Імпартуйце ў прыкладанне',
   'onboarding.step3.outcome1': '✓ прайшло → гатова',
   'onboarding.step3.outcome2': '✗ не атрымалася → выпраўце і паспрабуйце зноў',
-  'onboarding.step3.footnote': '(Поўны prompt вы ўбачыце ў кіраўніцтве па стварэнні, з падрабязнымі крокамі.)',
-  'onboarding.step4.title': 'Вы гатовыя пачаць',
-  'onboarding.step4.body': 'Вы можаце вярнуцца да гэтага ў любы час з экрана імпарту.',
+  'onboarding.clubStep.title': 'Ваш трэнажорны зал',
+  'onboarding.clubStep.body': 'Памочнік падбярэ практыкаванні пад абсталяванне, даступнае ў вашым клубе.',
+  'onboarding.nameGoalStep.title': 'Наладзьце сваю праграму',
+  'onboarding.nameGoalStep.body': 'Чым больш падрабязна вы апішаце, тым больш персаналізаванай будзе руціна.',
+  'onboarding.scheduleStep.title': 'Ваш графік',
+  'onboarding.scheduleStep.body': 'Колькі дзён і колькі часу ў вас ёсць для трэніровак кожны тыдзень.',
+  'onboarding.injuriesStep.title': 'Перад пачаткам',
+  'onboarding.injuriesStep.body':
+    'Памочнік выключыць рухі, якія вы пазначыце. Пакіньце пустым, калі абмежаванняў няма.',
+  'onboarding.skipConfirm.title': 'Выйсці, не закончыўшы?',
+  'onboarding.skipConfirm.body': 'Тое, што вы ўвялі, будзе захавана. Астатняе можна дапоўніць пазней у кіраўніцтве.',
+  'onboarding.skipConfirm.confirm': 'Выйсці',
+  'onboarding.skipConfirm.cancel': 'Застацца тут',
+
+  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  'promptRequest.field1.label': 'Назва / праграма',
+  'promptRequest.field1.hint': 'Дадай нумар фазы, імя ці кантэкст, каб лёгка пазнаць праграму.',
+  'promptRequest.field1.example': 'Алена — Фаза 2 з 3 (аб\'ём). Займаюся 8 месяцаў.',
+  'promptRequest.field2.label': 'Асноўная мэта',
+  'promptRequest.field2.hint':
+    'Мэта, любімыя практыкаванні, абсталяванне, якое падабаецца, YouTube-каналы, якія глядзіш, што не любіш, як трэніруешся...',
+  'promptRequest.field2.hintSmart': 'У вас ёсць {cat1}, {cat2} і {cat3} у вашым зале — раскажыце, якія вам падабаюцца.',
+  'promptRequest.field2.example':
+    'Хачу больш мышц у верхняй частцы цела, асабліва грудзей і плячэй. Люблю трос і трэнажёры Смітта, вольныя вагі мне менш падабаюцца. Гляджу Джэфа Ніпарда на YouTube — падабаецца высокачастотны падыход. Кардыё — не. Магу трэніравацца вельмі інтэнсіўна пры доўгім адпачынку (2-3 мін).',
+  'promptRequest.field3.label': 'Дзён на тыдзень',
+  'promptRequest.field3.hint': 'Абярыце, колькі дзён на тыдзень вы можаце трэніравацца.',
+  'promptRequest.field4.label': 'Працягласць сесіі',
+  'promptRequest.field4.hint': 'Рэальны час, ўключаючы розніцу паміж будзённымі і выходнымі.',
+  'promptRequest.field4.example': '45-60 хвілін у будзённыя дні, да 80 хвілін у суботу',
+  'promptRequest.field5.label': 'Траўмы ці рухі, якіх варта пазбягаць',
+  'promptRequest.field5.hint': 'Канкрэтныя траўмы, балючыя рухі, абмежаваны дыяпазон, што ўсё ж працуе.',
+  'promptRequest.field5.example':
+    'Тэндыніт каленнай чашачкі ў правым калене (з 2024): без прысяданняў і выпадаў, але прэс нагамі з частковым дыяпазонам нармальна. Левае плячо: лёгкі імпінджмент — без жіму над галавой, нахіленае жымоўе ў трэнажёры ўсё ж добра.',
+  'promptRequest.field5.placeholder': 'няма',
+  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'Паглядзіце кіраўніцтва па стварэнні з LLM →',
@@ -73,11 +105,15 @@ export default {
   'guide.promptLabel': 'Prompt для LLM',
   'guide.copy': 'Скапіраваць',
   'guide.copied': 'Скапіравана',
-  'guide.fillHint': 'Запоўніце кожны нумараваны радок REQUEST (звычайны тэкст, без JSON) перад адпраўкай.',
-  'guide.downloadsHeading': 'LLM без доступу да інтэрнэту?',
-  'guide.downloadsBody': 'Спампуйце архіў даных (ZIP) і далучыце яго да чата ўручную.',
+  'guide.fillHint': 'Праверце і дапоўніце палі перад капіраваннем — праграма ўжо запоўніла тое, што ведае.',
+  'guide.coverageBadge': '{n}/8 палёў',
+  'guide.requestEditorHeading': 'Дадзеныя праграмы',
+  'guide.formOverwritesTextarea': 'Змены ў гэтых палях абнаўляюць prompt і скасоўваюць любую ручную праўку тэксту.',
+  'guide.field8Checkbox': 'Уключыць мой прагрэс ({n} сесій)',
+  'guide.downloadsHeading': 'Prompt абрэзаўся пры ўстаўцы?',
+  'guide.downloadsBody': 'Спампуйце поўную схему і далучыце яе да чата ўручную.',
   'guide.downloadAction': 'Спампаваць',
-  'guide.downloadArchiveLabel': 'Усе файлы (ZIP)',
+  'guide.schemaDownloadLabel': 'Поўная схема (JSON)',
   'guide.noRutina': 'Няма rutina.json?',
   'guide.fallbackHtml': '<p>Не ўдалося загрузіць кіраўніцтва.</p>',
 
@@ -340,7 +376,7 @@ export default {
   'promptEquipment.clubHeading': 'ПОЛЕ 6 — КЛУБ',
   'promptEquipment.tableHeading': 'НАЯЎНАЕ АБСТАЛЯВАННЕ (id | modelCode | назва | катэгорыя | мышачная група)',
   'promptEquipment.noClubSelected': '(яшчэ не выбраны — выкарыстайце пікер клуба ў кіраўніцтве)',
-  'promptEquipment.equipmentIdNote': 'equipmentId неабавязковы: прапусціце яго або выкарыстайце null для практыкаванняў з уласнай вагой.',
+  'promptEquipment.equipmentIdNote': 'equipmentId неабавязковы: прапусціце яго для практыкаванняў з уласнай вагой.',
   'promptEquipment.exceptionNote':
     'extraEquipment — ВЫКЛЮЧЭННЕ, а не варыянт па змаўчанні: з 48 id каталога (уключаючы свабодныя вагі, лаўкі, штангі і кілімкі) большасць рыштунку ўжо мае id. Указвайце extraEquipment ТОЛЬКІ для рыштунку без вытворчай ідэнтычнасці (стужка, ролік, ручнік).',
 };

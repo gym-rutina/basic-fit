@@ -27,17 +27,21 @@ describe('detectGuideLocale', () => {
   });
 });
 
-// llm-guide-zip-download (AC7): pending Cmok implementation — see
-// tech-plan.md for the exact GUIDE_DATA_ARCHIVE / GUIDE_DOWNLOAD_ARCHIVE_LABEL
-// shape. Replaces the prior feature's GUIDE_DATA_FILES describe block, which
-// tested the per-file constants this feature removes.
-describe('GUIDE_DATA_ARCHIVE (LLM guide zip-download card)', () => {
-  it('has the confirmed zip filename (AC7)', () => {
-    expect(guideLocale.GUIDE_DATA_ARCHIVE.filename).toBe('rutina-data-files.zip');
+// onboarding-request-fields Q1/R7.2 (tech-plan.md §2.9): the zip archive
+// (GUIDE_DATA_ARCHIVE) is replaced by GUIDE_SCHEMA_DOWNLOAD, offering the
+// repo's own description-bearing rutina.schema.json directly — a one-entry
+// zip would just reintroduce the "my chat can't open a zip" failure this
+// feature removes. Updated alongside the copy-static-pages.js /
+// scripts/lib/stripSchema.js changes even though architecture-planning's
+// AC-to-test map did not separately list this file — the rename is required
+// by tech-plan.md §2.9 and strayLiterals.test.js's allowlist already assumes it.
+describe('GUIDE_SCHEMA_DOWNLOAD (LLM guide fallback download card)', () => {
+  it('has the confirmed schema filename (R7.2)', () => {
+    expect(guideLocale.GUIDE_SCHEMA_DOWNLOAD.filename).toBe('rutina.schema.json');
   });
 
-  it('path mirrors where buildDataArchive writes the zip in dist/ (AC2/AC7)', () => {
-    expect(guideLocale.GUIDE_DATA_ARCHIVE.path).toBe('data/rutina-data-files.zip');
+  it('path mirrors where copy-static-pages.js copies the schema in dist/ (R7.2)', () => {
+    expect(guideLocale.GUIDE_SCHEMA_DOWNLOAD.path).toBe('data/schema/rutina.schema.json');
   });
 
   it('points at the production GitHub Pages origin, not raw.githubusercontent.com (AC2)', () => {
@@ -46,7 +50,8 @@ describe('GUIDE_DATA_ARCHIVE (LLM guide zip-download card)', () => {
     );
   });
 
-  it('removes the per-file constants entirely — replacement, not addition (AC7)', () => {
+  it('removes the zip archive constant entirely — replacement, not addition (Q1)', () => {
+    expect(guideLocale.GUIDE_DATA_ARCHIVE).toBeUndefined();
     expect(guideLocale.GUIDE_DATA_FILES).toBeUndefined();
     expect(guideLocale.GUIDE_DOWNLOAD_FILE_LABELS).toBeUndefined();
   });

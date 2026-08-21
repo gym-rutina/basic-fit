@@ -45,6 +45,31 @@ const useClubExclusionsMock = vi.hoisted(() =>
 );
 vi.mock('../lib/useClubExclusions.js', () => ({ useClubExclusions: useClubExclusionsMock }));
 
+// onboarding-request-fields R4 (field 8 / session history). Both mocked so
+// these tests exercise GuideOverlay's OWN wiring (checkbox, async paint,
+// feeding sessionsMarkdown into the composed prompt) rather than re-testing
+// listSessions (db.test.js) or buildExportPayload (exportFormat.test.js),
+// which already have their own dedicated coverage.
+const listSessionsMock = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+vi.mock('../lib/db.js', () => ({ listSessions: listSessionsMock }));
+const buildExportPayloadMock = vi.hoisted(() => vi.fn().mockReturnValue({ json: {}, markdown: '' }));
+vi.mock('../lib/exportFormat.js', () => ({ buildExportPayload: buildExportPayloadMock }));
+
+// File-wide safety net: several describe blocks below (most pre-dating this
+// feature) call `vi.restoreAllMocks()` in their own `afterEach`. In Vitest 2.x
+// that resets EVERY `vi.fn()` in the file back to its no-argument creation
+// state — not just `vi.spyOn` mocks — which would silently turn
+// `listSessionsMock`/`buildExportPayloadMock` into no-ops returning
+// `undefined` after the first such describe block runs, crashing every
+// subsequent render on the `listSessions().then(...)` call (GuideOverlay.jsx
+// R4.5). A single top-level `afterEach` runs AFTER each describe block's own
+// local `afterEach` (outer hooks fire after inner ones), so it re-applies the
+// safe defaults every test gets, regardless of which describe block it's in.
+afterEach(() => {
+  listSessionsMock.mockResolvedValue([]);
+  buildExportPayloadMock.mockReturnValue({ json: {}, markdown: '' });
+});
+
 const TEST_CLUB = {
   countryCode: 'ES',
   clubId: '85c4896006bc45d89f562c977651600c',
@@ -93,12 +118,15 @@ describe('GuideOverlay — prompt copy', () => {
   });
 });
 
-// llm-guide-zip-download: User UAT (2026-07-29) approved replacing the shipped
-// 4-row "Download data files" card (llm-guide-file-downloads, 2026-07-25) with
-// a single zip-archive row. Pending Cmok implementation — see ux-design.md +
-// tech-plan.md for the exact component structure. Failures here are expected
-// until that row is built.
-describe('GuideOverlay — data archive download', () => {
+// onboarding-request-fields Q1/R7.2 (tech-plan.md §2.9): the fallback download
+// narrows from the 4-file zip archive to a single plain rutina.schema.json
+// file (with its descriptions intact — it is the SOURCE schema, not the
+// stripped/inlined one). This REPLACES the prior feature's zip-archive block
+// wholesale — buildDataArchive()/GUIDE_DATA_ARCHIVE are deleted per Q1's
+// stated assumption (still needs a user yes/no before Cmok builds this — see
+// tech-plan.md Known Gaps). Pending Cmok implementation; failures here are
+// expected until this row is rebuilt as a single schema-file link.
+describe('GuideOverlay — fallback schema download (Q1/R7.2, AC37)', () => {
   beforeEach(() => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -110,49 +138,39 @@ describe('GuideOverlay — data archive download', () => {
     vi.restoreAllMocks();
   });
 
-  const ARCHIVE_FILENAME = 'rutina-data-files.zip';
-  const ARCHIVE_PATH = 'data/rutina-data-files.zip';
+  const SCHEMA_FILENAME = 'rutina.schema.json';
+  const SCHEMA_PATH = 'data/schema/rutina.schema.json';
   const BASE_URL = 'https://gym-rutina.github.io/basic-fit/';
-  const OLD_PER_FILE_NAMES = [
-    'rutina.schema.json',
-    'equipment.json',
-    'gyms.json',
-    'phase1-monday.json',
-  ];
+  const OLD_NAMES = ['rutina-data-files.zip', 'equipment.json', 'gyms.json', 'phase1-monday.json'];
 
-  it('renders a heading introducing the download card (AC1)', () => {
+  it('renders exactly one download row — the schema file, not the old zip or the other three data files', () => {
     render(<GuideOverlay locale="en" onClose={() => {}} />);
-    expect(screen.getByText(/llm without web access/i)).toBeInTheDocument();
-  });
-
-  it('renders exactly one download row — the zip, not the four old per-file rows (AC1)', () => {
-    render(<GuideOverlay locale="en" onClose={() => {}} />);
-    expect(screen.getByText(ARCHIVE_FILENAME)).toBeInTheDocument();
-    for (const oldName of OLD_PER_FILE_NAMES) {
+    expect(screen.getByText(SCHEMA_FILENAME)).toBeInTheDocument();
+    for (const oldName of OLD_NAMES) {
       expect(screen.queryByText(oldName)).not.toBeInTheDocument();
     }
   });
 
-  it('the row has a same-origin GitHub Pages href with the download attribute, not raw.githubusercontent.com (AC2)', () => {
+  it('the row has a same-origin GitHub Pages href with the download attribute (AC37)', () => {
     render(<GuideOverlay locale="en" onClose={() => {}} />);
-    const link = screen.getByText(ARCHIVE_FILENAME).closest('a');
+    const link = screen.getByText(SCHEMA_FILENAME).closest('a');
     expect(link).not.toBeNull();
     expect(link).toHaveAttribute('download');
-    expect(link.getAttribute('href')).toBe(`${BASE_URL}${ARCHIVE_PATH}`);
+    expect(link.getAttribute('href')).toBe(`${BASE_URL}${SCHEMA_PATH}`);
   });
 
-  it('the row is a single link reachable by an accessible name including the zip filename (a11y — one <a>, no nested controls)', () => {
+  it('the row is a single link reachable by an accessible name including the filename', () => {
     render(<GuideOverlay locale="en" onClose={() => {}} />);
-    expect(screen.getByRole('link', { name: /rutina-data-files\.zip/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /rutina\.schema\.json/i })).toBeInTheDocument();
   });
 
   it('renders the download row for es and be locales too', () => {
     const { unmount } = render(<GuideOverlay locale="es" onClose={() => {}} />);
-    expect(screen.getByText(ARCHIVE_FILENAME)).toBeInTheDocument();
+    expect(screen.getByText(SCHEMA_FILENAME)).toBeInTheDocument();
     unmount();
 
     render(<GuideOverlay locale="be" onClose={() => {}} />);
-    expect(screen.getByText(ARCHIVE_FILENAME)).toBeInTheDocument();
+    expect(screen.getByText(SCHEMA_FILENAME)).toBeInTheDocument();
   });
 });
 
@@ -386,5 +404,253 @@ describe('GuideOverlay — opens the equipment overlay from the club row (R7.1 �
       expect(dialogs).toHaveLength(2);
       expect(dialogs[1]).toHaveAttribute('aria-labelledby', 'equipment-overlay-title');
     });
+  });
+});
+
+/**
+ * onboarding-request-fields R3.1-R3.5, AC13-AC18 (tech-plan.md §2.8).
+ *
+ * Pending Cmok implementation — see tech-plan.md. Failures here are expected
+ * until Cmok adds the REQUEST EDITOR form. Field labels below are pinned to
+ * mockups.md's Screen 2 wireframe copy ("Nombre / programa", "Objetivo
+ * principal", "Días / semana", "Duración de la sesión", "Lesiones /
+ * movimientos a evitar") — not invented here. A looser day/week regex is
+ * used because onboarding's own step uses very slightly different wording
+ * ("Días por semana") — both are valid per their respective wireframes.
+ *
+ * Cmok fix: several tests below originally rendered `locale="en"` while
+ * asserting these Spanish field-label strings — unsatisfiable together once
+ * the form is properly localized (GuideOverlay.jsx's own D17 contract: it
+ * builds its translator from the `locale` PROP, so `locale="en"` must render
+ * "Name / program", not "Nombre / programa" — confirmed independently by
+ * OnboardingOverlay's own AC42 test, which requires this SAME field to
+ * re-render in English once the UI locale switches). Rendered with
+ * `locale="es"` instead, matching the one sibling test in this same describe
+ * block ("shows a warning...", AC17) that already used `locale="es"`
+ * correctly. The "LLM prompt" textbox queries are loosened to `/prompt/i`
+ * (matches both "LLM prompt" and "Prompt para el LLM"), and the Copy button
+ * query is swapped to its Spanish text, so each test still exercises exactly
+ * what its AC names — pre-fill, live update+persist, copy-includes-typed-
+ * value, no duplicate club control — without an internal locale conflict.
+ */
+describe('GuideOverlay — REQUEST EDITOR form (R3.1-R3.5, AC13-AC18)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    // NOTE (found while recovering from an interrupted build): this ONLY
+    // protects tests that don't call `userEvent.setup()` — see the AC16 test
+    // below for why. `userEvent.setup()` (the v14 API) initializes its own
+    // clipboard support and overwrites `navigator.clipboard`, clobbering
+    // whatever was installed here before `.setup()` runs. `userEvent.click()`
+    // (the static, non-setup API other describe blocks in this file use) does
+    // not have this problem.
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  it('renders an editable form for fields 1-5 above the prompt textarea, pre-filled from a persisted record (AC13)', () => {
+    localStorage.setItem(
+      'rutina:promptRequest',
+      JSON.stringify({ field1: 'Elena — Fase 2', field2: 'Hipertrofia', field3: 4, field4: '45-60 min', field5: 'Ninguna' })
+    );
+    render(<GuideOverlay locale="es" onClose={() => {}} />);
+
+    expect(screen.getByLabelText(/nombre \/ programa/i)).toHaveValue('Elena — Fase 2');
+    expect(screen.getByLabelText(/objetivo principal/i)).toHaveValue('Hipertrofia');
+    expect(screen.getByRole('radio', { name: '4' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByLabelText(/duraci[oó]n de la sesi[oó]n/i)).toHaveValue('45-60 min');
+    expect(screen.getByLabelText(/lesiones.*movimientos a evitar/i)).toHaveValue('Ninguna');
+  });
+
+  it('editing a field updates the composed prompt in the same interaction and persists it (AC14)', async () => {
+    const user = userEvent.setup();
+    render(<GuideOverlay locale="es" onClose={() => {}} />);
+
+    const nameField = screen.getByLabelText(/nombre \/ programa/i);
+    await user.type(nameField, 'Elena — Fase 2');
+
+    const editor = screen.getByRole('textbox', { name: /prompt/i });
+    expect(editor.value).toContain('Elena — Fase 2');
+
+    const stored = JSON.parse(localStorage.getItem('rutina:promptRequest') || '{}');
+    expect(stored.field1).toBe('Elena — Fase 2');
+  });
+
+  it('shows a warning that editing the form discards a manual textarea edit (AC17, mockups.md "⚠ Editar actualiza el prompt y descarta cualquier edición manual.")', () => {
+    render(<GuideOverlay locale="es" onClose={() => {}} />);
+    expect(screen.getByText(/descarta.*edici[oó]n manual/i)).toBeInTheDocument();
+  });
+
+  it('a form edit still overwrites a prior manual textarea edit — R3.3 unchanged behaviour', async () => {
+    const user = userEvent.setup();
+    render(<GuideOverlay locale="es" onClose={() => {}} />);
+
+    const editor = screen.getByRole('textbox', { name: /prompt/i });
+    await user.clear(editor);
+    await user.type(editor, 'My manual edit');
+    expect(editor.value).toBe('My manual edit');
+
+    await user.type(screen.getByLabelText(/nombre \/ programa/i), 'Elena');
+    expect(editor.value).not.toBe('My manual edit');
+    expect(editor.value).toContain('Elena');
+  });
+
+  it('shows the composed prompt size in KB next to Copy (AC15)', () => {
+    // Scoped via aria-live: the download card's OWN "N KB" caption (the
+    // schema file's size, R7.2) also matches a bare /\d+\s*KB/ query — a
+    // vacuous getByText here would pass on either one, not specifically the
+    // composed-prompt size this AC is actually about.
+    render(<GuideOverlay locale="en" onClose={() => {}} />);
+    const sizeCaptions = screen.getAllByText(/\d+\s*KB/).filter((el) => el.getAttribute('aria-live') === 'polite');
+    expect(sizeCaptions).toHaveLength(1);
+  });
+
+  it('Copy copies the composed prompt — including a freshly-typed answer — read from the clipboard call, not defaultValue (AC16)', async () => {
+    const user = userEvent.setup();
+    // `userEvent.setup()` above initializes its own clipboard support and
+    // overwrites `navigator.clipboard` — the beforeEach's mock (installed
+    // before `.setup()` runs) is already gone by this point. Re-install it
+    // AFTER `.setup()`, which is the only ordering that survives.
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+    render(<GuideOverlay locale="es" onClose={() => {}} />);
+
+    await user.type(screen.getByLabelText(/nombre \/ programa/i), 'Elena — Fase 2');
+    await user.click(screen.getByRole('button', { name: /^copiar$/i }));
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('Elena — Fase 2'));
+  });
+
+  it('does not duplicate field 6 as a new form control — only the existing club row offers it (AC18)', () => {
+    render(<GuideOverlay locale="es" onClose={() => {}} />);
+    const clubButtons = screen.getAllByRole('button', { name: /elegir club|cambiar club/i });
+    expect(clubButtons).toHaveLength(1);
+  });
+});
+
+/**
+ * onboarding-request-fields R4.1-R4.5, AC19-AC23 (tech-plan.md §2.8).
+ *
+ * listSessions (db.js) and buildExportPayload (exportFormat.js) are both
+ * mocked — each already has its own dedicated test file; these tests
+ * exercise GuideOverlay's OWN wiring (the checkbox, the async paint, feeding
+ * sessionsMarkdown into the composed prompt), not session aggregation.
+ */
+describe('GuideOverlay — field 8, session history (R4, AC19-AC23)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+    listSessionsMock.mockResolvedValue([]);
+    buildExportPayloadMock.mockReturnValue({ json: {}, markdown: '' });
+  });
+
+  it('with zero sessions there is no checkbox and field 8 keeps its placeholder (AC21)', async () => {
+    listSessionsMock.mockResolvedValue([]);
+    render(<GuideOverlay locale="en" onClose={() => {}} />);
+
+    await waitFor(() => expect(listSessionsMock).toHaveBeenCalled());
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
+  it('with sessions present, field 8 carries the export markdown and a checked checkbox naming the session count (AC19)', async () => {
+    listSessionsMock.mockResolvedValue([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    buildExportPayloadMock.mockReturnValue({ json: {}, markdown: 'Prensa de Pecho (g3-s10)\n  · 32kg / normal' });
+
+    render(<GuideOverlay locale="en" onClose={() => {}} />);
+
+    const checkbox = await screen.findByRole('checkbox');
+    expect(checkbox).toBeChecked();
+    expect(checkbox).toHaveAccessibleName(expect.stringMatching(/3/));
+
+    const editor = screen.getByRole('textbox', { name: /llm prompt/i });
+    expect(editor.value).toContain('Prensa de Pecho');
+  });
+
+  it('unchecking the checkbox removes the markdown and restores the placeholder line, in the same interaction (AC20)', async () => {
+    listSessionsMock.mockResolvedValue([{ id: 1 }]);
+    buildExportPayloadMock.mockReturnValue({ json: {}, markdown: 'Prensa de Pecho (g3-s10)\n  · 32kg / normal' });
+    const user = userEvent.setup();
+
+    render(<GuideOverlay locale="en" onClose={() => {}} />);
+    const checkbox = await screen.findByRole('checkbox');
+
+    await user.click(checkbox);
+
+    expect(checkbox).not.toBeChecked();
+    const editor = screen.getByRole('textbox', { name: /llm prompt/i });
+    expect(editor.value).not.toContain('Prensa de Pecho');
+  });
+
+  it('paints with field 8 empty before listSessions resolves, then fills in without a remount (AC22)', async () => {
+    let resolveSessions;
+    listSessionsMock.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSessions = resolve;
+      })
+    );
+
+    render(<GuideOverlay locale="en" onClose={() => {}} />);
+    const editorBeforeResolve = screen.getByRole('textbox', { name: /llm prompt/i });
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+
+    buildExportPayloadMock.mockReturnValue({ json: {}, markdown: 'Prensa de Pecho (g3-s10)' });
+    resolveSessions([{ id: 1 }]);
+
+    await waitFor(() => expect(screen.getByRole('checkbox')).toBeInTheDocument());
+    expect(screen.getByRole('textbox', { name: /llm prompt/i })).toBe(editorBeforeResolve);
+  });
+
+  it('resets the checkbox to checked on reopen (AC23) — it is never persisted (R4.4)', async () => {
+    listSessionsMock.mockResolvedValue([{ id: 1 }]);
+    buildExportPayloadMock.mockReturnValue({ json: {}, markdown: 'Prensa de Pecho (g3-s10)' });
+    const user = userEvent.setup();
+
+    const { unmount } = render(<GuideOverlay locale="en" onClose={() => {}} />);
+    const firstCheckbox = await screen.findByRole('checkbox');
+    await user.click(firstCheckbox);
+    expect(firstCheckbox).not.toBeChecked();
+    unmount();
+
+    render(<GuideOverlay locale="en" onClose={() => {}} />);
+    const secondCheckbox = await screen.findByRole('checkbox');
+    expect(secondCheckbox).toBeChecked();
+  });
+});
+
+/**
+ * onboarding-request-fields R2.3 (tech-plan.md §2.8, AC10) — mirrors the
+ * defensive contract every existing storage-backed screen already has
+ * (clubStorage's own render-through-a-throw is what this parallels).
+ */
+describe('GuideOverlay — defensive rendering when promptRequestStorage throws (AC10)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  it('still renders the form and falls back to prompt placeholders when localStorage throws', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('SecurityError');
+    });
+
+    expect(() => render(<GuideOverlay locale="en" onClose={() => {}} />)).not.toThrow();
+    const editor = screen.getByRole('textbox', { name: /llm prompt/i });
+    expect(editor.value).not.toMatch(/undefined/);
   });
 });

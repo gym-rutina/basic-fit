@@ -222,7 +222,7 @@ Two safety behaviors worth knowing before running it:
 
 ## Using the PWA
 
-**First launch:** if there's no active rutina yet, a short onboarding carousel introduces what Rutina does and the LLM generate-then-import workflow before handing off to Import. It's skippable from any step, and a small on-demand control keeps it reachable afterward if you want to revisit it. Subsequent opens skip straight past it.
+**First launch:** if there's no active rutina yet, a short onboarding carousel introduces what Rutina does and the LLM generate-then-import workflow, then asks for your gym (via the Club Picker), your program's name and goal, your weekly schedule, and any injuries or movements to avoid — one guided step per field, each explaining what the field is for and showing an example. **Every step is skippable**, including all the input ones, and answering none of them still finishes onboarding normally. There is no separate Settings entry for these answers afterward: the one place to review or change them is the LLM guide screen itself, where they show as an editable form right above the prompt (see "Authoring a Rutina with an LLM" below) — editing there recomputes the prompt instantly. A small on-demand control keeps onboarding reachable if you want to revisit it later; subsequent app opens skip straight past it.
 
 1. **Import a rutina** — paste a `rutina.json` or upload a file. Use `data/examples/phase1-monday.json` to try the flow immediately. Generate your own with the LLM workflow below.
 2. **Home** — shows today's day (resolved by matching the day label against the current weekday in Spanish, with a fallback to the first unstarted day). While a session is in progress, Home shows an "EN CURSO" card describing *that* session instead — its own day and `X / Y completados` — with a **Reanudar entrenamiento** button rather than "Empezar entrenamiento"; this holds from the first paint (a skeleton, not a start button, while the check is in flight), so you can't accidentally start a second session on top of one already running. If the check itself fails, Home shows an error with a **Reintentar** button instead of silently offering to start. A purple **"Entrenamiento en curso"** banner — showing the day and progress — sits at the top of every other tab (Programa, Catálogo, Historial, Progreso, Exportar) and jumps back into the session when tapped; it's hidden on Home itself, on the session screen, and during import, and it disappears the moment the session is finished, stopped, or discarded.
@@ -288,15 +288,15 @@ of language; that's a units question, not a translation one.
 
 ## Authoring a Rutina with an LLM
 
-Training programs are authored by pasting a ready-made prompt into any LLM chat — no coding required.
+Training programs are authored by pasting a ready-made prompt into any LLM chat — no coding required, and no 8-field checklist to fill in by hand anymore.
 
-1. Fill in an 8-field checklist (goal, days/week, session length, injuries, gym, output language, etc.)
-2. Copy the prompt template, paste your checklist into `REQUEST`, and send to any LLM
-3. The prompt points the LLM at public data files in this repo (schema, equipment, example) — nothing to assemble by hand. If your LLM chat can't fetch URLs (e.g. Perplexity, offline models), the in-app guide also offers a single **Download** button to save a zip archive of the data files and attach it instead.
+1. Onboarding (or the guide screen's editable form, any time after) collects the 8-field checklist for you — program name/goal, days/week, session length, injuries, gym, output language — and every field is optional.
+2. The app composes the full prompt from those answers, including your club's equipment list and the rutina JSON Schema **inlined as literal text** — there's nothing to fetch or assemble by hand, and no zip archive to attach. (A single `rutina.schema.json` download remains as a fallback, for when a chat truncates a long paste — see the in-app guide's Troubleshooting section.)
+3. Copy the composed prompt from the guide screen and send it to any LLM.
 4. Import the JSON reply into the PWA (or validate locally: `npm run validate-rutina -- path/to/rutina.json`)
 5. If validation fails, paste the error text back to the LLM and re-import
 
-When repeating this for a second phase, paste the Markdown from the PWA's **Export** screen as field 8 — the LLM uses it to understand what actually happened (weight progression, difficulty, abandoned sessions). See [`docs/export-format.md`](docs/export-format.md) for the exact format.
+When repeating this for a second phase, the guide screen fills field 8 for you automatically from your logged session history (a checkbox, on by default, lets you leave it out) — the LLM uses it to understand what actually happened (weight progression, difficulty, abandoned sessions). See [`docs/export-format.md`](docs/export-format.md) for the exact format.
 
 Full walkthrough (shown in-app via **Import → guide link**) — pick your language:
 

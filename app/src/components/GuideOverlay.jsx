@@ -1,18 +1,50 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
+import { FilterPill } from '../../../design-system/components/primitives/FilterPill.jsx';
 import { GUIDE_HTML, GUIDE_PROMPT } from '../data/guideContent.js';
-import { GUIDE_DATA_ARCHIVE, GUIDE_DATA_FILES_BASE_URL } from '../lib/guideLocale.js';
+import { GUIDE_SCHEMA_DOWNLOAD, GUIDE_DATA_FILES_BASE_URL } from '../lib/guideLocale.js';
 import { readClub } from '../lib/clubStorage.js';
 import { EQUIPMENT } from '../data/equipment.js';
-import { buildPrompt } from '../lib/promptEquipment.js';
+import { composePrompt, equipmentTableBytes } from '../lib/promptEquipment.js';
+import { readPromptRequest, writePromptRequest } from '../lib/promptRequestStorage.js';
 import { useClubExclusions } from '../lib/useClubExclusions.js';
+import { listSessions } from '../lib/db.js';
+import { buildExportPayload } from '../lib/exportFormat.js';
 import { ClubPickerSheet } from './ClubPickerSheet.jsx';
 import { EquipmentOverlaySheet } from './EquipmentOverlaySheet.jsx';
 import { tFor, useI18n } from '../i18n/index.js';
 
+const DAY_PILLS = [1, 2, 3, 4, 5, 6, 7];
+
 /** Byte size → de-emphasized "N KB" caption (ux-design.md Decision 7). */
 function formatKb(bytes) {
   return Math.round(bytes / 1024) + ' KB';
+}
+
+/** Mirrors OnboardingOverlay's own draftFromRecord — a controlled-input-safe
+ * shape (never undefined for text fields) seeded from the SAME persisted
+ * record (onboarding-request-fields R3.1, tech-plan.md §2.8). */
+function draftFromRecord(record) {
+  return {
+    field1: record.field1 ?? '',
+    field2: record.field2 ?? '',
+    field3: record.field3,
+    field4: record.field4 ?? '',
+    field5: record.field5 ?? '',
+  };
+}
+
+function countCoverage({ draft, club, sessionsIncluded }) {
+  let n = 0;
+  if (draft.field1 && draft.field1.trim()) n++;
+  if (draft.field2 && draft.field2.trim()) n++;
+  if (typeof draft.field3 === 'number') n++;
+  if (draft.field4 && draft.field4.trim()) n++;
+  if (draft.field5 && draft.field5.trim()) n++;
+  if (club) n++;
+  n++; // field 7 (output language) is always resolved
+  if (sessionsIncluded) n++;
+  return n;
 }
 
 /* Scoped styles for guide article content (pre-rendered HTML from Markdown). */
@@ -97,8 +129,59 @@ export function GuideOverlay({ locale, onClose }) {
   const { excludedIds } = useClubExclusions(club?.clubId ?? null);
   const html = GUIDE_HTML[active] || GUIDE_HTML.en || t('guide.fallbackHtml');
 
-  // D22a (tech-plan-build-b.md §5): append the club + equipment section from
-  // buildPrompt to the base GUIDE_PROMPT template.
+  // onboarding-request-fields R3.1 (tech-plan.md §2.8) — the REQUEST EDITOR
+  // form's draft, pre-filled synchronously from the SAME persisted record
+  // OnboardingOverlay writes. Every field edit updates this state AND
+  // persists immediately (R3.2) — not on a separate "save" action.
+  const [requestDraft, setRequestDraft] = useState(() => draftFromRecord(readPromptRequest()));
+
+  // R4.5 — listSessions() is async; the prompt/checkbox must not block first
+  // paint. `sessions === null` means "still loading" (mirrors ExportScreen.jsx
+  // :19-32's own cancelled-guarded pattern).
+  const [sessions, setSessions] = useState(null);
+  // R4.4 — checked by default on every mount, never persisted.
+  const [includeSessions, setIncludeSessions] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    listSessions()
+      .then((s) => {
+        if (!cancelled) setSessions(s);
+      })
+      .catch(() => {
+        if (!cancelled) setSessions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const sessionsMarkdown = useMemo(() => {
+    if (!sessions || sessions.length === 0) return '';
+    return buildExportPayload(sessions, {}, { t, locale: active }).markdown;
+  }, [sessions, t, active]);
+  const sessionsIncluded = Boolean(includeSessions && sessions && sessions.length > 0);
+
+  function setRequestField(key, value) {
+    setRequestDraft((d) => {
+      const next = { ...d, [key]: value };
+      writePromptRequest(next);
+      return next;
+    });
+  }
+
+  function handleDayPillClick(n) {
+    setRequestDraft((d) => {
+      const next = { ...d, field3: d.field3 === n ? undefined : n };
+      writePromptRequest(next);
+      return next;
+    });
+  }
+
+  // D22a (tech-plan-build-b.md §5), extended by onboarding-request-fields
+  // R6.1 (tech-plan.md §2.2): `composePrompt` is the ONE assembly point —
+  // REQUEST (from the form's draft) + the build-generated GUIDE_PROMPT
+  // (ROLE..OUTPUT, SCHEMA inlined) + the club/equipment tail.
   //
   // WHY uncontrolled textarea + ref rather than controlled (value=):
   // React's updateWrapper calls node.defaultValue = newValue on every render,
@@ -115,8 +198,18 @@ export function GuideOverlay({ locale, onClose }) {
   // after act() flushes the effect. node.defaultValue is not changed.
   const promptRef = useRef(null);
   const computedPromptText = useMemo(
-    () => GUIDE_PROMPT + '\n' + buildPrompt({ equipment: EQUIPMENT, lang: active, excludedIds, club }),
-    [active, excludedIds, club]
+    () =>
+      composePrompt({
+        answers: requestDraft,
+        equipment: EQUIPMENT,
+        lang: active,
+        excludedIds,
+        club,
+        sessionsMarkdown,
+        sessionsIncluded,
+        guidePromptText: GUIDE_PROMPT,
+      }),
+    [requestDraft, active, excludedIds, club, sessionsMarkdown, sessionsIncluded]
   );
   useEffect(() => {
     if (promptRef.current) promptRef.current.value = computedPromptText;
@@ -214,6 +307,114 @@ export function GuideOverlay({ locale, onClose }) {
           paddingInline: 'var(--page-pad-x)',
         }}>
           <div style={{ maxWidth: 600, margin: '0 auto var(--space-6)' }}>
+            {/* onboarding-request-fields R3.1-R3.5 (tech-plan.md §2.8) — the
+                REQUEST EDITOR form. Fields 1-5 are editable here; field 6
+                (club) is READ-ONLY, rendered from `club` state — the existing
+                club row further down is the only EDIT affordance for it
+                (AC18, no duplication). */}
+            <div
+              style={{
+                background: 'var(--bf-grey-1)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-md)',
+                padding: '14px 16px',
+                marginBottom: 'var(--space-5)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span
+                  style={{
+                    font: 'var(--text-label)',
+                    letterSpacing: 'var(--tracking-label)',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  {t('guide.requestEditorHeading')}
+                </span>
+                <span style={{ font: '600 12px/1 var(--font-sans)', color: 'var(--bf-purple)' }}>
+                  {t('guide.coverageBadge', { n: countCoverage({ draft: requestDraft, club, sessionsIncluded }) })}
+                </span>
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label htmlFor="guide-field1" style={{ display: 'block', font: '600 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: 6 }}>
+                  {t('promptRequest.field1.label')}
+                </label>
+                <input
+                  id="guide-field1"
+                  type="text"
+                  value={requestDraft.field1}
+                  onChange={(e) => setRequestField('field1', e.target.value)}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', border: '1px solid var(--border-control)', borderRadius: 'var(--radius-control)', padding: '9px 11px', font: 'var(--text-body-sm)', color: 'var(--bf-ink)', background: 'var(--bf-white)' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label htmlFor="guide-field2" style={{ display: 'block', font: '600 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: 6 }}>
+                  {t('promptRequest.field2.label')}
+                </label>
+                <textarea
+                  id="guide-field2"
+                  rows={3}
+                  value={requestDraft.field2}
+                  onChange={(e) => setRequestField('field2', e.target.value)}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', border: '1px solid var(--border-control)', borderRadius: 'var(--radius-control)', padding: '9px 11px', font: 'var(--text-body-sm)', color: 'var(--bf-ink)', background: 'var(--bf-white)', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <span style={{ display: 'block', font: '600 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: 6 }}>
+                  {t('promptRequest.field3.label')}
+                </span>
+                <div role="radiogroup" aria-label={t('promptRequest.field3.label')} style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {DAY_PILLS.map((n) => (
+                    <FilterPill
+                      key={n}
+                      role="radio"
+                      aria-checked={requestDraft.field3 === n}
+                      active={requestDraft.field3 === n}
+                      onClick={() => handleDayPillClick(n)}
+                      style={{ padding: '8px 12px' }}
+                    >
+                      {n}
+                    </FilterPill>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label htmlFor="guide-field4" style={{ display: 'block', font: '600 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: 6 }}>
+                  {t('promptRequest.field4.label')}
+                </label>
+                <input
+                  id="guide-field4"
+                  type="text"
+                  value={requestDraft.field4}
+                  onChange={(e) => setRequestField('field4', e.target.value)}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', border: '1px solid var(--border-control)', borderRadius: 'var(--radius-control)', padding: '9px 11px', font: 'var(--text-body-sm)', color: 'var(--bf-ink)', background: 'var(--bf-white)' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label htmlFor="guide-field5" style={{ display: 'block', font: '600 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)', marginBottom: 6 }}>
+                  {t('promptRequest.field5.label')}
+                </label>
+                <textarea
+                  id="guide-field5"
+                  rows={3}
+                  value={requestDraft.field5}
+                  placeholder={t('promptRequest.field5.placeholder')}
+                  onChange={(e) => setRequestField('field5', e.target.value)}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', border: '1px solid var(--border-control)', borderRadius: 'var(--radius-control)', padding: '9px 11px', font: 'var(--text-body-sm)', color: 'var(--bf-ink)', background: 'var(--bf-white)', resize: 'vertical' }}
+                />
+              </div>
+
+              <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: 0 }}>
+                {t('guide.formOverwritesTextarea')}
+              </p>
+            </div>
+
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -232,27 +433,32 @@ export function GuideOverlay({ locale, onClose }) {
               >
                 {t('guide.promptLabel')}
               </span>
-              <button
-                type="button"
-                onClick={handleCopyPrompt}
-                aria-live="polite"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '6px 12px',
-                  font: '600 13px/1 var(--font-sans)',
-                  color: copied ? 'var(--bf-success)' : 'var(--bf-purple)',
-                  background: copied ? 'var(--bf-success-tint)' : 'var(--bf-purple-tint)',
-                  border: `1px solid ${copied ? 'var(--bf-success)' : 'var(--bf-purple)'}`,
-                  borderRadius: 'var(--radius-control)',
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                }}
-              >
-                <Icon name={copied ? 'check' : 'copy'} size={14} />
-                {copied ? t('guide.copied') : t('guide.copy')}
-              </button>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                <span aria-live="polite" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}>
+                  {formatKb(equipmentTableBytes(computedPromptText))}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyPrompt}
+                  aria-live="polite"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '6px 12px',
+                    font: '600 13px/1 var(--font-sans)',
+                    color: copied ? 'var(--bf-success)' : 'var(--bf-purple)',
+                    background: copied ? 'var(--bf-success-tint)' : 'var(--bf-purple-tint)',
+                    border: `1px solid ${copied ? 'var(--bf-success)' : 'var(--bf-purple)'}`,
+                    borderRadius: 'var(--radius-control)',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon name={copied ? 'check' : 'copy'} size={14} />
+                  {copied ? t('guide.copied') : t('guide.copy')}
+                </button>
+              </span>
             </div>
             <p style={{
               font: 'var(--text-body-sm)',
@@ -283,6 +489,30 @@ export function GuideOverlay({ locale, onClose }) {
                 resize: 'vertical',
               }}
             />
+            {/* onboarding-request-fields R4.1-R4.5 (tech-plan.md §2.8) — field 8
+                auto-fills from session history. Absent (not disabled) with zero
+                sessions (R4.3); checked by default, never persisted (R4.4);
+                the prompt never waits on this to paint (R4.5). */}
+            {sessions && sessions.length > 0 && (
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  font: 'var(--text-body-sm)',
+                  color: 'var(--bf-ink)',
+                  margin: '0 0 var(--space-4)',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={includeSessions}
+                  onChange={(e) => setIncludeSessions(e.target.checked)}
+                />
+                {t('guide.field8Checkbox', { n: sessions.length })}
+              </label>
+            )}
             {/* gym-directory-and-catalog R6.1/R6.7/D3/D16 — the gyms.html id-lookup
                 callout is replaced by the club picker trigger. Empty state prompts
                 selection; a resolved (or stale, D16) club shows its cached name +
@@ -386,7 +616,7 @@ export function GuideOverlay({ locale, onClose }) {
                 style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
               >
                 <a
-                  href={GUIDE_DATA_FILES_BASE_URL + GUIDE_DATA_ARCHIVE.path}
+                  href={GUIDE_DATA_FILES_BASE_URL + GUIDE_SCHEMA_DOWNLOAD.path}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
@@ -407,20 +637,20 @@ export function GuideOverlay({ locale, onClose }) {
                 >
                   <span className="guide-downloads-row-label" style={{ minWidth: 0 }}>
                     <span style={{ font: '600 13px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
-                      {t('guide.downloadArchiveLabel')}
+                      {t('guide.schemaDownloadLabel')}
                     </span>
                     <br />
                     <span
                       className="guide-downloads-row-filename"
                       style={{ font: '12px/1.4 monospace', color: 'var(--bf-ink-2)' }}
                     >
-                      {GUIDE_DATA_ARCHIVE.filename}
+                      {GUIDE_SCHEMA_DOWNLOAD.filename}
                     </span>
                     <span
                       className="guide-downloads-row-size"
                       style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}
                     >
-                      {' '}· {formatKb(GUIDE_DATA_ARCHIVE.bytes)}
+                      {' '}· {formatKb(GUIDE_SCHEMA_DOWNLOAD.bytes)}
                     </span>
                   </span>
                   <span

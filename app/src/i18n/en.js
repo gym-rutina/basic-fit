@@ -16,6 +16,7 @@ export default {
   'common.completedOfSpaced': '{done} / {total} completed',
   'common.unfinishedSuffix': 'unfinished session',
   'common.secondsFull': '{n} seconds',
+  'common.example': 'E.g.',
 
   // ── tab (BottomTabBar) ──────────────────────────────────────────────────
   'tab.home': 'Home',
@@ -50,8 +51,7 @@ export default {
   'onboarding.howItWorksLink': 'How the app works →',
   'onboarding.step1.title': 'Your trainer, no accounts, no connection needed',
   'onboarding.step1.body': 'Save your routine and history on this device. No account, no API key.',
-  'onboarding.step2.title': 'You build the plan with an LLM',
-  'onboarding.step2.body':
+  'onboarding.step2.preamble':
     'Rutina does not generate your program — you create it with an LLM chat (ChatGPT, Claude, Gemini…) and import it here.',
   'onboarding.step3.title': 'How it works',
   'onboarding.step3.step1': 'Fill in the prompt',
@@ -60,9 +60,41 @@ export default {
   'onboarding.step3.step4': 'Import it into the app',
   'onboarding.step3.outcome1': '✓ passes → ready',
   'onboarding.step3.outcome2': '✗ fails → fix it and try again',
-  'onboarding.step3.footnote': "(You'll see the full prompt in the creation guide, with detailed steps.)",
-  'onboarding.step4.title': "You're all set",
-  'onboarding.step4.body': 'You can revisit this anytime from the import screen.',
+  'onboarding.clubStep.title': 'Your gym',
+  'onboarding.clubStep.body': "The assistant will match exercises to your club's available equipment.",
+  'onboarding.nameGoalStep.title': 'Personalize your program',
+  'onboarding.nameGoalStep.body': 'The more detail you give, the more personalized the routine.',
+  'onboarding.scheduleStep.title': 'Your schedule',
+  'onboarding.scheduleStep.body': 'How many days and how much time you have to train each week.',
+  'onboarding.injuriesStep.title': 'Before you start',
+  'onboarding.injuriesStep.body':
+    "The assistant will exclude the movements you name. Leave it blank if you don't have restrictions.",
+  'onboarding.skipConfirm.title': 'Leave without finishing?',
+  'onboarding.skipConfirm.body': "What you've entered will be saved. You can finish the rest later from the guide.",
+  'onboarding.skipConfirm.confirm': 'Leave',
+  'onboarding.skipConfirm.cancel': 'Stay here',
+
+  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  'promptRequest.field1.label': 'Program name',
+  'promptRequest.field1.hint': 'Add a phase number, your name, or any context that helps you recognise this program.',
+  'promptRequest.field1.example': 'Elena — Phase 2 of 3 (volume). 8 months training so far.',
+  'promptRequest.field2.label': 'Primary goal',
+  'promptRequest.field2.hint':
+    'Goal, exercises you enjoy, preferred equipment, YouTube channels you follow, what you hate, how you train...',
+  'promptRequest.field2.hintSmart': 'You have {cat1}, {cat2} and {cat3} at your gym — tell it which ones you like.',
+  'promptRequest.field2.example':
+    'I want more muscle in upper body, especially chest and shoulders. I love cable machines and Smith press — free weights feel less safe to me. I follow Jeff Nippard on YouTube, I like high-frequency evidence-based training. No cardio. I can go very intense if I get 2-3 min rest between sets.',
+  'promptRequest.field3.label': 'Days per week',
+  'promptRequest.field3.hint': 'Choose how many days you can train each week.',
+  'promptRequest.field4.label': 'Session length',
+  'promptRequest.field4.hint': 'Real time available, including weekday vs weekend variation.',
+  'promptRequest.field4.example': '45-60 min on weekdays, up to 80 min on Saturdays',
+  'promptRequest.field5.label': 'Injuries or movements to avoid',
+  'promptRequest.field5.hint': 'Specific injuries, movements that hurt, limited range of motion, what does work.',
+  'promptRequest.field5.example':
+    'Patellar tendinitis in right knee (since 2024): no barbell squats or lunges, but leg press with partial range is fine. Left shoulder impingement: no overhead press, incline machine press is OK.',
+  'promptRequest.field5.placeholder': 'none',
+  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'View the LLM creation guide →',
@@ -71,11 +103,15 @@ export default {
   'guide.promptLabel': 'LLM prompt',
   'guide.copy': 'Copy',
   'guide.copied': 'Copied',
-  'guide.fillHint': 'Fill in every numbered REQUEST line (plain text, no JSON) before sending.',
-  'guide.downloadsHeading': 'LLM without web access?',
-  'guide.downloadsBody': 'Download the data archive (ZIP) and attach it to the chat manually.',
+  'guide.fillHint': 'Review and adjust the fields before copying — the app already filled in what it knows.',
+  'guide.coverageBadge': '{n}/8 fields',
+  'guide.requestEditorHeading': 'Program data',
+  'guide.formOverwritesTextarea': 'Editing these fields updates the prompt and discards any manual text edit.',
+  'guide.field8Checkbox': 'Include my progress ({n} sessions)',
+  'guide.downloadsHeading': 'Did the chat truncate the prompt?',
+  'guide.downloadsBody': 'Download the full schema and attach it to the chat manually.',
   'guide.downloadAction': 'Download',
-  'guide.downloadArchiveLabel': 'All data files (ZIP)',
+  'guide.schemaDownloadLabel': 'Full schema (JSON)',
   'guide.noRutina': "Don't have a rutina.json?",
   'guide.fallbackHtml': '<p>Could not load the guide.</p>',
 
@@ -338,7 +374,7 @@ export default {
   'promptEquipment.clubHeading': 'FIELD 6 — CLUB',
   'promptEquipment.tableHeading': 'AVAILABLE EQUIPMENT (id | modelCode | name | category | muscle group)',
   'promptEquipment.noClubSelected': '(not selected yet — use the guide’s club picker)',
-  'promptEquipment.equipmentIdNote': 'equipmentId is optional: omit it or use null for bodyweight exercises.',
+  'promptEquipment.equipmentIdNote': 'equipmentId is optional: omit it for bodyweight exercises.',
   'promptEquipment.exceptionNote':
     'extraEquipment is the EXCEPTION, not the default: with 48 catalog ids (including free weights, benches, bars and mats), most gear already has an id. Declare extraEquipment ONLY for identity-less gear (a band, a foam roller, a towel).',
 };

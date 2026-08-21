@@ -64,14 +64,10 @@ export function SettingsScreen() {
         >
           {UI_LOCALES.map((l) => (
             <FilterPill key={l} active={locale === l} onClick={() => setLocale(l)} role="radio" aria-checked={locale === l}>
-              {l.toUpperCase()}
+              {LOCALE_AUTONYMS[l]}
             </FilterPill>
           ))}
         </div>
-
-        <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', marginTop: 10 }}>
-          {UI_LOCALES.map((l) => LOCALE_AUTONYMS[l]).join(' · ')}
-        </p>
 
         <hr aria-hidden="true" style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 'var(--space-8) 0 0' }} />
       </div>

@@ -98,3 +98,24 @@ describe('ImportScreen — onboarding revisit link (AC7)', () => {
     expect(screen.getByLabelText(/rutina\.json/i)).toBeInTheDocument();
   });
 });
+
+// onboarding-request-fields R7.5, AC39 (tech-plan.md §2.5): the handout
+// narrows (equipment.json/gyms.json/phase1-monday.json stop being served as
+// downloads), but the in-app "load example" button is explicitly a NON-goal
+// — phase1-monday.json stays in the repo, wired exactly as it is today.
+describe('ImportScreen — load-example button still works (R7.5, AC39)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('fills the textarea with the bundled phase1-monday.json example', async () => {
+    const user = userEvent.setup();
+    render(<ImportScreen />);
+
+    await user.click(screen.getByRole('button', { name: /ejemplo/i }));
+
+    const textarea = screen.getByLabelText(/rutina\.json/i);
+    expect(textarea.value.length).toBeGreaterThan(0);
+    expect(() => JSON.parse(textarea.value)).not.toThrow();
+  });
+});

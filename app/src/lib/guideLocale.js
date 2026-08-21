@@ -33,17 +33,19 @@ export const GUIDE_DATA_FILES_BASE_URL =
   'https://gym-rutina.github.io/basic-fit/';
 
 /**
- * Single zip archive replacing the four per-file downloads
- * (llm-guide-zip-download). `path` must mirror where
- * scripts/copy-static-pages.js's buildDataArchive() writes the archive
- * inside dist/ (dist/data/rutina-data-files.zip → 'data/rutina-data-files.zip'
+ * Fallback download: the full, description-bearing schema file itself —
+ * NOT the stripped copy inlined into the prompt (onboarding-request-fields
+ * R7.2, tech-plan.md §2.9). Replaces the old zip archive (`GUIDE_DATA_ARCHIVE`
+ * — Q1: a one-entry zip would just reintroduce the "my chat can't open a
+ * zip" failure this feature removes). `path` mirrors where
+ * scripts/copy-static-pages.js copies the file inside dist/
+ * (dist/data/schema/rutina.schema.json → 'data/schema/rutina.schema.json'
  * here, combined with GUIDE_DATA_FILES_BASE_URL above). `bytes` is
- * hand-maintained (not build-computed) — same convention as the old
- * per-file `bytes` fields; update it after running `npm run build && npm run postbuild`
- * and reading the "Wrote dist/data/rutina-data-files.zip (N bytes)" log line.
+ * hand-maintained (not build-computed) — same convention the old archive
+ * entry used; update it after `data/schema/rutina.schema.json` changes.
  */
-export const GUIDE_DATA_ARCHIVE = {
-  filename: 'rutina-data-files.zip',
-  path: 'data/rutina-data-files.zip',
-  bytes: 19291,
+export const GUIDE_SCHEMA_DOWNLOAD = {
+  filename: 'rutina.schema.json',
+  path: 'data/schema/rutina.schema.json',
+  bytes: 13545,
 };

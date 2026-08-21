@@ -1,59 +1,77 @@
 # Authoring a Rutina with an LLM
 
 This guide turns a training program that lives only in your head (or a coach's notes)
-into a `rutina.json` file. Fill in the prompt at the top of this screen, copy it into
-**any** LLM chat (ChatGPT, Claude, Gemini, whatever you have on hand), and import what
-comes back into the **Rutina** app.
+into a `rutina.json` file. The app already fills in most of the prompt for you; review
+and adjust it at the top of this screen, copy it into **any** LLM chat (ChatGPT, Claude,
+Gemini, whatever you have on hand), and import what comes back into the **Rutina** app.
 
 No JSON knowledge required. No account, no API key — this works in a normal browser chat
 window.
 
-> **Language.** Field 7 sets the language of the routine text — write it in
-> whatever language you want (not limited to English/Spanish/Belarusian; any
-> language the LLM can produce). Rutina displays exercise names, day labels,
-> technique cues, rules and notes **exactly as the LLM writes them**, in a
-> single language, and never translates them, re-labels them, or requires
-> them to match the app's own interface language (set separately, under
-> **Settings**). Ask the LLM for **one plain string per field** — never a
-> multilingual object like `{"en": "Monday", "es": "Lunes"}`.
+## What the app fills in for you
 
-All reference data lives in the public repository
-[github.com/gym-rutina/basic-fit](https://github.com/gym-rutina/basic-fit).
-The prompt tells the LLM where to read it — you do **not** need to copy schema or
-equipment files yourself.
+The first time you open Rutina, the onboarding assistant asks about your gym, your
+program's name/goal, your schedule, and any injuries or movements to avoid — one guided
+step per field, each showing what the field is for, how the prompt uses it, and a
+concrete example. **Every step is optional**: skip any of them and the prompt leaves that
+numbered line blank, ready for you to fill in by hand in the textarea if you change your
+mind.
 
-| Data | URL |
-|------|-----|
-| Schema (source of truth) | [rutina.schema.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/schema/rutina.schema.json) |
-| Equipment catalog (optional detail reference) | [equipment.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/equipment.json) |
-| Reference example | [phase1-monday.json](https://cdn.jsdelivr.net/gh/gym-rutina/basic-fit@main/data/examples/phase1-monday.json) |
+Your answers are saved on this device, with **one single place to edit them later**: the
+form on this same guide screen, right above the prompt. There is no separate Settings
+entry for this — open it whenever you like, change what you need, and the prompt
+recomputes instantly with every edit (any text you typed directly into the textarea is
+discarded the moment you touch the form; the note next to the textarea warns you of this).
 
-> **LLM without web access?** Use the **Download** button in this guide screen to save
-> a zip archive of the data files directly to your device — one file, ready to attach to
-> the chat, not just an inline browser view. Prefer to fetch them yourself? The table
-> above links directly to the raw files in the repository.
+> **Language.** Field 7 sets the language of the routine text. It's no longer asked as an
+> onboarding step: the app fills it in automatically from the active UI language (e.g.
+> "English"). Rutina displays exercise names, day labels, technique cues, rules and notes
+> **exactly as the LLM writes them**, in a single language, and never translates them,
+> re-labels them, or requires them to match the app's own interface language (set
+> separately, under **Settings**). If you want output in a language other than the three
+> the interface supports (es/en/be), edit field 7 directly in the textarea before
+> copying — the LLM can produce any language, not just those three. Ask the LLM for **one
+> plain string per field** — never a multilingual object like
+> `{"en": "Monday", "es": "Lunes"}`.
 
-## Step 1 — Copy the prompt
+The rutina schema and your club's equipment list are **already inlined in the prompt
+itself** (the `SCHEMA` and `EQUIPMENT` sections) — nothing to fetch or attach for a first
+try. The public repository
+[github.com/gym-rutina/basic-fit](https://github.com/gym-rutina/basic-fit) is still the
+source of truth for that data; the prompt only falls back to a URL if your chat truncated
+the paste (see Troubleshooting below).
 
-Use the **Copy** button above this guide. The prompt starts with **REQUEST** — fill in
-every numbered line (plain text, no JSON) before sending.
+> **Prompt got cut off when you pasted it?** Use the **Download** button on this guide
+> screen to save `rutina.schema.json` — the full schema, with its descriptions — directly
+> to your device, and attach it to the chat manually.
+
+## Step 1 — Review and copy the prompt
+
+Review the form at the top of this screen (name, goal, days per week, session length,
+injuries) — the app has already filled it in with what it knows about you. Edit any
+field if needed, then use the **Copy** button. The composed prompt's size is shown next
+to the button, in case your chat tends to truncate long pastes.
 
 > **Field 6 — target gym**
-> Use the **Club Picker** in the Rutina app — tap the club row on the **Catálogo** tab or
-> the club row above the prompt in this guide screen. Once you pick a club, the app fills
-> in field 6 (name, city, address) and appends the club-scoped equipment list automatically.
-> If your club is not in the directory, type the gym name and address directly into field 6.
+> Use the **Club Picker** in the Rutina app — tap the club row in the "Your gym"
+> onboarding step, on the **Catálogo** tab, or the club row above the prompt in this
+> guide screen. Once you pick a club, the app fills in field 6 (name, city, address) and
+> appends the club-scoped equipment list automatically. If your club is not in the
+> directory, type the gym name and address directly into field 6 in the textarea.
 
-| # | Field | Example | Required |
-|---|-------|---------|----------|
-| 1 | Who is this for / program name | "Elena — Fase 2" | yes |
-| 2 | Primary goal this phase | "Hipertrofia, más volumen" | yes |
-| 3 | Days per week | 4 | yes |
-| 4 | Session length budget | "45-60 min" | yes |
-| 5 | Injuries / movements to avoid | "Evitar press militar por hombro derecho" | no — write "none" if none |
-| 6 | Target gym | "BasicFit Málaga Alameda — Málaga, Avda. Andalucía" (pre-filled by the Club Picker) | yes |
-| 7 | Language for the output text | "Español" | yes |
-| 8 | Prior progress export | pasted Markdown from Rutina **Historial → Exportar** | no — omit if starting a first phase |
+| # | Field | Filled by | Example |
+|---|-------|-----------|---------|
+| 1 | Who is this for / program name | Onboarding ("Personalize your program" step) · editable on this guide | "Elena — Phase 2 of 3 (volume). 8 months training so far." |
+| 2 | Primary goal this phase | Onboarding (same step) · editable on this guide | "I want more muscle in upper body, especially chest and shoulders..." |
+| 3 | Days per week | Onboarding ("Your schedule" step) · editable on this guide (1–7 selector) | 4 |
+| 4 | Session length budget | Onboarding (same step) · editable on this guide | "45-60 min on weekdays, up to 80 min on Saturdays" |
+| 5 | Injuries / movements to avoid | Onboarding ("Before you start" step) · editable on this guide | "Patellar tendinitis in right knee..." — write "none" if none |
+| 6 | Target gym | Club Picker (onboarding, Catálogo tab, or this guide) | Chosen club's name, city and address, plus its equipment list |
+| 7 | Language for the output text | Active UI language (Settings) — never asked | "English" (autonym of the active language) |
+| 8 | Prior progress export | The app's own session history, if you have any logged | Markdown of your sessions, with an "Include my progress" checkbox on by default |
+
+Text fields all have a length cap (fields 1 and 4: 200 characters; field 2: 800; field
+5: 500) — over-length text is truncated on save, never rejected while you type.
 
 Putting "output only JSON, nothing else" at both the top (`ROLE`) and the bottom
 (`OUTPUT`) is deliberate — it's the single highest-leverage instruction for getting
@@ -83,22 +101,32 @@ npm run validate-rutina -- path/to/your-rutina.json
 
 ---
 
-## Worked example (one full turn)
+## Worked example (composed prompt)
 
-**REQUEST filled in (top of the copied prompt):**
+You don't need to type this by hand — this is what the `REQUEST` block looks like once
+you've completed the onboarding assistant (or edited the fields on this guide). The **8
+field labels stay in English** across all three guides — that's the prompt's original
+wording and it doesn't change with the interface language; only your answers and the
+rest of this guide are localized.
 
 ```text
-1. Who is this for / program name: Elena Rois — Fase 2
-2. Primary goal this phase: Hipertrofia, más volumen muscular
+### REQUEST
+
+1. Who is this for / program name: Elena — Phase 2 of 3 (volume). 8 months training so far.
+2. Primary goal this phase: I want more muscle in upper body, especially chest and shoulders. I love cable machines and Smith press.
 3. Days per week: 4
-4. Session length budget: 45-60 min
-5. Injuries / movements to avoid: ninguna
-6. Target gym: BasicFit Málaga Alameda — Málaga, Avda. Andalucía, Centro Comercial Alameda
-7. Language for the output text: Español
-8. Prior progress export (optional): (ninguna todavía, primera vez usando esto)
+4. Session length budget: 45-60 min on weekdays, up to 80 min on Saturdays
+5. Injuries / movements to avoid (write "none"/"ninguna" if none): Patellar tendinitis in right knee (since 2024): no barbell squats or lunges, but leg press with partial range is fine.
+6. Target gym (pre-filled by the app's club picker — name, city, address and available equipment ids are listed in the EQUIPMENT section appended below): BasicFit Málaga Alameda, Málaga, Avda. Andalucía s/n (CC Alameda, La Luz)
+7. Language for the output text: English
+8. Prior progress export (optional — paste Markdown from Rutina app Export, or leave blank): Chest Press (g3-s10)
+   · 32kg / hard
+   · 32kg / normal
+   · 35kg / easy
 ```
 
-**LLM reads schema and equipment from URLs in DATA SOURCES, then returns JSON.**
+The schema (`SCHEMA`) and your club's equipment list (`EQUIPMENT`) immediately follow
+this in the copied prompt — the LLM doesn't need to go fetch anything on its own.
 
 **Import** into the Rutina app, or run `npm run validate-rutina -- data/rutina-nombre-fase2-draft.json`.
 
@@ -106,31 +134,35 @@ npm run validate-rutina -- path/to/your-rutina.json
 
 ## Troubleshooting
 
-- **The LLM cannot fetch URLs.** Use the **Download** button in this guide screen to
-  save a zip archive of the DATA SOURCES files, then attach it to the chat manually —
-  filenames inside match those in the prompt. The raw-URL table above works too, for
-  LLMs/browsers that can fetch directly, or you can paste file contents into the chat
-  instead.
-- **The LLM's chat can't open a `.zip` attachment.** Extract the archive locally, then
-  attach or paste the individual files instead — `rutina.schema.json`, `phase1-monday.json`
-  (and `equipment.json` if the LLM needs additional muscle-group or video details).
+- **The chat truncated the prompt when you pasted it (long programs or long
+  descriptions).** This is the most common failure with a prompt this size. Use the
+  **Download** button on this guide screen to save `rutina.schema.json` (the full schema,
+  with its descriptions) and attach it to the chat manually, telling the LLM that the
+  pasted prompt's `SCHEMA` section got cut off and to use the attached file instead.
 - **The LLM added a friendly intro or wrapped the JSON in a markdown fence.** Re-send
   with: "Output ONLY the JSON object, no markdown fence, no explanation."
-- **The reply got cut off mid-JSON (very long programs).** Ask the LLM to "continue
-  from where you stopped, still outputting only JSON."
-- **Equipment id not found.** The LLM must use only the ids listed in the EQUIPMENT section
-  appended to the prompt — not invented ids. Paste the validator error back and ask it to
-  re-read the equipment list.
-- **Field 6 or the equipment list is missing from the prompt.** You need to pick a club first.
-  Open the **Club Picker** on the Catálogo tab or in this guide screen; once a club is
-  selected the app fills in field 6 and appends the equipment list automatically.
+- **The LLM's reply got cut off mid-JSON (very long programs).** Ask the LLM to "continue
+  from where you stopped, still outputting only JSON." This is the opposite problem from
+  the one above: here it's the LLM's *reply* that's cut off, not your prompt.
+- **Equipment id not found.** The LLM must use only the ids listed in the `EQUIPMENT`
+  section appended to the prompt — not invented ids. Paste the validator error back and
+  ask it to re-read the equipment list.
+- **Field 6 or the equipment list is missing from the prompt.** You need to pick a club
+  first. Open the **Club Picker** on the "Your gym" onboarding step, the Catálogo tab, or
+  this guide screen; once a club is selected the app fills in field 6 and appends the
+  equipment list automatically.
 
 ---
 
 ## Using your progress export (field 8)
 
-After running a phase, **Historial → Exportar progreso** in the Rutina app produces a
-Markdown text you can paste as-is into field 8. It looks like:
+If you already have logged sessions, the guide adds your progress Markdown to field 8
+automatically — no copy-paste needed. An **"Include my progress (N sessions)"** checkbox,
+on by default, controls whether it's included in this particular copy of the prompt;
+uncheck it if you'd rather leave it out. The checkbox resets to checked every time you
+open the guide — it's a per-copy choice, not a saved preference.
+
+It looks like:
 
 ```
 Prensa de Pecho (g3-s10)

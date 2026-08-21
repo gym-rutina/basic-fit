@@ -57,6 +57,9 @@ const PATHS = {
   "message-square": <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
   "check-circle": <><circle cx="12" cy="12" r="10" /><polyline points="8 12 11 15 16 9" /></>,
   "list-checks": <><path d="m3 17 2 2 4-4" /><path d="m3 7 2 2 4-4" /><path d="M13 6h8" /><path d="M13 12h8" /><path d="M13 18h8" /></>,
+
+  /* Onboarding (added for onboarding-request-fields — the injuries input step) */
+  shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
 };
 
 /** Thin-line stroke icon (Feather/Lucide subset). Inherits color via currentColor. */

@@ -54,13 +54,28 @@ const ALLOWLIST = [
   },
   {
     file: 'lib/guideLocale.js',
-    text: 'rutina-data-files.zip',
-    why: 'static archive filename (GUIDE_DATA_ARCHIVE.filename), not user-visible prose.',
+    text: 'rutina.schema.json',
+    why: 'static download filename (GUIDE_SCHEMA_DOWNLOAD.filename, onboarding-request-fields Q1/R7.2 — replaces the deleted GUIDE_DATA_ARCHIVE zip), not user-visible prose.',
   },
   {
     file: 'lib/guideLocale.js',
-    text: 'data/rutina-data-files.zip',
-    why: 'static archive path (GUIDE_DATA_ARCHIVE.path), not user-visible prose.',
+    text: 'data/schema/rutina.schema.json',
+    why: 'static download path (GUIDE_SCHEMA_DOWNLOAD.path, onboarding-request-fields Q1/R7.2), not user-visible prose.',
+  },
+  {
+    file: 'lib/promptRequestStorage.js',
+    text: 'rutina:promptRequest',
+    why: 'localStorage key, not user-visible copy — same rutina: namespace convention as rutina:club / rutina:uiLang / rutina:onboardingSeen (onboarding-request-fields R2.1).',
+  },
+  {
+    file: 'lib/promptEquipment.js',
+    text: 'Injuries / movements to avoid (write "none"/"ninguna" if none)',
+    why: 'REQUEST-field scaffolding label, hardcoded English by design (DD-001 — never looked up via t()); "ninguna" is a quoted example of the literal word to type, not translatable UI copy.',
+  },
+  {
+    file: 'lib/promptEquipment.js',
+    text: 'Prior progress export (optional — paste Markdown from Rutina app Export, or leave blank)',
+    why: 'REQUEST-field scaffolding label, hardcoded English by design (DD-001 — never looked up via t()); "Rutina" here is the app\'s own proper noun (Export screen name), not Spanish prose.',
   },
 ];
 
