@@ -1,6 +1,12 @@
 # --- Dependencies ---
 node_modules/
 
+# --- design-sync (claude.ai/design) scratch state ---
+.ds-sync/
+ds-bundle/
+ds-bundle-rebuild/
+.design-sync/
+
 # --- Build output (rutina-pwa: React + Vite) ---
 dist/
 .vite/
