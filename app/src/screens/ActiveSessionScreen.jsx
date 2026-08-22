@@ -394,6 +394,11 @@ export function ActiveSessionScreen({ onSessionEnded }) {
   const doneCount = merged.filter((e) => e.completedAt).length;
   const total = merged.length;
   const firstPendingIndex = merged.find((e) => !e.completedAt)?.exerciseIndex ?? null;
+  // active-session-finish-button AC7/AC9: a zero-exercise day must never
+  // present as "trivially finished" (0 === 0), so `total > 0` gates this
+  // before the count comparison. Single source of truth for both the inline
+  // Finish CTA below and which ConfirmSheet outcome pair gets passed.
+  const isFullyComplete = total > 0 && doneCount === total;
 
   // Defensive guard: /session is only reachable via Start/Resume (ux-design.md
   // States Matrix) — if there's genuinely no active session, don't render a
@@ -525,16 +530,21 @@ export function ActiveSessionScreen({ onSessionEnded }) {
             extraEquipment={rutina.extraEquipment}
           />
         ))}
+        {isFullyComplete && (
+          <Button variant="primary" onClick={handleFinish}>
+            <Icon name="check" size={16} /> {t('session.finishAction')}
+          </Button>
+        )}
       </div>
 
       {showEndDialog && (
         <ConfirmSheet
           title={t('session.endSessionTitle')}
           description={t('session.endSessionDesc', { done: doneCount, total })}
-          primaryLabel={t('session.finishAction')}
-          onPrimary={handleFinish}
-          secondaryLabel={t('session.finishIncompleteAction')}
-          onSecondary={handleAbandon}
+          primaryLabel={isFullyComplete ? t('session.finishAction') : undefined}
+          onPrimary={isFullyComplete ? handleFinish : undefined}
+          secondaryLabel={!isFullyComplete ? t('session.finishIncompleteAction') : undefined}
+          onSecondary={!isFullyComplete ? handleAbandon : undefined}
           cancelLabel={t('common.cancel')}
           onCancel={() => setShowEndDialog(false)}
           destructiveAction={{

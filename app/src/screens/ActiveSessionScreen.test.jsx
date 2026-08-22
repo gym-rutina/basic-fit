@@ -225,6 +225,22 @@ async function openEndSheet(user) {
   await user.click(await screen.findByRole('button', { name: /terminar sesión/i }));
 }
 
+/**
+ * active-session-finish-button: every exercise logged. Used by both the
+ * discard suite (a completed session must still offer discard, AC8) and the
+ * completion-aware finish suite below.
+ */
+function fullyCompletedSession(overrides = {}) {
+  const session = makeSession(overrides);
+  session.exercises = session.exercises.map((ex, i) => ({
+    ...ex,
+    weightUsed: 20 + i * 10,
+    difficulty: 'normal',
+    completedAt: `2026-08-01T10:${(15 + i * 10).toString().padStart(2, '0')}:00.000Z`,
+  }));
+  return session;
+}
+
 describe('ActiveSessionScreen — discard (AC1–AC5)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -260,21 +276,40 @@ describe('ActiveSessionScreen — discard (AC1–AC5)', () => {
     expect(screen.getByRole('button', { name: /descartar sin guardar/i })).toBeInTheDocument();
   });
 
-  it('is distinct from the two recording outcomes (AC4)', async () => {
+  it('is distinct from the pending-session recording outcome (AC4; active-session-finish-button AC5)', async () => {
+    // Session is 0/3 done — the sheet offers only the abandon outcome
+    // (active-session-finish-button AC5), so "finish" is not asserted here.
     const user = userEvent.setup();
     renderSessionWith();
     await openEndSheet(user);
+    const dialog = await screen.findByRole('alertdialog');
 
-    const discard = screen.getByRole('button', { name: /descartar sin guardar/i });
-    const finish = screen.getByRole('button', { name: /finalizar sesión/i });
-    const abandon = screen.getByRole('button', { name: /sesión terminada sin completar/i });
+    const discard = within(dialog).getByRole('button', { name: /descartar sin guardar/i });
+    const abandon = within(dialog).getByRole('button', { name: /sesión terminada sin completar/i });
 
     // A user must not be able to confuse "no se guarda" with "sesión sin
     // terminar" — the abandoned outcome DOES record.
     expect(discard.getAttribute('style')).toContain('bf-danger');
-    expect(finish.getAttribute('style') ?? '').not.toContain('bf-danger');
     expect(abandon.getAttribute('style') ?? '').not.toContain('bf-danger');
     expect(discard.textContent).not.toMatch(/sin completar/i);
+  });
+
+  it('is distinct from the completed-session recording outcome (AC4; active-session-finish-button AC6)', async () => {
+    // Session is 3/3 done — the sheet offers only the finish outcome
+    // (active-session-finish-button AC6), and an identically-labelled inline
+    // Finish button also renders outside the sheet, so queries are scoped
+    // to the dialog to disambiguate.
+    db.getActiveSession.mockResolvedValue(fullyCompletedSession());
+    const user = userEvent.setup();
+    renderSessionWith();
+    await openEndSheet(user);
+    const dialog = await screen.findByRole('alertdialog');
+
+    const discard = within(dialog).getByRole('button', { name: /descartar sin guardar/i });
+    const finish = within(dialog).getByRole('button', { name: /finalizar sesión/i });
+
+    expect(discard.getAttribute('style')).toContain('bf-danger');
+    expect(finish.getAttribute('style') ?? '').not.toContain('bf-danger');
   });
 
   it('confirms through a danger sheet stating it is not saved and cannot be undone (AC3)', async () => {
@@ -303,7 +338,10 @@ describe('ActiveSessionScreen — discard (AC1–AC5)', () => {
 
     expect(db.deleteSessions).not.toHaveBeenCalled();
     // Returns to the end sheet, so a mis-tap costs one tap, not the decision.
-    expect(await screen.findByRole('button', { name: /finalizar sesión/i })).toBeInTheDocument();
+    // Default fixture is 0/3 done, so the sheet's non-destructive outcome is
+    // "ended without finishing" (active-session-finish-button AC5), not
+    // "finalizar sesión".
+    expect(await screen.findByRole('button', { name: /sesión terminada sin completar/i })).toBeInTheDocument();
   });
 
   it('deletes the session record on confirm (AC1)', async () => {
@@ -357,15 +395,170 @@ describe('ActiveSessionScreen — discard (AC1–AC5)', () => {
     expect(screen.queryByText('Home')).not.toBeInTheDocument();
   });
 
-  it('still records FINISH and ABANDON as it does today (AC24)', async () => {
+  it('keeps discard and cancel available even when the session is fully complete (active-session-finish-button AC8)', async () => {
+    db.getActiveSession.mockResolvedValue(fullyCompletedSession());
     const user = userEvent.setup();
     renderSessionWith();
     await openEndSheet(user);
-    await user.click(screen.getByRole('button', { name: /finalizar sesión/i }));
+    const dialog = await screen.findByRole('alertdialog');
+
+    expect(within(dialog).getByRole('button', { name: /descartar sin guardar/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: /cancelar/i })).toBeInTheDocument();
+  });
+
+  it('still records FINISH as it does today, now via the sheet\'s sole non-destructive outcome on a fully-complete session (AC24; active-session-finish-button AC9)', async () => {
+    db.getActiveSession.mockResolvedValue(fullyCompletedSession());
+    const user = userEvent.setup();
+    renderSessionWith();
+    await openEndSheet(user);
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: /finalizar sesión/i }));
 
     await waitFor(() => expect(db.saveSession).toHaveBeenCalled());
     expect(db.saveSession.mock.calls.at(-1)[0]).toMatchObject({ status: 'completed' });
     expect(db.deleteSessions).not.toHaveBeenCalled();
+  });
+
+  it('still records ABANDON as it does today, now via the sheet\'s sole non-destructive outcome on a pending session (AC24; active-session-finish-button AC9)', async () => {
+    // Original AC24 test only ever exercised the FINISH path — this closes
+    // that gap by actually clicking the ABANDON button too.
+    const user = userEvent.setup();
+    renderSessionWith(); // default makeSession(): 0/3 done
+    await openEndSheet(user);
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: /sesión terminada sin completar/i }));
+
+    await waitFor(() => expect(db.saveSession).toHaveBeenCalled());
+    expect(db.saveSession.mock.calls.at(-1)[0]).toMatchObject({ status: 'abandoned' });
+    expect(db.deleteSessions).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * active-session-finish-button spec.md (AC1-AC10). Two related behaviors on
+ * ActiveSessionScreen, both gated by the same `isFullyComplete = total > 0 &&
+ * doneCount === total` check: (1) an inline "Finalizar sesión" CTA renders
+ * below the exercise list once every exercise is done, and finishes the
+ * session immediately with no confirmation sheet; (2) the X-triggered
+ * end-session ConfirmSheet becomes completion-aware, offering exactly one of
+ * "Finalizar sesión" / "Sesión terminada sin completar" — never both, never
+ * neither — since the two are contradictory once completion state is known.
+ */
+const EMPTY_DAY_RUTINA = {
+  schemaVersion: 1,
+  program: { name: 'Test', phaseName: 'Fase 1', phaseNumber: 1, durationWeeks: 4 },
+  days: [{ label: 'Descanso', exercises: [] }],
+};
+
+function emptyDaySession() {
+  return {
+    id: 'sess-empty',
+    dayLabel: 'Descanso',
+    dayIndex: 0,
+    status: 'active',
+    startedAt: '2026-08-01T10:00:00.000Z',
+    endedAt: null,
+    exercises: [],
+  };
+}
+
+describe('ActiveSessionScreen — completion-aware finish (active-session-finish-button AC1-AC10)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    db.getActiveRutina.mockResolvedValue({ rutina: RUTINA, importedAt: '2026-08-01' });
+    db.getActiveSession.mockResolvedValue(makeSession());
+    db.getLastWeight.mockResolvedValue(null);
+    db.saveSession.mockResolvedValue(undefined);
+    db.deleteSessions.mockResolvedValue(undefined);
+  });
+
+  it('does not render while exercises are still pending (AC1)', async () => {
+    renderSessionWith(); // default makeSession(): 0/3 done
+    await screen.findByLabelText(/peso usado/i); // wait for the screen to settle
+
+    expect(screen.queryByRole('button', { name: /finalizar sesión/i })).not.toBeInTheDocument();
+  });
+
+  it('appears the instant the last pending exercise is marked complete (AC2)', async () => {
+    const twoDone = makeSession();
+    twoDone.exercises[0] = { ...twoDone.exercises[0], weightUsed: 40, difficulty: 'normal', completedAt: '2026-08-01T10:15:00.000Z' };
+    twoDone.exercises[1] = { ...twoDone.exercises[1], weightUsed: 20, difficulty: 'easy', completedAt: '2026-08-01T10:30:00.000Z' };
+    db.getActiveSession.mockResolvedValue(twoDone);
+    const user = userEvent.setup();
+    renderSessionWith();
+    await screen.findByLabelText(/peso usado/i); // wait for the screen to settle
+
+    // The third exercise (Curl Bíceps Mancuerna) is the sole pending one and
+    // auto-expands on load.
+    expect(screen.queryByRole('button', { name: /finalizar sesión/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: /normal/i }));
+    await user.click(screen.getByRole('button', { name: /marcar completado/i }));
+
+    expect(await screen.findByRole('button', { name: /finalizar sesión/i })).toBeInTheDocument();
+  });
+
+  it('finishes immediately with no confirm sheet when clicked (AC3)', async () => {
+    db.getActiveSession.mockResolvedValue(fullyCompletedSession());
+    const user = userEvent.setup();
+    renderSessionWith();
+
+    await user.click(await screen.findByRole('button', { name: /finalizar sesión/i }));
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(db.saveSession).toHaveBeenCalled());
+    expect(db.saveSession.mock.calls.at(-1)[0]).toMatchObject({ status: 'completed' });
+    expect(await screen.findByText('Home')).toBeInTheDocument();
+  });
+
+  it('disappears again if the user undoes the exercise that completed the session (AC4)', async () => {
+    db.getActiveSession.mockResolvedValue(fullyCompletedSession());
+    const user = userEvent.setup();
+    renderSessionWith();
+
+    expect(await screen.findByRole('button', { name: /finalizar sesión/i })).toBeInTheDocument();
+
+    // All cards start collapsed on a fully-complete session (no pending
+    // exercise to auto-expand) — expand the last one to reach its Undo.
+    await user.click(screen.getByRole('button', { name: /curl bíceps mancuerna/i }));
+    await user.click(screen.getByRole('button', { name: /deshacer/i }));
+
+    expect(screen.queryByRole('button', { name: /finalizar sesión/i })).not.toBeInTheDocument();
+  });
+
+  it('the end-session sheet offers only "ended without finishing" while exercises are pending (AC5)', async () => {
+    const user = userEvent.setup();
+    renderSessionWith(); // default makeSession(): 0/3 done
+    await openEndSheet(user);
+    const dialog = await screen.findByRole('alertdialog');
+
+    expect(within(dialog).getByRole('button', { name: /sesión terminada sin completar/i })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: /finalizar sesión/i })).not.toBeInTheDocument();
+  });
+
+  it('the end-session sheet offers only "finish session" once every exercise is done (AC6)', async () => {
+    db.getActiveSession.mockResolvedValue(fullyCompletedSession());
+    const user = userEvent.setup();
+    renderSessionWith();
+    await openEndSheet(user);
+    const dialog = await screen.findByRole('alertdialog');
+
+    expect(within(dialog).getByRole('button', { name: /finalizar sesión/i })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: /sesión terminada sin completar/i })).not.toBeInTheDocument();
+  });
+
+  it('treats a zero-exercise day as not fully complete, for both the inline button and the sheet (AC7)', async () => {
+    db.getActiveRutina.mockResolvedValue({ rutina: EMPTY_DAY_RUTINA, importedAt: '2026-08-01' });
+    db.getActiveSession.mockResolvedValue(emptyDaySession());
+    const user = userEvent.setup();
+    renderSessionWith();
+    await screen.findByText('Descanso');
+
+    expect(screen.queryByRole('button', { name: /finalizar sesión/i })).not.toBeInTheDocument();
+
+    await openEndSheet(user);
+    const dialog = await screen.findByRole('alertdialog');
+    expect(within(dialog).getByRole('button', { name: /sesión terminada sin completar/i })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: /finalizar sesión/i })).not.toBeInTheDocument();
   });
 });
 
