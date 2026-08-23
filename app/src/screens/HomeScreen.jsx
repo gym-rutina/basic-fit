@@ -68,6 +68,7 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
     // one, rather than trusting the props snapshot at tap time.
     const existing = await getActiveSession();
     if (existing) {
+      onRetryActiveSession();
       navigate('/session');
       return;
     }
@@ -75,6 +76,9 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
     const session = createSession(today.day.label, today.index, today.day.exercises, new Date().toISOString());
     await saveSession(session);
     setStarting(false);
+    // Shell owns activeSession (AC10-AC13) — without this, Inicio/other tabs
+    // keep showing "no active session" until a hard reload re-mounts the hook.
+    onRetryActiveSession();
     navigate('/session');
   }
 
