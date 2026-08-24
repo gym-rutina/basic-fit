@@ -4,7 +4,7 @@ import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { Badge } from '../../../design-system/components/primitives/Badge.jsx';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
-import { resolveTodayDay } from '../lib/today.js';
+import { resolveNextDayIndex } from '../lib/nextDay.js';
 import { createSession } from '../lib/sessionMachine.js';
 import { getActiveSession, listSessions, saveSession } from '../lib/db.js';
 import { formatRelativeDays } from '../lib/relativeTime.js';
@@ -18,23 +18,33 @@ import { useI18n } from '../i18n/index.js';
  * CTA before the shell knows the answer, because `'loading'` renders a
  * skeleton with no CTA text at all.
  *
- * States: loading (skeleton, no CTA) | active | idle | error+retry
- * (ux-design.md), plus the pre-existing full-screen `loadError` (corrupt
- * rutina, AC24 regression baseline).
+ * Day proposal (home-next-workout-and-picker): pure rotation from completed
+ * history via `resolveNextDayIndex` — calendar-blind (AC3), always labelled
+ * "Próximo" (AC4). The idle card carries an inline day-picker disclosure for
+ * ≥2-day rutinas (AC8; hidden at 1 day per UAT amendment), and the recent-
+ * sessions section shows up to 2 non-active cards (AC15).
+ *
+ * States: loading (skeleton, no CTA/picker) | active | idle (+picker) |
+ * error+retry | starting (CTA + every row disabled) | empty history (no
+ * recent section) | full-screen `loadError` (corrupt rutina, AC24 baseline)
+ * — ux-design.md states matrix.
  */
 export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus, activeSession, onRetryActiveSession }) {
   const navigate = useNavigate();
   const { t, locale } = useI18n();
-  const [lastSession, setLastSession] = useState(null);
+  const [recentSessions, setRecentSessions] = useState([]);
   const [pastSessions, setPastSessions] = useState([]);
   const [starting, setStarting] = useState(false);
+  // AC11 — picker expansion is component-local only; navigation unmounts
+  // Home, so nothing is persisted and no reset logic is needed.
+  const [pickerExpanded, setPickerExpanded] = useState(false);
 
   useEffect(() => {
     if (loadError) return;
     let cancelled = false;
     listSessions().then((sessions) => {
       if (cancelled) return;
-      setLastSession(sessions.find((s) => s.status !== 'active') || null);
+      setRecentSessions(sessions.filter((s) => s.status !== 'active').slice(0, 2));
       setPastSessions(sessions.map((s) => ({ dayIndex: s.dayIndex, status: s.status })));
     });
     return () => {
@@ -59,10 +69,11 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
     );
   }
 
-  const today = resolveTodayDay(rutina.days, new Date(), pastSessions);
-  const exerciseCount = today.day.exercises.length;
+  const proposedIndex = resolveNextDayIndex(rutina.days.length, pastSessions);
+  const proposedDay = rutina.days[proposedIndex];
+  const exerciseCount = proposedDay.exercises.length;
 
-  async function handleStart() {
+  async function handleStart(dayIndex) {
     // AC11 — data-integrity backstop: the render-level guard (AC10) alone is
     // racy, so re-check for an active session immediately before creating
     // one, rather than trusting the props snapshot at tap time.
@@ -73,7 +84,8 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
       return;
     }
     setStarting(true);
-    const session = createSession(today.day.label, today.index, today.day.exercises, new Date().toISOString());
+    const day = rutina.days[dayIndex];
+    const session = createSession(day.label, dayIndex, day.exercises, new Date().toISOString());
     await saveSession(session);
     setStarting(false);
     // Shell owns activeSession (AC10-AC13) — without this, Inicio/other tabs
@@ -138,42 +150,126 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
         {activeSessionStatus === 'ready' && !activeSession && (
           <div style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', boxShadow: 'var(--shadow-card)' }}>
             <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
-              {today.mode === 'today' ? t('home.todayLabel') : t('home.nextLabel')}
+              {t('home.nextLabel')}
             </div>
-            <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }} dir="auto">{today.day.label}</h2>
+            <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }} dir="auto">{proposedDay.label}</h2>
             <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 var(--space-5)' }}>
-              {today.day.intro ? (
-                <span dir="auto">{today.day.intro} · </span>
+              {proposedDay.intro ? (
+                <span dir="auto">{proposedDay.intro} · </span>
               ) : (
                 ''
               )}
               {t(exerciseCount === 1 ? 'home.exerciseCountOne' : 'home.exerciseCountOther', { n: exerciseCount })}
             </p>
-            <Button variant="primary" size="lg" style={{ width: '100%' }} disabled={starting} onClick={handleStart}>
+            <Button variant="primary" size="lg" style={{ width: '100%' }} disabled={starting} onClick={() => handleStart(proposedIndex)}>
               <Icon name="play" size={18} /> {t('home.startAction')}
             </Button>
+
+            {rutina.days.length >= 2 && (
+              <>
+                <Button
+                  variant="ghost"
+                  style={{ width: '100%', minHeight: 44, marginTop: 4 }}
+                  aria-expanded={pickerExpanded}
+                  aria-controls="home-day-picker"
+                  onClick={() => setPickerExpanded((v) => !v)}
+                >
+                  {t('home.chooseDayAction')}
+                  <Icon name={pickerExpanded ? 'chevron-up' : 'chevron-down'} size={18} />
+                </Button>
+                {pickerExpanded && (
+                  <div id="home-day-picker" style={{ marginTop: 'var(--space-4)', display: 'grid', borderTop: '1px solid var(--border-default)' }}>
+                    {rutina.days.map((day, i) => {
+                      const isProposed = i === proposedIndex;
+                      // Explicit accessible name: identity + count must read as one
+                      // phrase, and the proposed marker must not be visual-only
+                      // (AC12). Whitespace-only separation before the count keeps
+                      // screen-reader phrasing natural. Built by concatenation,
+                      // NOT a template literal — strayLiterals' naive backtick
+                      // pairing reads the span up to the next template as one
+                      // giant "string" and trips its Spanish heuristic.
+                      const rowName =
+                        day.label +
+                        (day.intro ? ' — ' + day.intro : '') +
+                        ' ' +
+                        t('program.exerciseAbbrev', { n: day.exercises.length }) +
+                        (isProposed ? ', ' + t('home.nextLabel') : '');
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          disabled={starting}
+                          aria-label={rowName}
+                          onClick={() => handleStart(i)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 10,
+                            width: '100%',
+                            minHeight: 44,
+                            textAlign: 'left',
+                            padding: '10px 12px',
+                            background: isProposed ? 'var(--bf-purple-tint)' : 'transparent',
+                            border: 'none',
+                            borderBottom: '1px solid var(--border-default)',
+                            borderBottomStyle: i === rutina.days.length - 1 ? 'none' : undefined,
+                            cursor: starting ? 'default' : 'pointer',
+                            fontFamily: 'inherit',
+                          }}
+                        >
+                          <span style={{ minWidth: 0 }}>
+                            <span dir="auto" style={{ display: 'block', font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
+                              {day.label}
+                              {day.intro ? ' — ' + day.intro : ''}
+                            </span>
+                            <span style={{ display: 'block', font: 'var(--text-body-sm)', color: 'var(--text-muted)', marginTop: 2 }}>
+                              {t('program.exerciseAbbrev', { n: day.exercises.length })}
+                            </span>
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                            {isProposed && (
+                              <span style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--bf-purple)' }}>
+                                {t('home.nextLabel')}
+                              </span>
+                            )}
+                            <span style={{ color: 'var(--text-muted)' }}>
+                              <Icon name="chevron-right" size={18} />
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
-        {lastSession && (
+        {recentSessions.length > 0 && (
           <div style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)' }}>
-            <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>{t('home.lastSessionLabel')}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ color: lastSession.status === 'abandoned' ? 'var(--text-muted)' : 'var(--bf-success)' }}>
-                <Icon name={lastSession.status === 'abandoned' ? 'x' : 'check'} size={20} />
-              </span>
-              <div>
-                <div style={{ font: '700 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
-                  <span dir="auto">{lastSession.dayLabel}</span> · {formatRelativeDays(lastSession.startedAt, new Date(), { locale, t })}
+            <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>{t('home.recentSessionsLabel')}</div>
+            <div style={{ display: 'grid', gap: 12 }}>
+              {recentSessions.map((session) => (
+                <div key={session.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ color: session.status === 'abandoned' ? 'var(--text-muted)' : 'var(--bf-success)' }}>
+                    <Icon name={session.status === 'abandoned' ? 'x' : 'check'} size={20} />
+                  </span>
+                  <div>
+                    <div style={{ font: '700 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
+                      <span dir="auto">{session.dayLabel}</span> · {formatRelativeDays(session.startedAt, new Date(), { locale, t })}
+                    </div>
+                    <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
+                      {t('common.completedOf', {
+                        done: session.exercises.filter((e) => e.completedAt).length,
+                        total: session.exercises.length,
+                      })}
+                      {session.status === 'abandoned' ? ` · ${t('common.unfinishedSuffix')}` : ''}
+                    </div>
+                  </div>
                 </div>
-                <div style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
-                  {t('common.completedOf', {
-                    done: lastSession.exercises.filter((e) => e.completedAt).length,
-                    total: lastSession.exercises.length,
-                  })}
-                  {lastSession.status === 'abandoned' ? ` · ${t('common.unfinishedSuffix')}` : ''}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         )}

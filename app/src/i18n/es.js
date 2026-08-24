@@ -199,12 +199,12 @@ export default {
   'home.activeSessionErrorBody': 'No se pudo comprobar si tienes un entrenamiento en curso.',
   'home.inProgressLabel': 'En curso',
   'home.resumeAction': 'Reanudar entrenamiento',
-  'home.todayLabel': 'Hoy',
   'home.nextLabel': 'Próximo',
   'home.exerciseCountOne': '{n} ejercicio',
   'home.exerciseCountOther': '{n} ejercicios',
   'home.startAction': 'Empezar entrenamiento',
-  'home.lastSessionLabel': 'Última sesión',
+  'home.chooseDayAction': 'Elegir otro día',
+  'home.recentSessionsLabel': 'Últimas sesiones',
 
   // ── program (ProgramScreen.jsx) ──────────────────────────────────────────
   'program.phaseLabel': 'Fase {n}',

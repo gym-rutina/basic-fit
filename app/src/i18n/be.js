@@ -195,12 +195,12 @@ export default {
   'home.activeSessionErrorBody': 'Не ўдалося праверыць, ці ёсць у вас трэнінг у працэсе.',
   'home.inProgressLabel': 'У працэсе',
   'home.resumeAction': 'Аднавіць трэнінг',
-  'home.todayLabel': 'Сёння',
   'home.nextLabel': 'Наступны',
   'home.exerciseCountOne': '{n} практыкаванне',
   'home.exerciseCountOther': '{n} практыкаванняў',
   'home.startAction': 'Пачаць трэнінг',
-  'home.lastSessionLabel': 'Апошняя сесія',
+  'home.chooseDayAction': 'Выбраць іншы дзень',
+  'home.recentSessionsLabel': 'Апошнія трэніроўкі',
 
   // ── program (ProgramScreen.jsx) ──────────────────────────────────────────
   'program.phaseLabel': 'Фаза {n}',

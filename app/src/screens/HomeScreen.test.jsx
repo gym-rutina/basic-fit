@@ -197,3 +197,267 @@ describe('HomeScreen — day proposal after deletion (AC25)', () => {
     expect(await screen.findByText('Día 1')).toBeInTheDocument();
   });
 });
+
+/**
+ * home-next-workout-and-picker — spec.md § A–C, ux-design.md D1–D8.
+ *
+ * The reported bug: after one full cycle through the program, Inicio kept
+ * proposing Día 1 forever (today.js's "first day never completed" fallback).
+ * The fix: rotation from the most recently COMPLETED session, plus an inline
+ * day-picker disclosure and a 2-card recent-sessions list.
+ *
+ * Status notes per test group:
+ * - Rotation tests asserting FINAL behaviour are RED until Cmok swaps in
+ *   nextDay.js (the weekday-matching "Hoy" path still exists today, and the
+ *   fallback math differs). The AC25 block above keeps passing throughout.
+ * - Picker / recent-list tests assert the UAT-approved mockup copy ("Elegir
+ *   otro día", "Últimas sesiones") — RED until Cmok lands component + i18n
+ *   keys together (t() falls back to the key string, so half-landed states
+ *   fail at the right assertion, not with undefined renders).
+ */
+
+const TWO_RECENT = [
+  {
+    id: 'sess-b',
+    dayLabel: 'Full B',
+    dayIndex: 1,
+    status: 'completed',
+    startedAt: '2026-08-20T09:00:00.000Z',
+    endedAt: '2026-08-20T10:00:00.000Z',
+    exercises: [
+      { equipmentId: 'g3-s20', name: 'Remo', weightUsed: 30, difficulty: 'normal', completedAt: '2026-08-20T09:30:00.000Z' },
+      { equipmentId: 'g3-s30', name: 'Sentadilla', weightUsed: null, difficulty: null, completedAt: null },
+    ],
+  },
+  {
+    id: 'sess-a',
+    dayLabel: 'Full A',
+    dayIndex: 0,
+    status: 'abandoned',
+    startedAt: '2026-08-18T09:00:00.000Z',
+    endedAt: '2026-08-18T09:20:00.000Z',
+    exercises: [
+      { equipmentId: 'g3-s10', name: 'Prensa', weightUsed: null, difficulty: null, completedAt: null },
+      { equipmentId: 'g3-s20', name: 'Remo', weightUsed: null, difficulty: null, completedAt: null },
+    ],
+  },
+];
+
+describe('HomeScreen — next-day rotation (home-next-workout-and-picker §A)', () => {
+  it('proposes Día 3 right after Día 2 completes, mid-program (AC1)', async () => {
+    db.listSessions.mockResolvedValue([
+      { id: 'x', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'y', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+    ]);
+    renderHome();
+
+    expect(await screen.findByText('Día 3')).toBeInTheDocument();
+  });
+
+  it('wraps to Día 1 after completing the last day — on the Nth pass too (AC5)', async () => {
+    db.listSessions.mockResolvedValue([
+      { id: 'c', dayLabel: 'Día 3', dayIndex: 2, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'b', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'a', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+    ]);
+    renderHome();
+
+    // The proposal card shows Día 1 as NEXT, not as a calendar-"today" claim.
+    const heading = await screen.findByText('Día 1');
+    expect(heading).toBeInTheDocument();
+    expect(screen.getByText(/próximo/i)).toBeInTheDocument();
+  });
+
+  it('re-proposes an abandoned day instead of advancing past it (AC6)', async () => {
+    // Discriminating fixture: one full cycle exists (every index completed at
+    // some point), THEN the user started Día 2 and abandoned it. Old
+    // "first-never-completed" semantics collapse to Día 1 here; rotation must
+    // continue FROM the last completion (Día 1) → propose Día 2 again.
+    // The abandoned session's label is deliberately unique ("Full Z") so the
+    // assertion cannot collide with the last-session card below the proposal.
+    db.listSessions.mockResolvedValue([
+      { id: 'z', dayLabel: 'Full Z', dayIndex: 1, status: 'abandoned', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'y', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'x', dayLabel: 'Día 3', dayIndex: 2, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'w', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'v', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+    ]);
+    renderHome();
+
+    const proposal = await screen.findByText('Día 2');
+    expect(proposal).toBeInTheDocument();
+    // No negative "Día 1" assertion here on purpose: post-build, this
+    // fixture's completed 'Día 1' sessions legitimately render in the
+    // recent-sessions list below the proposal card (Bagnik gate A2).
+  });
+
+  it('never claims "Hoy" — weekday-named days are proposed by rotation alone (AC3, AC4)', async () => {
+    // Pin the clock to a WEDNESDAY so this discriminates on every run date,
+    // not just when CI happens to land midweek: the OLD resolver matched the
+    // 'Miércoles' label against the real weekday and showed the eyebrow
+    // "Hoy"; the new contract shows "Próximo" no matter what the calendar says.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      vi.setSystemTime(new Date('2026-07-15T09:00:00')); // a Wednesday
+      const weekdayRutina = {
+        ...RUTINA,
+        days: [{ label: 'Miércoles', intro: 'Empuje', exercises: [{ equipmentId: 'g3-s10', name: 'Prensa' }] }],
+      };
+      db.listSessions.mockResolvedValue([]);
+      renderHome({ rutina: weekdayRutina });
+
+      await waitFor(() => expect(screen.getByText('Miércoles')).toBeInTheDocument());
+      expect(screen.queryByText(/^hoy$/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/próximo/i)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe('HomeScreen — day picker (home-next-workout-and-picker §B)', () => {
+  it('renders the collapsed toggle below the start CTA when there are ≥2 days (AC8)', async () => {
+    renderHome();
+
+    const toggle = await screen.findByRole('button', { name: /elegir otro día/i });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('hides the toggle for a single-day rutina (AC8 amendment, UAT-approved)', async () => {
+    const singleDay = {
+      ...RUTINA,
+      days: [{ label: 'Full Body', intro: 'Todo', exercises: [{ equipmentId: 'g3-s10', name: 'Prensa' }] }],
+    };
+    renderHome({ rutina: singleDay });
+
+    expect(await screen.findByText('Full Body')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /elegir otro día/i })).not.toBeInTheDocument();
+  });
+
+  it('does not render the picker while the active-session read is in flight or failed (AC13)', () => {
+    const loading = renderHome({ activeSessionStatus: 'loading' });
+    expect(screen.queryByRole('button', { name: /elegir otro día/i })).not.toBeInTheDocument();
+    loading.unmount();
+
+    // The error branch gets its own mount — a picker leaking into either
+    // pre-ready state must fail one of these two assertions.
+    renderHome({ activeSessionStatus: 'error' });
+    expect(screen.queryByRole('button', { name: /elegir otro día/i })).not.toBeInTheDocument();
+  });
+
+  it('expands into all program days in order with exercise counts, and collapses on a second tap (AC9)', async () => {
+    const user = userEvent.setup();
+    renderHome();
+
+    const toggle = () => screen.getByRole('button', { name: /elegir otro día/i });
+    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+
+    // Row accessible names must carry the count copy (es '{n} ej.'; each
+    // RUTINA fixture day has exactly 1 exercise) — a row built without
+    // t('program.exerciseAbbrev') fails these regexes.
+    expect(toggle()).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: /día 1 — pecho y tríceps\s*1 ej\./i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /día 2 — espalda\s*1 ej\./i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /día 3 — pierna\s*1 ej\./i })).toBeInTheDocument();
+
+    // Second tap collapses: aria-expanded flips back and the rows unmount —
+    // a latch-open toggle cannot satisfy this pair.
+    await user.click(toggle());
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: /día 1 — pecho y tríceps/i })).not.toBeInTheDocument();
+  });
+
+  it('marks exactly the auto-proposed row as Próximo inside the list (AC12)', async () => {
+    db.listSessions.mockResolvedValue([
+      { id: 'x', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+    ]);
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+
+    // Proposal = Día 3 → only that row's accessible name carries ", Próximo".
+    expect(screen.getByRole('button', { name: /día 3.*próximo/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /día 1.*próximo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /día 2.*próximo/i })).not.toBeInTheDocument();
+  });
+
+  it('starts a session for the PICKED day immediately (AC10)', async () => {
+    // Empty history → the auto-proposal is Día 1 (bootstrap index 0), so the
+    // Día-1 row cannot discriminate parameterization — clicking it would look
+    // identical to handleStart(proposedIndex). Clicking DÍA 3 proves the row
+    // passes ITS OWN index through: dayIndex 2, not the proposed 0.
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+    await user.click(screen.getByRole('button', { name: /^día 3/i }));
+
+    await waitFor(() => expect(db.saveSession).toHaveBeenCalledTimes(1));
+    expect(db.saveSession.mock.calls[0][0]).toMatchObject({ status: 'active', dayIndex: 2, dayLabel: 'Día 3' });
+    expect(await screen.findByText('SESSION SCREEN')).toBeInTheDocument();
+  });
+
+  it('re-checks for an active session before creating from the picker (AC10, AC11 backstop)', async () => {
+    db.getActiveSession.mockResolvedValue(ACTIVE_SESSION);
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+    await user.click(screen.getByRole('button', { name: /^día 3/i }));
+
+    await waitFor(() => expect(screen.getByText('SESSION SCREEN')).toBeInTheDocument());
+    expect(db.saveSession).not.toHaveBeenCalled();
+  });
+
+  it('disables every picker row while a start is in flight (AC14)', async () => {
+    db.saveSession.mockImplementation(() => new Promise(() => {})); // never resolves
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+    await user.click(screen.getByRole('button', { name: /^día 1/i }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /^día 2/i })).toBeDisabled());
+    expect(screen.getByRole('button', { name: /^día 1/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^día 3/i })).toBeDisabled();
+  });
+});
+
+describe('HomeScreen — recent sessions list (home-next-workout-and-picker §C)', () => {
+  it('shows up to the 2 newest non-active sessions under a plural heading (AC15, AC17)', async () => {
+    db.listSessions.mockResolvedValue(TWO_RECENT);
+    renderHome();
+
+    expect(await screen.findByText(/últimas sesiones/i)).toBeInTheDocument();
+    expect(screen.getByText('Full B')).toBeInTheDocument();
+    expect(screen.getByText('Full A')).toBeInTheDocument();
+  });
+
+  it('excludes the active session from the recent list (AC15)', async () => {
+    db.listSessions.mockResolvedValue([
+      ...TWO_RECENT,
+      { id: 'live', dayLabel: 'Full Live', dayIndex: 2, status: 'active', startedAt: '', endedAt: null, exercises: [] },
+    ]);
+    renderHome();
+
+    await screen.findByText(/últimas sesiones/i);
+    expect(screen.queryByText('Full Live')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when history is empty (AC15 zero case)', async () => {
+    db.listSessions.mockResolvedValue([]);
+    renderHome();
+
+    await screen.findByRole('button', { name: /empezar entrenamiento/i });
+    expect(screen.queryByText(/últimas sesiones|última sesión/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps the abandoned suffix on non-completed cards (AC16, existing semantics)', async () => {
+    db.listSessions.mockResolvedValue([TWO_RECENT[1]]);
+    renderHome();
+
+    expect(await screen.findByText(/sin terminar/i)).toBeInTheDocument();
+  });
+});
+

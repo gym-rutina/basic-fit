@@ -193,12 +193,12 @@ export default {
   'home.activeSessionErrorBody': "We couldn't check whether you have a workout in progress.",
   'home.inProgressLabel': 'In progress',
   'home.resumeAction': 'Resume workout',
-  'home.todayLabel': 'Today',
   'home.nextLabel': 'Next',
   'home.exerciseCountOne': '{n} exercise',
   'home.exerciseCountOther': '{n} exercises',
   'home.startAction': 'Start workout',
-  'home.lastSessionLabel': 'Last session',
+  'home.chooseDayAction': 'Choose another day',
+  'home.recentSessionsLabel': 'Recent sessions',
 
   // ── program (ProgramScreen.jsx) ──────────────────────────────────────────
   'program.phaseLabel': 'Phase {n}',
