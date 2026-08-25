@@ -82,7 +82,22 @@ describe('buildVideoQuery — languages', () => {
     expect(buildVideoQuery({ name: 'Планка', equipmentId: null }, null, 'be')).toBe('Планка тэхніка');
   });
 
-  it('falls back to Spanish for an unknown language', () => {
-    expect(buildVideoQuery({ name: 'Plancha', equipmentId: null }, null, 'fr')).toBe('Plancha técnica');
+  it('uses the French word table', () => {
+    expect(buildVideoQuery({ name: 'Plancha', equipmentId: null }, null, 'fr')).toBe('Plancha technique');
+  });
+
+  it('uses the Dutch word table', () => {
+    expect(buildVideoQuery({ name: 'Plancha', equipmentId: null }, null, 'nl')).toBe('Plancha techniek');
+  });
+
+  it('uses the German word table', () => {
+    expect(buildVideoQuery({ name: 'Plancha', equipmentId: null }, null, 'de')).toBe('Plancha Technik');
+  });
+
+  it('falls back to Spanish for an unmapped language', () => {
+    // Must stay genuinely unmapped — fr/nl/de are registered catalogs since
+    // expand-ui-locales and resolve their own word tables above; only a
+    // locale absent from CATALOGS exercises the es fallback (DEC-6).
+    expect(buildVideoQuery({ name: 'Plancha', equipmentId: null }, null, 'it')).toBe('Plancha técnica');
   });
 });

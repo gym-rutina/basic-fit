@@ -14,19 +14,24 @@ import { UI_LOCALES, DEFAULT_LOCALE, CATALOGS, tFor, defaultT } from './index.js
  */
 
 const ANCHORS = {
-  'tab.home': { es: 'Inicio', en: 'Home', be: 'Галоўная' },
-  'tab.program': { es: 'Programa', en: 'Program', be: 'Праграма' },
-  'tab.catalog': { es: 'Catálogo', en: 'Catalog', be: 'Каталог' },
-  'tab.history': { es: 'Historial', en: 'History', be: 'Гісторыя' },
-  'tab.progress': { es: 'Progreso', en: 'Progress', be: 'Прагрэс' },
-  'settings.title': { es: 'Ajustes', en: 'Settings', be: 'Налады' },
-  'settings.languageHeading': { es: 'Idioma', en: 'Language', be: 'Мова' },
-  'common.back': { es: 'Volver', en: 'Back', be: 'Назад' },
-  'common.cancel': { es: 'Cancelar', en: 'Cancel', be: 'Скасаваць' },
-  'time.today': { es: 'hoy', en: 'today', be: 'сёння' },
-  'time.yesterday': { es: 'ayer', en: 'yesterday', be: 'учора' },
-  'onboarding.skip': { es: 'Saltar', en: 'Skip', be: 'Прапусціць' },
-  'onboarding.next': { es: 'Siguiente', en: 'Next', be: 'Далей' },
+  // expand-ui-locales R5.2 — the spec marked this extension "optional"; it is
+  // NOT: the it.each below iterates ALL of UI_LOCALES against these entries,
+  // so growing UI_LOCALES to 6 without fr/nl/de columns here fails the suite
+  // (tFor never returns undefined, so expected[locale] === undefined can
+  // never pass). These anchors ARE the contract the new catalogs must meet.
+  'tab.home': { es: 'Inicio', en: 'Home', be: 'Галоўная', fr: 'Accueil', nl: 'Start', de: 'Start' },
+  'tab.program': { es: 'Programa', en: 'Program', be: 'Праграма', fr: 'Programme', nl: 'Programma', de: 'Programm' },
+  'tab.catalog': { es: 'Catálogo', en: 'Catalog', be: 'Каталог', fr: 'Catalogue', nl: 'Catalogus', de: 'Katalog' },
+  'tab.history': { es: 'Historial', en: 'History', be: 'Гісторыя', fr: 'Historique', nl: 'Geschiedenis', de: 'Verlauf' },
+  'tab.progress': { es: 'Progreso', en: 'Progress', be: 'Прагрэс', fr: 'Progrès', nl: 'Voortgang', de: 'Fortschritt' },
+  'settings.title': { es: 'Ajustes', en: 'Settings', be: 'Налады', fr: 'Réglages', nl: 'Instellingen', de: 'Einstellungen' },
+  'settings.languageHeading': { es: 'Idioma', en: 'Language', be: 'Мова', fr: 'Langue', nl: 'Taal', de: 'Sprache' },
+  'common.back': { es: 'Volver', en: 'Back', be: 'Назад', fr: 'Retour', nl: 'Terug', de: 'Zurück' },
+  'common.cancel': { es: 'Cancelar', en: 'Cancel', be: 'Скасаваць', fr: 'Annuler', nl: 'Annuleren', de: 'Abbrechen' },
+  'time.today': { es: 'hoy', en: 'today', be: 'сёння', fr: "aujourd'hui", nl: 'vandaag', de: 'heute' },
+  'time.yesterday': { es: 'ayer', en: 'yesterday', be: 'учора', fr: 'hier', nl: 'gisteren', de: 'gestern' },
+  'onboarding.skip': { es: 'Saltar', en: 'Skip', be: 'Прапусціць', fr: 'Passer', nl: 'Overslaan', de: 'Überspringen' },
+  'onboarding.next': { es: 'Siguiente', en: 'Next', be: 'Далей', fr: 'Suivant', nl: 'Volgende', de: 'Weiter' },
 };
 
 describe('catalog parity (AC21)', () => {

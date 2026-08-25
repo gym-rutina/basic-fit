@@ -16,9 +16,19 @@ describe('detectGuideLocale', () => {
     expect(detectGuideLocale('be-BY')).toBe('be');
   });
 
+  it('returns the locale itself for fr/nl/de browser languages', () => {
+    // expand-ui-locales D4 promoted these out of the en catch-all. Guide
+    // ARTICLES stay a 3-language set (GuideOverlay falls back to its en
+    // page), but detection now reports the UI locale itself.
+    expect(detectGuideLocale('fr')).toBe('fr');
+    expect(detectGuideLocale('nl')).toBe('nl');
+    expect(detectGuideLocale('de')).toBe('de');
+  });
+
   it('returns en for English and other unsupported languages', () => {
     expect(detectGuideLocale('en-US')).toBe('en');
-    expect(detectGuideLocale('fr')).toBe('en');
+    expect(detectGuideLocale('it')).toBe('en');
+    expect(detectGuideLocale('ru')).toBe('en');
   });
 
   it('defaults to en when language is missing', () => {

@@ -1,10 +1,10 @@
 # BasicFit Rutina
 
-A multilingual (EN/ES/BE) equipment catalog and training-routine PWA for BasicFit gyms, covering Matrix Aura series strength machines plus ZIVA free weights and accessories. Includes an offline-capable React PWA for tracking workouts, a set of legacy static routine pages, and an LLM-based routine authoring workflow.
+A six-language (EN/ES/BE/FR/NL/DE) equipment catalog and training-routine PWA for BasicFit gyms, covering Matrix Aura series strength machines plus ZIVA free weights and accessories. Includes an offline-capable React PWA for tracking workouts, a set of legacy static routine pages, and an LLM-based routine authoring workflow.
 
 ## Overview
 
-48 equipment items (29 machines, 14 free weights, 5 accessories — spanning the Matrix Aura line plus ZIVA free weights and accessories) across BasicFit locations. Each entry includes multilingual names and instructions (English, Spanish, Belarusian), product images, video links, PDF manuals, and muscle-group targeting.
+48 equipment items (29 machines, 14 free weights, 5 accessories — spanning the Matrix Aura line plus ZIVA free weights and accessories) across BasicFit locations. Each entry includes multilingual names and instructions (English, Spanish, Belarusian, French, Dutch, German), product images, video links, PDF manuals, and muscle-group targeting.
 
 A bundled club directory covers 1,727 BasicFit locations across 6 countries (Netherlands, Belgium, France, Luxembourg, Spain, Germany). The PWA's **Club Picker** lets you search it by country → city → club and remembers your choice; the Catálogo tab uses it to offer a "just my club's equipment" filter. See "Selecting your club" below.
 
@@ -64,7 +64,7 @@ basicfit-rutina/
 │       │   ├── HistoryScreen.jsx   # Past sessions + per-exercise trend
 │       │   ├── ProgressScreen.jsx  # Weight/volume/frequency progress charts
 │       │   ├── ExportScreen.jsx    # JSON + Markdown export
-│       │   └── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE)
+│       │   └── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE/FR/NL/DE)
 │       ├── lib/
 │       │   ├── db.js               # IndexedDB wrapper (idb): activeRutina, sessions, lastWeights
 │       │   ├── sessionMachine.js   # Pure session-state reducer
@@ -231,7 +231,7 @@ Two safety behaviors worth knowing before running it:
 5. **History** — past sessions with per-exercise last-3-sessions weight trend. Each card has its own delete (trash) icon; a **Seleccionar** button in the header switches to selection mode, with **Seleccionar todo** to select everything and a **Borrar (n)** bar to delete the checked sessions in one go. Both single and bulk delete ask for confirmation first and cannot be undone. Deleting a session also rolls back any weight prefills it seeded: the next time you log that exercise, the suggested starting weight falls back to your most recent remaining session instead.
 6. **Progress** — fifth bottom tab after History: per-exercise weight chart (full history), per-session volume bars (current program's sets×reps × logged weight), and a trailing 12-week training-frequency heatmap — all derived from existing session history (no new store). Volume for older sessions can shift if you later edit the active program's sets/reps.
 7. **Export** — download a JSON archive or copy Markdown to clipboard. Optional Web Share on mobile. See [`docs/export-format.md`](docs/export-format.md) for the exact format.
-8. **Catalog** — all 48 equipment items (29 machines, 14 free weights, 5 accessories) with images and instructions (EN/ES/BE). A club row at the top lets you pick your club. Once one is picked: the **"Solo mi club"** pill filters the grid to your club's equipment (using your saved exclusions), and the **"Equipamiento de tu club"** button opens the equipment sheet where you untick items your specific club does not have.
+8. **Catalog** — all 48 equipment items (29 machines, 14 free weights, 5 accessories) with images and instructions (EN/ES/BE/FR/NL/DE). A club row at the top lets you pick your club. Once one is picked: the **"Solo mi club"** pill filters the grid to your club's equipment (using your saved exclusions), and the **"Equipamiento de tu club"** button opens the equipment sheet where you untick items your specific club does not have.
 
 All data is stored locally in IndexedDB — no account, no server.
 
@@ -258,8 +258,8 @@ because conflating them is exactly what caused the two bugs described below.
 
 | # | Axis | Controlled by | Lives in | Behavior |
 |---|------|----------------|----------|----------|
-| 1 | **UI chrome** — labels, buttons, headings, aria-labels, empty states, errors, onboarding, the LLM guide overlay | The app | `app/src/i18n/{es,en,be}.js` | `es` / `en` / `be`, switchable from **Settings** (the sliders icon + language code in the header) or from the onboarding language picker on first run. Persisted in `localStorage`. First run defaults from the browser: `es`/`be` → that locale, anything else → `en`. |
-| 2 | **Bundled reference data** — equipment names, descriptions, instructions, video links | The app | `data/equipment.json` (`{en, es, be}` per field) | Follows the UI language everywhere in the app, with a local, non-persisted override on the **Catálogo** tab's `Idioma` pills. |
+| 1 | **UI chrome** — labels, buttons, headings, aria-labels, empty states, errors, onboarding, the LLM guide overlay | The app | `app/src/i18n/{es,en,be,fr,nl,de}.js` | `es` / `en` / `be` / `fr` / `nl` / `de`, switchable from **Settings** (the sliders icon + language code in the header) or from the onboarding language picker on first run. Persisted in `localStorage`. First run defaults from the browser: `es`/`be`/`fr`/`nl`/`de` → that locale, anything else → `en`. |
+| 2 | **Bundled reference data** — equipment names, descriptions, instructions, video links | The app | `data/equipment.json` (`{en, es, be, fr, nl, de}` per field) | Follows the UI language everywhere in the app, with a local, non-persisted override on the **Catálogo** tab's `Idioma` pills. |
 | 3 | **User-authored routine content** — exercise names, day labels, technique cues, rules, notes, phase objectives | The user, via whatever LLM they used | Imported `rutina.json` | Rendered **exactly as authored, in whatever language it was written in.** Never translated, never validated for language, never assumed to be Spanish. |
 
 Axes 1 and 2 are a translation problem the app solves for you. Axis 3 is
@@ -309,6 +309,8 @@ Full walkthrough (shown in-app via **Import → guide link**) — pick your lang
 | Español | [`docs/llm-rutina-prompt.es.md`](docs/llm-rutina-prompt.es.md) | (same template) |
 | Беларуская | [`docs/llm-rutina-prompt.be.md`](docs/llm-rutina-prompt.be.md) | (same template) |
 
+The guide ships in these three languages only. A UI set to Français, Nederlands or Deutsch gets the English article — the overlay falls back to English when no translated guide exists — while every other part of the app renders natively in all six locales.
+
 ## Data Format
 
 ### Equipment entry (abbreviated)
@@ -323,12 +325,15 @@ Full walkthrough (shown in-app via **Import → guide link**) — pick your lang
     "primary": ["pectoralis-major"],
     "secondary": ["triceps", "anterior-deltoid"]
   },
-  "names": { "en": "Chest Press", "es": "Prensa de Pecho", "be": "Жым ад грудзей" },
+  "names": { "en": "Chest Press", "es": "Prensa de Pecho", "be": "Жым ад грудзей", "fr": "Presse à poitrine", "nl": "Borstpers", "de": "Brustpresse" },
   "images": [{ "url": "https://images.jhtassets.com/...", "isMain": true }],
   "instructions": {
     "en": "<ol><li>Step 1</li></ol>",
     "es": "<ol><li>Paso 1</li></ol>",
-    "be": "<ol><li>Крок 1</li></ol>"
+    "be": "<ol><li>Крок 1</li></ol>",
+    "fr": "<ol><li>Étape 1</li></ol>",
+    "nl": "<ol><li>Stap 1</li></ol>",
+    "de": "<ol><li>Schritt 1</li></ol>"
   },
   "kind": "machine",
   "verifiedAt": []
@@ -414,17 +419,17 @@ The 7 originally hand-entered Málaga gyms below are `data/gyms.json`'s legacy l
 To add or update equipment:
 
 1. Edit `data/equipment.json`
-2. Follow the existing structure (EN/ES/BE content required). Belarusian (`be`) content is always hand-authored — never scraped or machine-translated, even when the `en`/`es` content comes from a live product page.
+2. Follow the existing structure (content required in all six locales: EN/ES/BE/FR/NL/DE). Belarusian, French, Dutch and German content is always hand-authored — never scraped or machine-translated, even when the `en`/`es` content comes from a live product page.
 3. Run `npm run validate-data` — must pass
 4. Run `npm run normalize-equipment` to apply the standard fixups (video-placeholder resolution, dead manual-URL rewriting). It's a no-op if there's nothing to fix.
 
 ### Adding or changing a UI string
 
-UI copy lives in `app/src/i18n/{es,en,be}.js` — flat, dotted-key objects
+UI copy lives in `app/src/i18n/{es,en,be,fr,nl,de}.js` — flat, dotted-key objects
 (e.g. `'settings.title': 'Ajustes'`), not nested. To add or change one:
 
-1. Add or edit the key in **all three** catalog files. `catalogs.test.js`
-   fails if the three files' key sets don't match exactly, or if any value
+1. Add or edit the key in **all six** catalog files. `catalogs.test.js`
+   fails if the six files' key sets don't match exactly, or if any value
    is empty/whitespace-only — this is enforced, not just requested.
 2. Library functions that produce copy outside React (`relativeTime.js`,
    `exportFormat.js`, `machineLabel.js`, …) take an optional trailing `t`

@@ -2,6 +2,9 @@ import React, { createContext, useContext, useLayoutEffect, useState } from 'rea
 import esCatalog from './es.js';
 import enCatalog from './en.js';
 import beCatalog from './be.js';
+import frCatalog from './fr.js';
+import nlCatalog from './nl.js';
+import deCatalog from './de.js';
 import { readUiLocale, writeUiLocale } from '../lib/uiLangStorage.js';
 
 /**
@@ -27,29 +30,47 @@ import { readUiLocale, writeUiLocale } from '../lib/uiLangStorage.js';
 // case-sensitively with an existing country code.
 
 // AC1 — the only locale list in app/src. DEC-1: matches equipment.json's
-// metadata.languages and docs/llm-rutina-prompt.{es,en,be}.md. DEC-6: `es`
-// is the authoring locale, so it leads the array.
-export const UI_LOCALES = ['es', 'en', 'be'];
+// metadata.languages SET (the two lists' orders have different jobs — es
+// leads here as authoring locale, en leads there by data convention).
+// docs/llm-rutina-prompt.{es,en,be}.md deliberately stays a 3-article set:
+// guide articles are a separate axis; GuideOverlay falls back to its en
+// article for fr/nl/de. DEC-6: `es` is the authoring locale, so it leads.
+export const UI_LOCALES = ['es', 'en', 'be', 'fr', 'nl', 'de'];
 
 export const DEFAULT_LOCALE = 'es';
 
 // A language's own name does not translate — not a catalog entry.
-export const LOCALE_AUTONYMS = { es: 'Español', en: 'English', be: 'Беларуская' };
+export const LOCALE_AUTONYMS = {
+  es: 'Español',
+  en: 'English',
+  be: 'Беларуская',
+  fr: 'Français',
+  nl: 'Nederlands',
+  de: 'Deutsch',
+};
 
-export const CATALOGS = { es: esCatalog, en: enCatalog, be: beCatalog };
+export const CATALOGS = {
+  es: esCatalog,
+  en: enCatalog,
+  be: beCatalog,
+  fr: frCatalog,
+  nl: nlCatalog,
+  de: deCatalog,
+};
 
 /**
  * AC2 — resolution order: a known stored value wins; otherwise
- * `navigator.language`'s 2-letter prefix maps es→es, be→be, everything
- * else→en (DEC-2, deliberate: a fr/de/it browser saw Spanish before this
- * feature and sees English after). Absent/empty/corrupt/unknown stored
- * values are all treated as "nothing stored" from this ONE place — storage
- * itself (`uiLangStorage.js`) does no validation. Never throws on hostile
- * input from either source.
+ * `navigator.language`'s 2-letter prefix maps es→es, be→be and — since
+ * expand-ui-locales (D4) — fr→fr, nl→nl, de→de; everything else→en (DEC-2,
+ * deliberate: an it/ru/pt browser saw Spanish before pwa-ui-language and
+ * still sees English). Absent/empty/corrupt/unknown stored values are all
+ * treated as "nothing stored" from this ONE place — storage itself
+ * (`uiLangStorage.js`) does no validation. Never throws on hostile input
+ * from either source.
  *
  * @param {unknown} stored
  * @param {unknown} navLang
- * @returns {'es'|'en'|'be'}
+ * @returns {'es'|'en'|'be'|'fr'|'nl'|'de'}
  */
 export function resolveUiLocale(stored, navLang) {
   if (typeof stored === 'string' && UI_LOCALES.includes(stored)) {
@@ -58,6 +79,9 @@ export function resolveUiLocale(stored, navLang) {
   const code = typeof navLang === 'string' ? navLang.trim().slice(0, 2).toLowerCase() : '';
   if (code === 'es') return 'es';
   if (code === 'be') return 'be';
+  if (code === 'fr') return 'fr';
+  if (code === 'nl') return 'nl';
+  if (code === 'de') return 'de';
   return 'en';
 }
 

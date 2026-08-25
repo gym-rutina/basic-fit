@@ -84,31 +84,61 @@
           },
           "names": {
             "type": "object",
-            "required": ["en", "es", "be"],
+            "required": ["en", "es", "be", "fr", "nl", "de"],
             "properties": {
               "en": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "es": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "be": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
+              },
+              "fr": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nl": {
+                "type": "string",
+                "minLength": 1
+              },
+              "de": {
+                "type": "string",
+                "minLength": 1
               }
             }
           },
           "descriptions": {
             "type": "object",
-            "required": ["en", "es", "be"],
+            "required": ["en", "es", "be", "fr", "nl", "de"],
             "properties": {
               "en": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "es": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "be": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
+              },
+              "fr": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nl": {
+                "type": "string",
+                "minLength": 1
+              },
+              "de": {
+                "type": "string",
+                "minLength": 1
               }
             }
           },
@@ -133,7 +163,7 @@
           },
           "videos": {
             "type": "object",
-            "required": ["en", "es", "be"],
+            "required": ["en", "es", "be", "fr", "nl", "de"],
             "properties": {
               "en": {
                 "type": "array",
@@ -186,6 +216,81 @@
                 }
               },
               "be": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["url", "type", "title"],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "duration": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "fr": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["url", "type", "title"],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "duration": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "nl": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["url", "type", "title"],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "duration": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "de": {
                 "type": "array",
                 "items": {
                   "type": "object",
@@ -237,16 +342,31 @@
           },
           "instructions": {
             "type": "object",
-            "required": ["en", "es", "be"],
+            "required": ["en", "es", "be", "fr", "nl", "de"],
             "properties": {
               "en": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "es": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "be": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
+              },
+              "fr": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nl": {
+                "type": "string",
+                "minLength": 1
+              },
+              "de": {
+                "type": "string",
+                "minLength": 1
               }
             }
           },

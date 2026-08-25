@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildFrequencyGrid } from './progress.js';
-import { tFor } from '../i18n/index.js';
+import { tFor, UI_LOCALES } from '../i18n/index.js';
 
 /**
  * pwa-ui-language AC7 — accessible names are strings too (tech-plan.md D4).
@@ -36,7 +36,9 @@ describe('heatmap cell aria labels (AC7)', () => {
   });
 
   it('never leaves a cell without an accessible name', () => {
-    for (const locale of ['es', 'en', 'be']) {
+    // expand-ui-locales R5.1: generic invariant, derived from UI_LOCALES —
+    // new catalogs must satisfy it the moment they register.
+    for (const locale of UI_LOCALES) {
       for (const cell of grid(tFor(locale)).cells) {
         expect(typeof cell.ariaLabel).toBe('string');
         expect(cell.ariaLabel.trim().length).toBeGreaterThan(0);

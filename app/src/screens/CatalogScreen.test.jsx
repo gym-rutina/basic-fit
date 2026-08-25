@@ -138,9 +138,9 @@ describe('the Catálogo override (AC14)', () => {
   });
 
   it('keeps the pill row rendering the data languages, in data order', () => {
-    // equipment.json's metadata.languages is ['en','es','be']; UI_LOCALES is
-    // ['es','en','be']. AC14 keeps the row data-driven, so its visual order
-    // does not change.
+    // equipment.json's metadata.languages leads with en; UI_LOCALES leads
+    // with es. AC14 keeps the row data-driven, so its visual order follows
+    // the data (expand-ui-locales grew both sets to six locales).
     renderCatalog('es');
     const labels = screen
       .getAllByRole('button', { name: /^(EN|ES|BE)$/ })

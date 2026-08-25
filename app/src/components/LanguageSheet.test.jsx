@@ -75,13 +75,18 @@ describe('LanguageSheet — semantics (Q2)', () => {
     expect(checked[0]).toHaveAccessibleName(new RegExp(LOCALE_AUTONYMS.en));
   });
 
-  it('ships no disabled "coming soon" rows — the mockup used them illustratively (D11)', () => {
+  it('ships no disabled "coming soon" rows — every rendered language is shipped (D11)', () => {
     // A disabled row for a language the app cannot switch to is a promise the
-    // code would have to keep.
+    // code would have to keep. expand-ui-locales promoted fr/nl/de from
+    // "must be absent" to shipped (R5.1), so the invariant is now: exactly
+    // one enabled row per UI_LOCALES member, nothing else.
     renderSheet();
-    expect(screen.queryByText(/français/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/nederlands/i)).not.toBeInTheDocument();
-    expect(screen.queryAllByRole('radio', { hidden: true }).filter((r) => r.getAttribute('aria-disabled') === 'true')).toHaveLength(0);
+    const radios = screen.queryAllByRole('radio', { hidden: true });
+    expect(radios).toHaveLength(UI_LOCALES.length);
+    expect(radios.filter((r) => r.getAttribute('aria-disabled') === 'true')).toHaveLength(0);
+    for (const autonym of Object.values(LOCALE_AUTONYMS)) {
+      expect(screen.getByRole('radio', { name: new RegExp(autonym) })).toBeInTheDocument();
+    }
   });
 });
 

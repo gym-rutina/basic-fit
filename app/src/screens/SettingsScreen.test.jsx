@@ -106,11 +106,12 @@ describe('SettingsScreen — the language picker (AC11, a11y)', () => {
     expect(group.textContent).not.toMatch(/\bBE\b/);
   });
 
-  it('shows exactly three options — never an empty or loading state', () => {
+  it('shows one option per shipped locale — never an empty or loading state', () => {
     // UI_LOCALES is a static in-code array (AC1), not fetched data, so the
-    // loading/empty/retry states do not exist here.
+    // loading/empty/retry states do not exist here. The count is derived,
+    // not hardcoded (expand-ui-locales R5.1: six locales now ship).
     renderSettings();
-    expect(screen.getAllByRole('radio')).toHaveLength(3);
+    expect(screen.getAllByRole('radio')).toHaveLength(UI_LOCALES.length);
   });
 });
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { equipmentDisplayName, getEquipmentById } from '../data/equipment.js';
 import { machineLabel, collisionSuffix } from './machineLabel.js';
 import { buildVideoQuery } from './videoQuery.js';
-import { tFor } from '../i18n/index.js';
+import { tFor, UI_LOCALES } from '../i18n/index.js';
 
 /**
  * pwa-ui-language AC13 (tech-plan.md D12).
@@ -53,7 +53,9 @@ describe('machineLabel (AC13)', () => {
   });
 
   it('always keeps the model code, which is not language at all', () => {
-    for (const locale of ['es', 'en', 'be']) {
+    // expand-ui-locales R5.1: derive the loop from UI_LOCALES so a new
+    // locale is covered the moment it registers (DD-003's trigger).
+    for (const locale of UI_LOCALES) {
       expect(machineLabel('g3-s10', 'Press inclinado', locale)).toContain('G3-S10');
     }
   });

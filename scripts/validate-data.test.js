@@ -27,8 +27,15 @@ import equipmentSchema from '../data/schema/equipment.schema.json';
 
 // A structurally valid post-migration entry. Individual tests break exactly
 // one thing, so a failure names the rule that broke rather than "invalid".
+// expand-ui-locales grew the schema's names/descriptions/videos/instructions
+// required-blocks to all six shipped locales — the factory must emit every
+// one of them so the discrimination tests below fail on the rule they name,
+// not on missing-locale noise.
 function equipmentItem(overrides = {}) {
-  const trilingual = (s) => ({ en: s, es: s, be: s });
+  const allLocales = (s) => ({ en: s, es: s, be: s, fr: s, nl: s, de: s });
+  const video = (title) => [
+    { url: 'https://www.youtube.com/results?search_query=x', type: 'instruction', title },
+  ];
   return {
     id: 'g3-s10',
     modelCode: 'G3-S10',
@@ -37,16 +44,19 @@ function equipmentItem(overrides = {}) {
     kind: 'machine',
     verifiedAt: [],
     muscleGroup: { primary: ['pectoralis-major'], secondary: ['triceps'] },
-    names: trilingual('Chest Press'),
-    descriptions: trilingual('Seated chest press machine.'),
+    names: allLocales('Chest Press'),
+    descriptions: allLocales('Seated chest press machine.'),
     images: [{ url: 'https://images.jhtassets.com/abc/transformed/w_300', source: 'Hero', isMain: true }],
     videos: {
-      en: [{ url: 'https://www.youtube.com/results?search_query=x', type: 'instruction', title: 'How to' }],
-      es: [{ url: 'https://www.youtube.com/results?search_query=x', type: 'instruction', title: 'Cómo' }],
-      be: [{ url: 'https://www.youtube.com/results?search_query=x', type: 'instruction', title: 'Як' }],
+      en: video('How to'),
+      es: video('Cómo'),
+      be: video('Як'),
+      fr: video('Comment'),
+      nl: video('Hoe'),
+      de: video('Wie'),
     },
     manuals: [],
-    instructions: trilingual('Sit down. Push.'),
+    instructions: allLocales('Sit down. Push.'),
     specifications: {},
     ...overrides,
   };
@@ -57,7 +67,7 @@ function catalog(items) {
     metadata: {
       lastUpdated: '2026-08-15',
       source: 'test',
-      languages: ['en', 'es', 'be'],
+      languages: ['en', 'es', 'be', 'fr', 'nl', 'de'],
       totalEquipment: items.length,
     },
     equipment: items,
