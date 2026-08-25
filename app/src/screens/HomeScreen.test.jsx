@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { HomeScreen } from './HomeScreen.jsx';
+import { INVITE_KEY } from '../lib/inviteStorage.js';
 import * as db from '../lib/db.js';
 
 vi.mock('../lib/db.js');
@@ -458,6 +459,83 @@ describe('HomeScreen — recent sessions list (home-next-workout-and-picker §C)
     renderHome();
 
     expect(await screen.findByText(/sin terminar/i)).toBeInTheDocument();
+  });
+});
+
+/**
+ * club-invite-link — S2, the Inicio "Acceso" button (spec.md AC8–AC13).
+ *
+ * Architecture contract (tech-plan.md D-C/D): the control is a plain anchor
+ * (`<Button href>` renders `<a>`, Button.jsx:37) with target="_blank" and
+ * rel="noopener noreferrer", and NO click handler at all. AC11/AC13 hold by
+ * construction — the browser hands off externally and React never hears about
+ * it. The storage value is ALSO re-validated at open time (D-C): a `javascript:`
+ * value that reached localStorage by any path other than our save flow must
+ * never become an href.
+ *
+ * RED until Cmok lands the HomeScreen conditional + i18n keys together.
+ */
+
+describe('HomeScreen — club access button (club-invite-link)', () => {
+  const INVITE = 'https://invite.basic-fit.com/xKb92a1c';
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  it('renders nothing — no placeholder, no reserved gap — when no URL is stored (AC8/D4)', async () => {
+    renderHome();
+
+    await screen.findByRole('button', { name: /empezar entrenamiento/i });
+    expect(screen.queryByRole('link', { name: /^acceso$/i })).not.toBeInTheDocument();
+  });
+
+  it('shows an Acceso link with the stored URL when one is saved (AC9)', async () => {
+    localStorage.setItem(INVITE_KEY, INVITE);
+    renderHome();
+
+    const acceso = await screen.findByRole('link', { name: /^acceso$/i });
+    expect(acceso).toHaveAttribute('href', INVITE);
+  });
+
+  it('opens externally with noopener noreferrer and no app-side handler (AC11, AC12, AC13)', async () => {
+    localStorage.setItem(INVITE_KEY, INVITE);
+    const user = userEvent.setup();
+    renderHome();
+
+    const acceso = await screen.findByRole('link', { name: /^acceso$/i });
+    expect(acceso).toHaveAttribute('target', '_blank');
+    expect(acceso.getAttribute('rel')).toContain('noopener');
+    expect(acceso.getAttribute('rel')).toContain('noreferrer');
+
+    // The whole interaction is the browser's job: tapping it must not touch
+    // the session store or navigate in-app. jsdom cannot follow target=_blank,
+    // which is exactly why the assertions below can hold for ANY click.
+    await user.click(acceso);
+    expect(db.saveSession).not.toHaveBeenCalled();
+    expect(db.getActiveSession).not.toHaveBeenCalled();
+  });
+
+  it('appears on the active-session branch too — gate access survives an unfinished workout (frame F)', async () => {
+    localStorage.setItem(INVITE_KEY, INVITE);
+    renderHome({ activeSession: ACTIVE_SESSION });
+
+    const acceso = await screen.findByRole('link', { name: /^acceso$/i });
+    expect(acceso).toHaveAttribute('href', INVITE);
+  });
+
+  it('refuses to render a TAMPERED unsafe value — open-time re-validation (D-C, AC4 spirit)', () => {
+    // Planted directly into storage, bypassing the settings flow entirely:
+    // the save-time allowlist never saw this string. The open-time choke is
+    // what keeps it from becoming script execution in the app's origin.
+    localStorage.setItem(INVITE_KEY, 'javascript:alert(document.cookie)');
+    renderHome({ activeSessionStatus: 'ready', activeSession: null });
+
+    expect(screen.queryByRole('link', { name: /^acceso$/i })).not.toBeInTheDocument();
   });
 });
 

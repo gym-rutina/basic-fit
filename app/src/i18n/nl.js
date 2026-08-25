@@ -45,6 +45,19 @@ export default {
   'settings.open': 'Instellingen',
   'settings.languageHeading': 'Taal',
 
+  // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
+  'access.sectionTitle': 'Toegang tot de club',
+  'access.inputLabel': 'Uitnodigingslink',
+  'access.inputPlaceholder': 'Plak hier je uitnodigingslink',
+  'access.saveAction': 'Opslaan',
+  'access.removeAction': 'Verwijderen',
+  'access.savedPrefix': 'Opgeslagen:',
+  'access.disclosureBody':
+    'Wordt alleen op dit apparaat bewaard; de app verstuurt hem nooit ergens naartoe. Iedereen die deze link heeft, kan de club in. De app kan niet controleren of de link nog geldig is.',
+  'access.storageErrorBody': 'Opslaan mislukt (opslag niet beschikbaar in deze browser).',
+  'access.errorUnsafeScheme': 'Alleen https:-links worden geaccepteerd — ‘{scheme}’ is niet veilig.',
+  'access.errorInvalidUrl': 'Dit lijkt geen geldige link. Kopieer hem opnieuw uit het originele bericht.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Overslaan',
   'onboarding.next': 'Volgende',
@@ -205,6 +218,7 @@ export default {
   'home.startAction': 'Training starten',
   'home.chooseDayAction': 'Andere dag kiezen',
   'home.recentSessionsLabel': 'Recente sessies',
+  'home.accessAction': 'Toegang',
 
   // ── program (ProgramScreen.jsx) ──────────────────────────────────────────
   'program.phaseLabel': 'Fase {n}',

@@ -168,3 +168,21 @@ describe('SettingsScreen — switching (AC12)', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
   });
 });
+
+describe('SettingsScreen — the Acceso al club section (club-invite-link wiring)', () => {
+  // Integration smoke only: the section's own states live in
+  // ClubAccessSection.test.jsx. This guards the one-line render inside
+  // SettingsScreen (tech-plan.md D-H) — heading below the Idioma block,
+  // per approved mockup frame A.
+  beforeEach(() => localStorage.clear());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  it('renders the Acceso al club section alongside the language block', () => {
+    renderSettings();
+    expect(screen.getByText('Acceso al club')).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: /idioma/i })).toBeInTheDocument();
+  });
+});

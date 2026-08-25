@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
@@ -8,6 +8,8 @@ import { resolveNextDayIndex } from '../lib/nextDay.js';
 import { createSession } from '../lib/sessionMachine.js';
 import { getActiveSession, listSessions, saveSession } from '../lib/db.js';
 import { formatRelativeDays } from '../lib/relativeTime.js';
+import { validateInviteUrl } from '../lib/inviteUrl.js';
+import { readInviteUrl } from '../lib/inviteStorage.js';
 import { useI18n } from '../i18n/index.js';
 
 /**
@@ -38,6 +40,18 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
   // AC11 — picker expansion is component-local only; navigation unmounts
   // Home, so nothing is persisted and no reset logic is needed.
   const [pickerExpanded, setPickerExpanded] = useState(false);
+
+  // club-invite-link D-C — defense-in-depth: the stored string is re-validated
+  // at OPEN time through the same pure choke point Settings saves with, so a
+  // value planted by any path other than our save flow (hand-edited
+  // localStorage, a future import, a bug) can never become an href. Read-once
+  // per mount is correct (D-E): every path from Settings back to Inicio goes
+  // through the router, which unmounts Home — staleness via UI flow is
+  // impossible, so no storage listener belongs here.
+  const invite = useMemo(() => {
+    const v = readInviteUrl();
+    return v && validateInviteUrl(v).ok ? v : null;
+  }, []);
 
   useEffect(() => {
     if (loadError) return;
@@ -245,6 +259,19 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
               </>
             )}
           </div>
+        )}
+
+        {/* club-invite-link D-D — a plain anchor (Button renders <a> when href
+            is passed) with zero click handlers: AC11/AC13 hold by construction,
+            the browser hands off externally and React never hears about it.
+            Rendered for EVERY main-card branch (loading/error/active/idle) —
+            gate access does not depend on session-db health — and structurally
+            absent when nothing valid is stored (AC8). The full-screen loadError
+            early return above stays untouched. */}
+        {invite && (
+          <Button variant="outline" style={{ width: '100%' }} href={invite} target="_blank" rel="noopener noreferrer">
+            {t('home.accessAction')}
+          </Button>
         )}
 
         {recentSessions.length > 0 && (

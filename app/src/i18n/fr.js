@@ -45,6 +45,19 @@ export default {
   'settings.open': 'Réglages',
   'settings.languageHeading': 'Langue',
 
+  // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
+  'access.sectionTitle': 'Accès au club',
+  'access.inputLabel': 'Lien d’invitation',
+  'access.inputPlaceholder': 'Colle ici le lien de ton invitation',
+  'access.saveAction': 'Enregistrer',
+  'access.removeAction': 'Supprimer',
+  'access.savedPrefix': 'Enregistré :',
+  'access.disclosureBody':
+    'Conservé uniquement sur cet appareil ; l’app ne l’envoie jamais nulle part. Quiconque possède ce lien peut entrer au club. L’app ne peut pas vérifier si le lien est encore valide.',
+  'access.storageErrorBody': 'Impossible d’enregistrer (stockage non disponible dans ce navigateur).',
+  'access.errorUnsafeScheme': 'Seuls les liens https: sont acceptés — « {scheme} » n’est pas sûr.',
+  'access.errorInvalidUrl': 'Ça ne ressemble pas à un lien valide. Recopie-le depuis le message d’origine.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Passer',
   'onboarding.next': 'Suivant',
@@ -204,6 +217,7 @@ export default {
   'home.startAction': 'Commencer l’entraînement',
   'home.chooseDayAction': 'Choisir un autre jour',
   'home.recentSessionsLabel': 'Dernières séances',
+  'home.accessAction': 'Accès',
 
   // ── program (ProgramScreen.jsx) ──────────────────────────────────────────
   'program.phaseLabel': 'Phase {n}',

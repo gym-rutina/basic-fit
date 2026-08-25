@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
+import { ClubAccessSection } from '../components/ClubAccessSection.jsx';
 import { FilterPill } from '../../../design-system/components/primitives/FilterPill.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { useI18n, UI_LOCALES, LOCALE_AUTONYMS } from '../i18n/index.js';
@@ -70,6 +71,10 @@ export function SettingsScreen() {
         </div>
 
         <hr aria-hidden="true" style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 'var(--space-8) 0 0' }} />
+
+        {/* club-invite-link (D-H): the section owns everything below the
+            language block, including its own trailing separator. */}
+        <ClubAccessSection />
       </div>
     </div>
   );

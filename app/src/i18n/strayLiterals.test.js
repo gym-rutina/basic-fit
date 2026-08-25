@@ -68,6 +68,11 @@ const ALLOWLIST = [
     why: 'localStorage key, not user-visible copy — same rutina: namespace convention as rutina:club / rutina:uiLang / rutina:onboardingSeen (onboarding-request-fields R2.1).',
   },
   {
+    file: 'lib/inviteStorage.js',
+    text: 'rutina:clubInviteUrl',
+    why: 'localStorage key (INVITE_KEY, club-invite-link tech-plan.md D-F), not user-visible copy — same rutina: namespace convention as rutina:club / rutina:promptRequest / rutina:uiLang.',
+  },
+  {
     file: 'lib/promptEquipment.js',
     text: 'Injuries / movements to avoid (write "none"/"ninguna" if none)',
     why: 'REQUEST-field scaffolding label, hardcoded English by design (DD-001 — never looked up via t()); "ninguna" is a quoted example of the literal word to type, not translatable UI copy.',
@@ -150,7 +155,7 @@ describe('no stray Spanish literals outside the catalogs (AC9)', () => {
       expect(entry.text, 'allowlist entry needs the literal').toBeTruthy();
       expect(entry.why, `allowlist entry for ${entry.file} needs a reason`).toBeTruthy();
     }
-    expect(ALLOWLIST.length, 'allowlist should stay small — every entry is a hole in AC9').toBeLessThanOrEqual(8);
+    expect(ALLOWLIST.length, 'allowlist should stay small — every entry is a hole in AC9').toBeLessThanOrEqual(9);
   });
 
   it('actually detects a stray literal when one exists (the tripwire has a trigger)', () => {

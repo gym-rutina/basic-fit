@@ -42,6 +42,19 @@ export default {
   'settings.open': 'Налады',
   'settings.languageHeading': 'Мова',
 
+  // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
+  'access.sectionTitle': 'Доступ у клуб',
+  'access.inputLabel': 'Спасылка-запрашэнне',
+  'access.inputPlaceholder': 'Устаўце сюды спасылку з запрашэння',
+  'access.saveAction': 'Захаваць',
+  'access.removeAction': 'Выдаліць',
+  'access.savedPrefix': 'Захавана:',
+  'access.disclosureBody':
+    'Захоўваецца толькі на гэтай прыладзе; праграма нікуды яго не адпраўляе. Любы, у каго ёсць гэтая спасылка, можа патрапіць у клуб. Праграма не можа праверыць, ці ўсё яшчэ дзейнічае спасылка.',
+  'access.storageErrorBody': 'Не ўдалося захаваць (сховішча недаступнае ў гэтым браўзеры).',
+  'access.errorUnsafeScheme': 'Прымаюцца толькі спасылкі https: — «{scheme}» небяспечная.',
+  'access.errorInvalidUrl': 'Гэта не падобнае на сапраўдную спасылку. Скапіруйце яе нанова з зыходнага паведамлення.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Прапусціць',
   'onboarding.next': 'Далей',
@@ -201,6 +214,7 @@ export default {
   'home.startAction': 'Пачаць трэнінг',
   'home.chooseDayAction': 'Выбраць іншы дзень',
   'home.recentSessionsLabel': 'Апошнія трэніроўкі',
+  'home.accessAction': 'Доступ',
 
   // ── program (ProgramScreen.jsx) ──────────────────────────────────────────
   'program.phaseLabel': 'Фаза {n}',

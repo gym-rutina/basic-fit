@@ -40,6 +40,19 @@ export default {
   'settings.open': 'Settings',
   'settings.languageHeading': 'Language',
 
+  // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
+  'access.sectionTitle': 'Club access',
+  'access.inputLabel': 'Invitation link',
+  'access.inputPlaceholder': 'Paste your invitation link here',
+  'access.saveAction': 'Save',
+  'access.removeAction': 'Remove',
+  'access.savedPrefix': 'Saved:',
+  'access.disclosureBody':
+    'Kept on this device only; the app never sends it anywhere. Anyone with this link can enter the club. The app cannot check whether the link still works.',
+  'access.storageErrorBody': "Couldn't save (storage unavailable in this browser).",
+  'access.errorUnsafeScheme': 'Only https: links are accepted — «{scheme}» is not safe.',
+  'access.errorInvalidUrl': "Doesn't look like a valid link. Copy it again from the original message.",
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Skip',
   'onboarding.next': 'Next',
@@ -199,6 +212,7 @@ export default {
   'home.startAction': 'Start workout',
   'home.chooseDayAction': 'Choose another day',
   'home.recentSessionsLabel': 'Recent sessions',
+  'home.accessAction': 'Access',
 
   // ── program (ProgramScreen.jsx) ──────────────────────────────────────────
   'program.phaseLabel': 'Phase {n}',

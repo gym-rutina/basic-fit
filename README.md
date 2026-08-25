@@ -53,18 +53,20 @@ basicfit-rutina/
 │       │   ├── BottomTabBar.jsx    # Persistent bottom navigation (Home/Program/Catalog/History/Progress)
 │       │   ├── ProgressCharts.jsx  # Hand-rolled SVG weight/volume/frequency charts
 │       │   ├── ConfirmSheet.jsx    # Reusable confirmation sheet
+│       │   ├── ClubAccessSection.jsx  # Settings "Acceso al club" section (save/open a Basic-Fit invite link)
 │       │   └── InstallBanner.jsx   # "Add to Home Screen" banner (beforeinstallprompt)
 │       ├── hooks/
 │       │   └── useInstallPrompt.js # Captures beforeinstallprompt; drives InstallBanner
 │       ├── screens/
 │       │   ├── ImportScreen.jsx    # Import a rutina.json
-│       │   ├── HomeScreen.jsx      # Next-workout proposal + day picker + recent sessions
+│       │   ├── HomeScreen.jsx      # Next-workout proposal + day picker + recent sessions + club access button
 │       │   ├── ProgramScreen.jsx   # Full routine view (all days)
 │       │   ├── ActiveSessionScreen.jsx  # Live workout logging
 │       │   ├── HistoryScreen.jsx   # Past sessions + per-exercise trend
 │       │   ├── ProgressScreen.jsx  # Weight/volume/frequency progress charts
 │       │   ├── ExportScreen.jsx    # JSON + Markdown export
-│       │   └── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE/FR/NL/DE)
+│       │   ├── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE/FR/NL/DE)
+│       │   └── SettingsScreen.jsx  # Settings screen (UI language switcher + club access link)
 │       ├── lib/
 │       │   ├── db.js               # IndexedDB wrapper (idb): activeRutina, sessions, lastWeights
 │       │   ├── sessionMachine.js   # Pure session-state reducer
@@ -75,7 +77,9 @@ basicfit-rutina/
 │       │   ├── difficulty.js       # Difficulty enum (easy/normal/hard) ↔ display labels
 │       │   ├── muscleGroups.js     # Muscle group display labels
 │       │   ├── relativeTime.js     # Relative time formatting ("hace 2 días")
-│       │   └── trends.js           # Per-exercise trend list for History screen
+│       │   ├── trends.js           # Per-exercise trend list for History screen
+│       │   ├── inviteUrl.js        # Invite-link validator (trim → URL ctor → https-only allowlist)
+│       │   └── inviteStorage.js    # Invite-URL persistence ('rutina:clubInviteUrl'; degrade-don't-throw)
 │       └── data/
 │           └── equipment.js        # Imports data/equipment.json at build time
 ├── data/
@@ -168,7 +172,7 @@ npm run test:viewport    # verify no horizontal overflow and tab-bar stays singl
 ### Running tests
 
 ```bash
-npm test                 # Vitest suites: sessionMachine, exportFormat, nextDay, db, validateImport, ProgramScreen, ConfirmSheet, useInstallPrompt, scraper/normalize/validator scripts
+npm test                 # Vitest suites: sessionMachine, exportFormat, nextDay, db, validateImport, ProgramScreen, ConfirmSheet, useInstallPrompt, inviteUrl, inviteStorage, ClubAccessSection, scraper/normalize/validator scripts
 npm run validate-data    # data integrity gate (48 equipment items; also validates data/gyms/ when present)
 ```
 
@@ -225,7 +229,7 @@ Two safety behaviors worth knowing before running it:
 **First launch:** if there's no active rutina yet, a short onboarding carousel introduces what Rutina does and the LLM generate-then-import workflow, then asks for your gym (via the Club Picker), your program's name and goal, your weekly schedule, and any injuries or movements to avoid — one guided step per field, each explaining what the field is for and showing an example. **Every step is skippable**, including all the input ones, and answering none of them still finishes onboarding normally. There is no separate Settings entry for these answers afterward: the one place to review or change them is the LLM guide screen itself, where they show as an editable form right above the prompt (see "Authoring a Rutina with an LLM" below) — editing there recomputes the prompt instantly. A small on-demand control keeps onboarding reachable if you want to revisit it later; subsequent app opens skip straight past it.
 
 1. **Import a rutina** — paste a `rutina.json` or upload a file. Use `data/examples/phase1-monday.json` to try the flow immediately. Generate your own with the LLM workflow below.
-2. **Home** — proposes your **next** workout: the day after the one you most recently *completed*, wrapping back around to the first day after the last — and falling back to the very first day until you complete something (abandoned attempts don't advance the proposal). The proposal ignores the calendar and the day labels' language entirely; it reads only your completed-session history. The proposed day sits on a card labeled **Próximo** with an **Empezar entrenamiento** button. If your program has more than one day, an **Elegir otro día** toggle under that button expands every day of the routine in program order, each row with its exercise count; the auto-proposed one is tinted purple and tagged **Próximo**, and tapping any row starts that day immediately (your pick isn't remembered — once you complete a session, the rotation simply continues from there). Below the card, an **Últimas sesiones** section lists your two most recent sessions (newest first; abandoned ones keep their "sin terminar" marking). While a session is in progress, Home shows an "EN CURSO" card describing *that* session instead — its own day and `X / Y completados` — with a **Reanudar entrenamiento** button rather than "Empezar entrenamiento"; this holds from the first paint (a skeleton, not a start button, while the check is in flight), so you can't accidentally start a second session on top of one already running. If the check itself fails, Home shows an error with a **Reintentar** button instead of silently offering to start. A purple **"Entrenamiento en curso"** banner — showing the day and progress — sits at the top of every other tab (Programa, Catálogo, Historial, Progreso, Exportar) and jumps back into the session when tapped; it's hidden on Home itself, on the session screen, and during import, and it disappears the moment the session is finished, stopped, or discarded.
+2. **Home** — proposes your **next** workout: the day after the one you most recently *completed*, wrapping back around to the first day after the last — and falling back to the very first day until you complete something (abandoned attempts don't advance the proposal). The proposal ignores the calendar and the day labels' language entirely; it reads only your completed-session history. The proposed day sits on a card labeled **Próximo** with an **Empezar entrenamiento** button. If your program has more than one day, an **Elegir otro día** toggle under that button expands every day of the routine in program order, each row with its exercise count; the auto-proposed one is tinted purple and tagged **Próximo**, and tapping any row starts that day immediately (your pick isn't remembered — once you complete a session, the rotation simply continues from there). With a club-access link saved (**Club access link** below), an outline **Acceso** button appears directly under the main card — on both the idle screen and the EN CURSO screen — and opens the saved link in a new browser tab while the app itself stays put: same route, same scroll position, any in-progress session still running when you come back. No link saved means no button rendered at all — its absence means you haven't configured one, not that something broke. Below that, an **Últimas sesiones** section lists your two most recent sessions (newest first; abandoned ones keep their "sin terminar" marking). While a session is in progress, Home shows an "EN CURSO" card describing *that* session instead — its own day and `X / Y completados` — with a **Reanudar entrenamiento** button rather than "Empezar entrenamiento"; this holds from the first paint (a skeleton, not a start button, while the check is in flight), so you can't accidentally start a second session on top of one already running. If the check itself fails, Home shows an error with a **Reintentar** button instead of silently offering to start. A purple **"Entrenamiento en curso"** banner — showing the day and progress — sits at the top of every other tab (Programa, Catálogo, Historial, Progreso, Exportar) and jumps back into the session when tapped; it's hidden on Home itself, on the session screen, and during import, and it disappears the moment the session is finished, stopped, or discarded.
 3. **Program** — full routine view across all days.
 4. **Active session** — tap a day on Home to start. Log weight + difficulty per exercise; the weight field is prefilled with the last weight logged for **that exact exercise**, not for the machine, so two different exercises sharing one piece of equipment (e.g. a chest press and a shoulder press on the same station) keep independent suggested weights and independent history. Right after updating to this version the field starts out empty for every exercise — the caption reads "Sin registros de este ejercicio todavía." — and fills in again the next time you log each one; older sessions aren't backfilled, and that caption is the only explanation you'll see (there's no separate one-time banner). Tapping an exercise's equipment row opens a sheet with a **"Ver técnica de «*exercise name*» en YouTube"** link — the tutorial is scoped to that exercise, not the machine in general, so two exercises sharing one station link to two different searches; the machine's own reference video has moved to the **Catálogo** tab. End the workout one of three ways: **Finalizar sesión** (saved as completed), **Sesión terminada sin completar** (saved as abandoned — still shows up in History as an unfinished session), or **Descartar sin guardar** — a separate, low-emphasis danger action set apart from the other two by hairline dividers, so it can't be mistaken for either save option. Discarding asks "¿Descartar el entrenamiento?", states plainly that nothing will be saved (including any weights already logged) and that it cannot be undone, and only proceeds if you confirm.
 5. **History** — past sessions with per-exercise last-3-sessions weight trend. Each card has its own delete (trash) icon; a **Seleccionar** button in the header switches to selection mode, with **Seleccionar todo** to select everything and a **Borrar (n)** bar to delete the checked sessions in one go. Both single and bulk delete ask for confirmation first and cannot be undone. Deleting a session also rolls back any weight prefills it seeded: the next time you log that exercise, the suggested starting weight falls back to your most recent remaining session instead.
@@ -233,7 +237,7 @@ Two safety behaviors worth knowing before running it:
 7. **Export** — download a JSON archive or copy Markdown to clipboard. Optional Web Share on mobile. See [`docs/export-format.md`](docs/export-format.md) for the exact format.
 8. **Catalog** — all 48 equipment items (29 machines, 14 free weights, 5 accessories) with images and instructions (EN/ES/BE/FR/NL/DE). A club row at the top lets you pick your club. Once one is picked: the **"Solo mi club"** pill filters the grid to your club's equipment (using your saved exclusions), and the **"Equipamiento de tu club"** button opens the equipment sheet where you untick items your specific club does not have.
 
-All data is stored locally in IndexedDB — no account, no server.
+All data is stored locally in your browser — IndexedDB for routines and sessions, browser settings storage (`localStorage`) for configuration like your club pick, UI language, and saved club-access link — no account, no server.
 
 ### Selecting your club
 
@@ -249,6 +253,22 @@ Once a club is selected:
 - The Catálogo tab's **"Solo mi club"** pill filters the grid to that club's equipment (using your saved exclusions).
 - An **"Equipamiento de tu club"** button — in both the Catálogo tab and the Guide overlay — opens the equipment sheet. Untick items your specific club does not have; the list is saved per club in IndexedDB (`clubEquipment` store) and survives a reload.
 - The Guide overlay's copied prompt embeds a club-scoped equipment table (all 48 items minus your exclusions, grouped by kind: machines / free weights / accessories) and pre-fills field 6 with your club's name, city, and address automatically. No manual gym-id lookup needed.
+
+### Club access link
+
+This is different from club *selection* above — nothing here changes which equipment the Catálogo tab filters. It's about getting *into* the gym: Basic-Fit members can share a **friend invite** link whose page shows a QR code that opens the club gate. If someone shared one with you, save it once in the app instead of digging it out of a chat at the door.
+
+Open **Settings** (the sliders icon in the header) and find the **Acceso al club** section:
+
+1. Paste the invite URL into the **Enlace de invitación** field. Only well-formed `https://` links are accepted — anything else (`http:` included) is rejected with a message naming exactly what was wrong, and a failed save never destroys an already-saved working link.
+2. Tap **Guardar**. While a link is stored, the **Guardado:** line underneath always shows the saved value — the exact address the Inicio button will open — even if you're mid-edit on a replacement.
+3. To swap invites, paste the new one over the pre-filled field and tap **Guardar** again. To remove the link entirely, tap **Eliminar**; Inicio goes back to not showing the button.
+
+The app treats the link as an opaque string and nothing more: it never renders the QR code, never fetches the page, and has no way to check whether the link still works — saving succeeds for any valid `https://` address, and whether it actually opens your club's gate is something you find out at the gate. This is not a Basic-Fit integration either: no account link-up, no membership management. What happens to the link is stated under the field, verbatim:
+
+> Se guarda solo en este dispositivo; la app nunca lo envía a ningún sitio. Cualquiera con este enlace puede entrar al club. La app no puede comprobar si el enlace sigue válido.
+
+That second sentence matters — anyone you forward the link to can enter the club too, so treat it like a key. And if the browser blocks storage (some private-browsing modes), **Guardar** reports the failure plainly instead of pretending the link was saved. On **Inicio**, a saved link adds an outline **Acceso** button under the main card; see step 2 of "Using the PWA" above.
 
 ## Languages
 
