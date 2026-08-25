@@ -26,6 +26,7 @@ yarn-error.log*
 Thumbs.db
 
 # --- Editor (per-developer AI chat history, not team-shared) ---
+.claude/
 .specstory/
 AGENTS.md
 CLAUDE.md
