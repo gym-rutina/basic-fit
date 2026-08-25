@@ -216,7 +216,7 @@ export default {
   'home.exerciseCountOne': '{n} Übung',
   'home.exerciseCountOther': '{n} Übungen',
   'home.startAction': 'Training starten',
-  'home.chooseDayAction': 'Anderen Tag wählen',
+  'home.chooseDayAction': 'Wählen',
   'home.recentSessionsLabel': 'Letzte Sessions',
   'home.accessAction': 'Zugang',
 

@@ -212,7 +212,7 @@ export default {
   'home.exerciseCountOne': '{n} практыкаванне',
   'home.exerciseCountOther': '{n} практыкаванняў',
   'home.startAction': 'Пачаць трэнінг',
-  'home.chooseDayAction': 'Выбраць іншы дзень',
+  'home.chooseDayAction': 'Выбраць',
   'home.recentSessionsLabel': 'Апошнія трэніроўкі',
   'home.accessAction': 'Доступ',
 

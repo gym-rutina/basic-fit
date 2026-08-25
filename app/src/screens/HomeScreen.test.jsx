@@ -211,8 +211,8 @@ describe('HomeScreen — day proposal after deletion (AC25)', () => {
  * - Rotation tests asserting FINAL behaviour are RED until Cmok swaps in
  *   nextDay.js (the weekday-matching "Hoy" path still exists today, and the
  *   fallback math differs). The AC25 block above keeps passing throughout.
- * - Picker / recent-list tests assert the UAT-approved mockup copy ("Elegir
- *   otro día", "Últimas sesiones") — RED until Cmok lands component + i18n
+ * - Picker / recent-list tests assert the approved UI copy ("Elegir",
+ *   "Últimas sesiones") — RED until Cmok lands component + i18n
  *   keys together (t() falls back to the key string, so half-landed states
  *   fail at the right assertion, not with undefined renders).
  */
@@ -320,7 +320,7 @@ describe('HomeScreen — day picker (home-next-workout-and-picker §B)', () => {
   it('renders the collapsed toggle below the start CTA when there are ≥2 days (AC8)', async () => {
     renderHome();
 
-    const toggle = await screen.findByRole('button', { name: /elegir otro día/i });
+    const toggle = await screen.findByRole('button', { name: /^elegir$/i });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
@@ -332,26 +332,26 @@ describe('HomeScreen — day picker (home-next-workout-and-picker §B)', () => {
     renderHome({ rutina: singleDay });
 
     expect(await screen.findByText('Full Body')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /elegir otro día/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^elegir$/i })).not.toBeInTheDocument();
   });
 
   it('does not render the picker while the active-session read is in flight or failed (AC13)', () => {
     const loading = renderHome({ activeSessionStatus: 'loading' });
-    expect(screen.queryByRole('button', { name: /elegir otro día/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^elegir$/i })).not.toBeInTheDocument();
     loading.unmount();
 
     // The error branch gets its own mount — a picker leaking into either
     // pre-ready state must fail one of these two assertions.
     renderHome({ activeSessionStatus: 'error' });
-    expect(screen.queryByRole('button', { name: /elegir otro día/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^elegir$/i })).not.toBeInTheDocument();
   });
 
   it('expands into all program days in order with exercise counts, and collapses on a second tap (AC9)', async () => {
     const user = userEvent.setup();
     renderHome();
 
-    const toggle = () => screen.getByRole('button', { name: /elegir otro día/i });
-    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+    const toggle = () => screen.getByRole('button', { name: /^elegir$/i });
+    await user.click(await screen.findByRole('button', { name: /^elegir$/i }));
 
     // Row accessible names must carry the count copy (es '{n} ej.'; each
     // RUTINA fixture day has exactly 1 exercise) — a row built without
@@ -375,7 +375,7 @@ describe('HomeScreen — day picker (home-next-workout-and-picker §B)', () => {
     const user = userEvent.setup();
     renderHome();
 
-    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+    await user.click(await screen.findByRole('button', { name: /^elegir$/i }));
 
     // Proposal = Día 3 → only that row's accessible name carries ", Próximo".
     expect(screen.getByRole('button', { name: /día 3.*próximo/i })).toBeInTheDocument();
@@ -391,7 +391,7 @@ describe('HomeScreen — day picker (home-next-workout-and-picker §B)', () => {
     const user = userEvent.setup();
     renderHome();
 
-    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+    await user.click(await screen.findByRole('button', { name: /^elegir$/i }));
     await user.click(screen.getByRole('button', { name: /^día 3/i }));
 
     await waitFor(() => expect(db.saveSession).toHaveBeenCalledTimes(1));
@@ -404,7 +404,7 @@ describe('HomeScreen — day picker (home-next-workout-and-picker §B)', () => {
     const user = userEvent.setup();
     renderHome();
 
-    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+    await user.click(await screen.findByRole('button', { name: /^elegir$/i }));
     await user.click(screen.getByRole('button', { name: /^día 3/i }));
 
     await waitFor(() => expect(screen.getByText('SESSION SCREEN')).toBeInTheDocument());
@@ -416,7 +416,7 @@ describe('HomeScreen — day picker (home-next-workout-and-picker §B)', () => {
     const user = userEvent.setup();
     renderHome();
 
-    await user.click(await screen.findByRole('button', { name: /elegir otro día/i }));
+    await user.click(await screen.findByRole('button', { name: /^elegir$/i }));
     await user.click(screen.getByRole('button', { name: /^día 1/i }));
 
     await waitFor(() => expect(screen.getByRole('button', { name: /^día 2/i })).toBeDisabled());
