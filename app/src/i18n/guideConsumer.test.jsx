@@ -45,14 +45,18 @@ describe('guide copy moved into the catalogs (AC8, AC6)', () => {
     }
   });
 
-  it('no longer exports the per-string maps from guideLocale.js', () => {
+  it('no longer exports the per-string maps or the retired gyms-page URL', () => {
     // 15 exported {es,en,be} maps folded into the shared catalogs. What stays
-    // in guideLocale.js is the non-copy data: URLs and the archive descriptor.
+    // in guideLocale.js is the non-copy data: the schema-download base URL
+    // and descriptor. GYMS_CATALOG_URL is gone too — gyms.html was retired
+    // with the static pages (retire-static-pages AC4) and nothing consumed
+    // the constant any more.
     const file = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../lib/guideLocale.js');
     const source = fs.readFileSync(file, 'utf8');
     expect(source).not.toMatch(/export const GUIDE_LINK_TEXT/);
     expect(source).not.toMatch(/export const GUIDE_TITLE/);
-    expect(source).toMatch(/export const GYMS_CATALOG_URL/);
+    expect(source).not.toMatch(/export const GYMS_CATALOG_URL/);
+    expect(source).toMatch(/export const GUIDE_DATA_FILES_BASE_URL/);
     expect(source).toMatch(/export const GUIDE_SCHEMA_DOWNLOAD/);
   });
 });

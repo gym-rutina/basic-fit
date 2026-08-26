@@ -14,20 +14,12 @@ export function detectGuideLocale(navLang = navigator.language) {
 }
 
 /**
- * Public gym list (names + ids) — not part of the LLM prompt. Not copy — a
- * URL — so it stays here rather than folding into the i18n catalogs.
- */
-export const GYMS_CATALOG_URL =
-  'https://gym-rutina.github.io/basic-fit/gyms.html';
-
-/**
  * In-app "download data archive" card (llm-guide-zip-download; superseded
  * the per-file "download data files" card from llm-guide-file-downloads).
  * Served same-origin from the deployed PWA (GitHub Pages) so the HTML
  * `download` attribute reliably forces a save dialog instead of an inline
- * browser view — see spec AC2. Always the absolute production URL, mirroring
- * GYMS_CATALOG_URL's existing convention (the guide never points this at
- * localhost, even in local dev).
+ * browser view — see spec AC2. Always the absolute production URL, never a
+ * localhost pointer, even in local dev.
  */
 export const GUIDE_DATA_FILES_BASE_URL =
   'https://gym-rutina.github.io/basic-fit/';

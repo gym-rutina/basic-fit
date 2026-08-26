@@ -1,6 +1,6 @@
 # BasicFit Rutina
 
-A six-language (EN/ES/BE/FR/NL/DE) equipment catalog and training-routine PWA for BasicFit gyms, covering Matrix Aura series strength machines plus ZIVA free weights and accessories. Includes an offline-capable React PWA for tracking workouts, a set of legacy static routine pages, and an LLM-based routine authoring workflow.
+A six-language (EN/ES/BE/FR/NL/DE) equipment catalog and training-routine PWA for BasicFit gyms, covering Matrix Aura series strength machines plus ZIVA free weights and accessories. Includes an offline-capable React PWA for tracking workouts and an LLM-based routine authoring workflow.
 
 ## Overview
 
@@ -12,15 +12,7 @@ The **Rutina PWA** (`app/`) lets you build a library of imported `rutina.json` t
 
 ## Quick Start
 
-### Static pages (no build required)
-
-```bash
-npm install
-npm run serve
-# open http://localhost:3000/gyms.html or /rutina_*.html
-```
-
-The standalone `equipment-catalog.html` viewer and its `npm run build-catalog` script were removed — the equipment catalog now lives only in the PWA's **Catálogo** tab. `data/equipment.json` still gets a maintenance pass via `npm run normalize-equipment` (see NPM Scripts below), it just no longer generates a static page.
+The repo's former standalone static HTML viewers (the old equipment-catalog page, the gym list, and the legacy routine pages) are retired — everything they showed lives in the PWA. `data/equipment.json` still gets a maintenance pass via `npm run normalize-equipment` (see NPM Scripts below); it just no longer generates a static page.
 
 ### PWA (development)
 
@@ -103,7 +95,6 @@ basicfit-rutina/
 │   │   └── gym-scrape-core.js      # Pure scraper core (parsing/pagination/city grouping) — no fs/path/process, unit-tested with no network
 │   ├── scrape-gyms.js              # I/O shell for the club directory scrape — network + writes data/gyms/ (see below)
 │   ├── normalize-equipment.js      # Fixup pass over data/equipment.json — writes only when content actually changes
-│   ├── build-rutina.js             # Embeds data into legacy rutina_*.html files
 │   ├── validate-data.js            # Schema + directory validation for equipment.json and data/gyms/
 │   └── validate-rutina.js          # CLI validator for rutina.json files
 ├── tests/
@@ -114,8 +105,6 @@ basicfit-rutina/
 │   ├── llm-rutina-prompt.en.md         # English guide
 │   ├── llm-rutina-prompt.es.md         # Spanish / Español
 │   └── llm-rutina-prompt.be.md         # Belarusian / Беларуская
-├── gyms.html                           # Static gym list (id + name + address)
-├── rutina_*.html                   # Legacy static routine pages
 ├── vite.config.js                  # Vite + React + vite-plugin-pwa config
 └── vitest.config.js                # Vitest config (jsdom, app/src/**/*.test.{js,jsx})
 ```
@@ -132,10 +121,9 @@ basicfit-rutina/
 | `npm run test:viewport` | Puppeteer viewport regression: 280/360/390/412/768px × routes (requires `npm run preview` running) |
 | `npm run validate-data` | Validate `data/equipment.json` (and `data/gyms/`, when present) against their required shape |
 | `npm run validate-rutina -- <path>` | Validate a `rutina.json` file against its schema + cross-check `equipmentId`/`extraEquipment` values |
-| `npm run serve` | Serve the repo root on port 3000 (for static HTML pages) |
+| `npm run serve` | Serve the repo root on port 3000 |
 | `npm run normalize-equipment` | Fixup pass over `data/equipment.json` (resolves video-search placeholders, rewrites dead JHT manual URLs). Writes the file **only when something actually changed** — safe to run repeatedly, and a no-op run prints a message instead of rewriting the file. |
 | `npm run scrape-gyms` | Scrapes the BasicFit club directory (6 countries) from `basic-fit.com`'s internal storefront endpoints and writes `data/gyms/index.json` + one file per country. Network-only — nothing in the test suite runs it. Already run once in this repo (`data/gyms/` holds real data, 1,727 clubs); re-run it any time to refresh (see "Data maintenance scripts" below). |
-| `npm run build-rutina` | Embed equipment + weights into legacy `rutina_*.html` files |
 | `npm run extract-images` | Scrape equipment images from Matrix product pages (Puppeteer) |
 
 ## Building the PWA
@@ -212,7 +200,7 @@ Scrapes BasicFit's storefront (`basic-fit.com`'s internal `Store-FinderMap`/`Sto
 - `data/gyms/index.json` — per-country totals and per-city club counts
 - `data/gyms/<CC>.json` (one per country) — `{ id, name, city, address, legacyId? }` per club. `cityKey`, `coordinates`, `hours`, and `url` are deliberately never stored (`hours`/`url` alone are ~59% of the raw payload; `cityKey` and `coordinates` had no downstream reader).
 
-**`data/gyms/` is populated with real data** — 1,727 clubs total: NL 255, BE 243, FR 911, LU 10, ES 246, DE 62. The PWA's Club Picker (see "Selecting your club" below) reads this directory directly; it is a bundled build-time module, not a runtime fetch. There is no scheduled job re-running the scrape yet (that's a separate, not-yet-built piece) — re-run `npm run scrape-gyms` by hand whenever the directory needs a refresh. The legacy 7-gym `data/gyms.json` file still exists alongside it and still backs the frozen static `rutina_*.html` pages; the PWA no longer reads it.
+**`data/gyms/` is populated with real data** — 1,727 clubs total: NL 255, BE 243, FR 911, LU 10, ES 246, DE 62. The PWA's Club Picker (see "Selecting your club" below) reads this directory directly; it is a bundled build-time module, not a runtime fetch. There is no scheduled job re-running the scrape yet (that's a separate, not-yet-built piece) — re-run `npm run scrape-gyms` by hand whenever the directory needs a refresh. The legacy 7-gym `data/gyms.json` file still exists alongside it as a historical record of the original hand-entered clubs; neither the PWA nor any script reads it any more.
 
 The script is split across two files on purpose, and that boundary matters for anyone touching it:
 
@@ -430,7 +418,7 @@ ZSL-TDYM-0250 TPE Deluxe Yoga Mats · ZVO-SPSB-6882 Slam Balls · ZVO-SPPB-6387 
 
 ## Gym Locations
 
-The 7 originally hand-entered Málaga gyms below are `data/gyms.json`'s legacy list, kept for the frozen `rutina_*.html` pages and for legacy `rutina.json` files whose `gymId` is a small integer (see "Legacy club ids" above). **For anything current, use the PWA's Club Picker** ("Selecting your club" above), which searches the full 1,727-club, 6-country directory in `data/gyms/`.
+The 7 originally hand-entered Málaga gyms below are `data/gyms.json`'s legacy list, kept for legacy `rutina.json` files whose `gymId` is a small integer (see "Legacy club ids" above). **For anything current, use the PWA's Club Picker** ("Selecting your club" above), which searches the full 1,727-club, 6-country directory in `data/gyms/`.
 
 1. Armengual de la Mota — Calle Armengual de la Mota 26, 29007 (Centro)
 2. Héroe de Sostoa — Calle Héroe de Sostoa 51

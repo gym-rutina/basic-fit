@@ -1,6 +1,6 @@
 {
   "name": "basicfit-rutina",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "description": "BasicFit Equipment Catalog and Routine Generator",
   "scripts": {
     "serve": "npx --yes serve . -p 3000",
@@ -10,13 +10,11 @@
     "scrape-gyms": "node scripts/scrape-gyms.js",
     "validate-data": "node scripts/validate-data.js",
     "validate-rutina": "node scripts/validate-rutina.js",
-    "build-rutina": "node scripts/build-rutina.js",
     "normalize-equipment": "node scripts/normalize-equipment.js",
     "build-guide": "node scripts/build-guide-content.js",
-    "build-gyms": "node scripts/build-gyms.js",
-    "predev": "npm run build-guide && npm run build-gyms",
+    "predev": "npm run build-guide",
     "dev": "vite",
-    "prebuild": "npm run build-guide && npm run build-gyms",
+    "prebuild": "npm run build-guide",
     "build": "vite build",
     "postbuild": "node scripts/copy-static-pages.js",
     "preview": "vite preview",
