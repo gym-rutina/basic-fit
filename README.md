@@ -279,7 +279,7 @@ because conflating them is exactly what caused the two bugs described below.
 | # | Axis | Controlled by | Lives in | Behavior |
 |---|------|----------------|----------|----------|
 | 1 | **UI chrome** — labels, buttons, headings, aria-labels, empty states, errors, onboarding, the LLM guide overlay | The app | `app/src/i18n/{es,en,be,fr,nl,de}.js` | `es` / `en` / `be` / `fr` / `nl` / `de`, switchable from **Settings** (the sliders icon + language code in the header) or from the onboarding language picker on first run. Persisted in `localStorage`. First run defaults from the browser: `es`/`be`/`fr`/`nl`/`de` → that locale, anything else → `en`. |
-| 2 | **Bundled reference data** — equipment names, descriptions, instructions, video links | The app | `data/equipment.json` (`{en, es, be, fr, nl, de}` per field) | Follows the UI language everywhere in the app, with a local, non-persisted override on the **Catálogo** tab's `Idioma` pills. |
+| 2 | **Bundled reference data** — equipment names, descriptions, instructions, video links | The app | `data/equipment.json` (`{en, es, be, fr, nl, de}` per field) | Follows the UI language everywhere in the app, with a local, non-persisted override on the **Catálogo** tab's `Idioma del contenido` select. |
 | 3 | **User-authored routine content** — exercise names, day labels, technique cues, rules, notes, phase objectives | The user, via whatever LLM they used | Imported `rutina.json` | Rendered **exactly as authored, in whatever language it was written in.** Never translated, never validated for language, never assumed to be Spanish. |
 
 Axes 1 and 2 are a translation problem the app solves for you. Axis 3 is

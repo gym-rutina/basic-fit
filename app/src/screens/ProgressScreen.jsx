@@ -2,8 +2,13 @@
  * Progress screen — AC1/AC2/AC3/AC4/AC5 (tech-plan.md).
  * Rutina-gated: App.jsx redirects to /import when there is no active rutina.
  * Loading: returns null (matches HistoryScreen precedent).
+ *
+ * pill-overflow-ux S4 (tech-plan.md D-D): the unbounded exercise-pill row is
+ * now a trigger button + searchable ExercisePickerSheet. The DATA layer is
+ * untouched — listLoggedExercises, collisionSuffix and selectedId all behave
+ * exactly as before; only the presentation changed.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { listSessions } from '../lib/db.js';
@@ -21,6 +26,7 @@ import {
   FrequencyHeatmap,
 } from '../components/ProgressCharts.jsx';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
+import { ExercisePickerSheet } from '../components/ExercisePickerSheet.jsx';
 import { collisionSuffix } from '../lib/machineLabel.js';
 import { useI18n } from '../i18n/index.js';
 
@@ -44,22 +50,14 @@ const SECTION_STYLE = {
   boxSizing: 'border-box',
 };
 
-const PILL_BASE = {
-  padding: '7px 14px',
-  font: '600 13px/1.2 var(--font-sans)',
-  borderRadius: 'var(--radius-control)',
-  cursor: 'pointer',
-  border: '1px solid var(--border-control)',
-  marginRight: 6,
-  marginBottom: 6,
-};
-
 /** ProgressScreen renders the three chart sections for AC2/AC3/AC4. */
 export function ProgressScreen({ rutina }) {
   const navigate = useNavigate();
   const { t, locale } = useI18n();
   const [sessions, setSessions] = useState(null); // null = loading
   const [selectedId, setSelectedId] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const triggerRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,13 +110,21 @@ export function ProgressScreen({ rutina }) {
   const stats = buildFrequencyStats(sessions, { todayKey });
 
   // exercise-level-tracking AC10: the picker selects by exercise key, so two
-  // exercises on one machine are two pills. Where two exercises share a NAME
-  // (different machines), the pill label gets a model-code suffix — real
-  // text inside the button, so it lands in the accessible name for free.
+  // exercises on one machine are two rows in the sheet. Where two exercises
+  // share a NAME (different machines), the row label gets a model-code
+  // suffix — real text inside the row button, so it lands in the accessible
+  // name for free. Labels arrive PRE-DISAMBIGUATED here; the sheet is i18n/
+  // data-agnostic about them (tech-plan.md D-D).
   const nameCounts = {};
   for (const ex of exercises) {
     nameCounts[ex.name] = (nameCounts[ex.name] || 0) + 1;
   }
+  const pickerItems = exercises.map((ex) => ({
+    key: ex.exerciseKey,
+    label: `${ex.name}${nameCounts[ex.name] > 1 ? collisionSuffix(ex.equipmentId, t) : ''}`,
+  }));
+  const activeLabel =
+    pickerItems.find((it) => it.key === activeId)?.label ?? pickerItems[0]?.label ?? '';
 
   return (
     <div style={PAGE_STYLE}>
@@ -139,27 +145,51 @@ export function ProgressScreen({ rutina }) {
             </p>
           ) : (
             <>
-              <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 10 }}>
-                {exercises.map((ex) => {
-                  const isActive = activeId === ex.exerciseKey;
-                  const collides = nameCounts[ex.name] > 1;
-                  return (
-                    <button
-                      key={ex.exerciseKey}
-                      aria-pressed={isActive}
-                      onClick={() => setSelectedId(ex.exerciseKey)}
-                      style={{
-                        ...PILL_BASE,
-                        background: isActive ? 'var(--bf-orange, #f57c00)' : 'var(--bf-white)',
-                        borderColor: isActive ? 'var(--bf-orange, #f57c00)' : 'var(--border-control)',
-                        color: isActive ? 'var(--bf-white)' : 'var(--bf-ink)',
-                      }}
-                    >
-                      <span dir="auto">{ex.name}</span>
-                      {collides ? collisionSuffix(ex.equipmentId, t) : ''}
-                    </button>
-                  );
-                })}
+              {/* pill-overflow-ux S4 trigger (AC10): shows the ACTIVE
+                  exercise's display name including its collision suffix, and
+                  opens the picker sheet. Styled like SelectField so the two
+                  "pick one of N" controls read as the same pattern; the
+                  chevron Icon is aria-hidden, so the accessible name is the
+                  exercise label itself. */}
+              <div style={{ marginBottom: 10 }}>
+                <span
+                  style={{
+                    font: 'var(--text-label)',
+                    letterSpacing: 'var(--tracking-label)',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-muted)',
+                    display: 'block',
+                    marginBottom: 8,
+                  }}
+                >
+                  {t('progress.exerciseLabel')}
+                </span>
+                <button
+                  ref={triggerRef}
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-expanded={pickerOpen}
+                  onClick={() => setPickerOpen(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                    width: '100%',
+                    minHeight: 44,
+                    padding: '10px 14px',
+                    font: '400 15px/1.3 var(--font-sans)',
+                    color: 'var(--bf-ink)',
+                    background: 'var(--bf-white)',
+                    border: '1px solid var(--border-control)',
+                    borderRadius: 'var(--radius-control)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  <span dir="auto">{activeLabel}</span>
+                  <Icon name="chevron-down" size={18} style={{ color: 'var(--text-muted)' }} />
+                </button>
               </div>
               {weightPoints.length === 0 ? (
                 <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>
@@ -200,6 +230,20 @@ export function ProgressScreen({ rutina }) {
           <FrequencyHeatmap cells={cells} stats={stats} t={t} />
         </section>
       </div>
+
+      {/* pill-overflow-ux S4: the picker sheet. The sheet closes ITSELF on row
+          activation (calls onSelect then onClose), so the handler here only
+          records the selection; returnFocusTo hands focus back to the trigger
+          (AC14's ClubPickerSheet contract). */}
+      {pickerOpen && exercises.length > 0 && (
+        <ExercisePickerSheet
+          items={pickerItems}
+          selectedKey={activeId}
+          onSelect={(key) => setSelectedId(key)}
+          onClose={() => setPickerOpen(false)}
+          returnFocusTo={triggerRef}
+        />
+      )}
     </div>
   );
 }

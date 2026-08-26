@@ -41,6 +41,7 @@ export default {
   'settings.title': 'Налады',
   'settings.open': 'Налады',
   'settings.languageHeading': 'Мова',
+  'settings.uiLanguageLabel': "Мова інтэрфейсу",
 
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Доступ у клуб',
@@ -155,6 +156,9 @@ export default {
   'muscle.tensorFasciaeLatae': 'Напрагальнік шырокай фасцыі',
   'muscle.triceps': 'Трыцэпс',
   'muscle.upperChest': 'Верхняя частка грудзей',
+  'muscles.showMore': "Паказаць яшчэ {n} цягліц",
+  'muscles.showMoreOne': "Паказаць яшчэ {n} цягліцу",
+  'muscles.showLess': "Менш",
 
   // ── difficulty (difficulty.js — tokens easy|normal|hard are frozen) ─────
   'difficulty.easy': 'Лёгка',
@@ -179,6 +183,10 @@ export default {
   'progress.last7Days': 'Апошнія 7 дзён',
   'progress.last30Days': 'Апошнія 30 дзён',
   'progress.currentStreak': 'Бягучая серыя',
+  'progress.exerciseLabel': "Практыкаванне",
+  'progress.pickerTitle': "Выбраць практыкаванне",
+  'progress.searchPlaceholder': "Шукаць практыкаванне…",
+  'progress.noResults': "Няма вынікаў для «{query}»",
 
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Каталог абсталявання',
@@ -190,6 +198,9 @@ export default {
   'catalog.clubRowButton': 'Выбраць клуб',
   'catalog.onlyMyClubPill': 'Толькі мой клуб',
   'catalog.categoryFilterLabel': 'Катэгорыя',
+  'catalog.languageLabel': "Мова змесціва",
+  'catalog.showMoreCategories': "+{n} яшчэ",
+  'catalog.showLessCategories': "Менш",
   'catalog.categoryAll': 'Усе',
   'catalog.categoryChest': 'Грудзі',
   'catalog.categoryBack': 'Спіна',

@@ -44,6 +44,7 @@ export default {
   'settings.title': 'Einstellungen',
   'settings.open': 'Einstellungen',
   'settings.languageHeading': 'Sprache',
+  'settings.uiLanguageLabel': "Anzeigesprache",
 
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Zugang zum Club',
@@ -159,6 +160,9 @@ export default {
   'muscle.tensorFasciaeLatae': 'Tensor fasciae latae',
   'muscle.triceps': 'Trizeps',
   'muscle.upperChest': 'Oberer Brustbereich',
+  'muscles.showMore': "{n} weitere Muskeln anzeigen",
+  'muscles.showMoreOne': "{n} weiteren Muskel anzeigen",
+  'muscles.showLess': "Weniger",
 
   // ── difficulty (difficulty.js — tokens easy|normal|hard are frozen) ─────
   'difficulty.easy': 'Leicht',
@@ -183,6 +187,10 @@ export default {
   'progress.last7Days': 'Letzte 7 Tage',
   'progress.last30Days': 'Letzte 30 Tage',
   'progress.currentStreak': 'Aktuelle Serie',
+  'progress.exerciseLabel': "Übung",
+  'progress.pickerTitle': "Übung wählen",
+  'progress.searchPlaceholder': "Übung suchen…",
+  'progress.noResults': "Keine Ergebnisse für \"{query}\"",
 
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Gerätekatalog',
@@ -194,6 +202,9 @@ export default {
   'catalog.clubRowButton': 'Studio wählen',
   'catalog.onlyMyClubPill': 'Nur mein Studio',
   'catalog.categoryFilterLabel': 'Kategorie',
+  'catalog.languageLabel': "Inhaltssprache",
+  'catalog.showMoreCategories': "+{n} mehr",
+  'catalog.showLessCategories': "Weniger",
   'catalog.categoryAll': 'Alle',
   'catalog.categoryChest': 'Brust',
   'catalog.categoryBack': 'Rücken',

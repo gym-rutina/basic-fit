@@ -45,6 +45,7 @@ export default {
   'settings.title': 'Ajustes',
   'settings.open': 'Ajustes',
   'settings.languageHeading': 'Idioma',
+  'settings.uiLanguageLabel': "Idioma de la interfaz",
 
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Acceso al club',
@@ -159,6 +160,9 @@ export default {
   'muscle.tensorFasciaeLatae': 'Tensor de la fascia lata',
   'muscle.triceps': 'Tríceps',
   'muscle.upperChest': 'Pecho superior',
+  'muscles.showMore': "Ver {n} músculos más",
+  'muscles.showMoreOne': "Ver {n} músculo más",
+  'muscles.showLess': "Menos",
 
   // ── difficulty (difficulty.js — tokens easy|normal|hard are frozen) ─────
   'difficulty.easy': 'Fácil',
@@ -183,6 +187,10 @@ export default {
   'progress.last7Days': 'Últimos 7 días',
   'progress.last30Days': 'Últimos 30 días',
   'progress.currentStreak': 'Racha actual',
+  'progress.exerciseLabel': "Ejercicio",
+  'progress.pickerTitle': "Elegir ejercicio",
+  'progress.searchPlaceholder': "Buscar ejercicio…",
+  'progress.noResults': "Sin resultados para «{query}»",
 
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Catálogo de equipamiento',
@@ -194,6 +202,9 @@ export default {
   'catalog.clubRowButton': 'Elegir club',
   'catalog.onlyMyClubPill': 'Solo mi club',
   'catalog.categoryFilterLabel': 'Categoría',
+  'catalog.languageLabel': "Idioma del contenido",
+  'catalog.showMoreCategories': "+{n} más",
+  'catalog.showLessCategories': "Menos",
   'catalog.categoryAll': 'Todas',
   'catalog.categoryChest': 'Pecho',
   'catalog.categoryBack': 'Espalda',

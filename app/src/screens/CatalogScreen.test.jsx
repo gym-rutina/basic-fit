@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { CatalogScreen } from './CatalogScreen.jsx';
 import { I18nProvider } from '../i18n/index.js';
+import { LANGUAGES } from '../data/equipment.js';
 
 /**
  * The directory module is MOCKED, and the club total is a deliberately
@@ -104,12 +105,13 @@ describe('the Catálogo override (AC14)', () => {
 
   it('changes equipment text only — the chrome around it stays in the UI locale', async () => {
     // This is the whole point of DEC-4: look up an English machine name
-    // without your app turning English.
+    // without your app turning English. pill-overflow-ux S2 swapped the pill
+    // row for a labelled select — same override, driven through selectOptions.
     const user = userEvent.setup();
     renderCatalog('es');
     expect(screen.getByText(CHEST_PRESS.es)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'EN' }));
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma del contenido' }), 'en');
 
     expect(screen.getByText(CHEST_PRESS.en)).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Catálogo de equipamiento' })).toBeInTheDocument();
@@ -119,7 +121,7 @@ describe('the Catálogo override (AC14)', () => {
     const user = userEvent.setup();
     renderCatalog('es');
 
-    await user.click(screen.getByRole('button', { name: 'BE' }));
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma del contenido' }), 'be');
 
     expect(localStorage.length).toBe(0);
   });
@@ -128,7 +130,7 @@ describe('the Catálogo override (AC14)', () => {
     const user = userEvent.setup();
     const first = renderCatalog('es');
 
-    await user.click(screen.getByRole('button', { name: 'EN' }));
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma del contenido' }), 'en');
     expect(screen.getByText(CHEST_PRESS.en)).toBeInTheDocument();
 
     first.unmount();
@@ -137,15 +139,15 @@ describe('the Catálogo override (AC14)', () => {
     expect(screen.getByText(CHEST_PRESS.es)).toBeInTheDocument();
   });
 
-  it('keeps the pill row rendering the data languages, in data order', () => {
+  it('keeps the language select rendering the data languages, in data order', () => {
     // equipment.json's metadata.languages leads with en; UI_LOCALES leads
-    // with es. AC14 keeps the row data-driven, so its visual order follows
-    // the data (expand-ui-locales grew both sets to six locales).
+    // with es. AC14 keeps the control data-driven, so its OPTION ORDER
+    // follows the data (pill-overflow-ux S2 — same intent as the pill row
+    // this select replaced; expand-ui-locales grew both sets to six locales).
     renderCatalog('es');
-    const labels = screen
-      .getAllByRole('button', { name: /^(EN|ES|BE)$/ })
-      .map((p) => p.textContent.trim());
-    expect(labels).toEqual(['EN', 'ES', 'BE']);
+    const select = screen.getByRole('combobox', { name: 'Idioma del contenido' });
+    const values = within(select).getAllByRole('option').map((o) => o.value);
+    expect(values).toEqual([...LANGUAGES]);
   });
 });
 
@@ -159,6 +161,9 @@ describe('Catálogo chrome is migrated (AC6)', () => {
 });
 
 describe('category pills always render a real label (Build A / Bagnik code-QA fix #2)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
   /**
    * CatalogScreen.jsx derives its category pills from the DATA
    * (`new Set(EQUIPMENT.map(e => e.category))`) but labels them from a
@@ -179,8 +184,16 @@ describe('category pills always render a real label (Build A / Bagnik code-QA fi
     }
   });
 
-  it('renders a real pill for both S2-added categories (free-weights, accessories)', () => {
+  it('renders a real pill for both S2-added categories (free-weights, accessories)', async () => {
+    // Wide viewport pinned explicitly — see the S1 describe's note on the
+    // repo-wide matchMedia polyfill answering matches:false.
+    stubViewport(true);
+    const user = userEvent.setup();
     renderCatalog('es');
+    // Both live beyond the collapsed window since pill-overflow-ux S1 —
+    // expand the row first, then assert the same intent (real labelled
+    // pills exist for the data-derived categories).
+    await user.click(screen.getByRole('button', { name: '+5 más' }));
     expect(screen.getByRole('button', { name: 'Peso libre' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Accesorios' })).toBeInTheDocument();
   });
@@ -327,5 +340,124 @@ describe('the subtitle no longer claims the catalog is Matrix-only (X4)', () => 
     // card, which would report the bug as a broken test. Same fix as the
     // `id \d+` assertion above.
     expect(screen.queryAllByText(/Matrix Aura/i)).toEqual([]);
+  });
+});
+
+/**
+ * pill-overflow-ux — S1 adaptive category collapse + S2 language select.
+ *
+ * The measured AC1×AC6 resolution (user-ratified): collapsed count adapts to
+ * viewport — 4 pills at ≥360px, 2 below — because four ES pills physically
+ * cannot fit 280px (FilterPill real metrics, ux-design §0).
+ *
+ * TECH-PLAN D-A PREMISE CORRECTED IN BUILD (Cmok, documented divergence):
+ * D-A assumed jsdom has NO matchMedia, making the component's default-TRUE
+ * branch the wide-path guarantee. But this repo's shared test-setup.js has
+ * polyfilled window.matchMedia since onboarding-screens (for InstallBanner),
+ * answering matches:false UNCONDITIONALLY — so left alone every render here
+ * would take the NARROW path. Rather than touch the shared harness, every
+ * collapse test pins its viewport explicitly: this describe stubs WIDE in a
+ * beforeEach (the common case), and the narrow-path test overrides with its
+ * own false stub. The component's default-true guard remains correct for a
+ * genuinely matchMedia-less environment.
+ */
+
+function stubViewport(matches) {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn().mockImplementation((q) => ({
+      matches,
+      media: q,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
+  );
+}
+
+function stubNarrowViewport() {
+  stubViewport(false);
+}
+
+describe('CatalogScreen — category collapse (pill-overflow-ux S1)', () => {
+  beforeEach(() => {
+    stubViewport(true);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('shows the first FOUR categories plus a "+5 más" toggle by default (AC1)', () => {
+    renderCatalog('es');
+
+    expect(screen.getByRole('button', { name: 'Todas' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pecho' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Espalda' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Piernas' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Hombros' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+5 más' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('expands the remaining categories in place and flips to Menos (AC2, AC3)', async () => {
+    const user = userEvent.setup();
+    renderCatalog('es');
+    const toggle = screen.getByRole('button', { name: '+5 más' });
+
+    await user.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    ['Hombros', 'Brazos', 'Core'].forEach((c) => expect(screen.getByRole('button', { name: c })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /menos/i })).toBeInTheDocument();
+  });
+
+  it('keeps the row expanded after picking a category (AC5)', async () => {
+    const user = userEvent.setup();
+    renderCatalog('es');
+
+    await user.click(screen.getByRole('button', { name: '+5 más' }));
+    await user.click(screen.getByRole('button', { name: 'Hombros' }));
+
+    expect(screen.getByRole('button', { name: /menos/i })).toBeInTheDocument();
+  });
+
+  it('resets to collapsed on remount (AC4 — screen-local state convention)', async () => {
+    const user = userEvent.setup();
+    const first = renderCatalog('es');
+    await user.click(screen.getByRole('button', { name: '+5 más' }));
+    first.unmount();
+
+    renderCatalog('es');
+
+    expect(screen.getByRole('button', { name: '+5 más' })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: 'Hombros' })).not.toBeInTheDocument();
+  });
+
+  it('shows TWO pills and "+7 más" on a mocked narrow viewport (AC6 narrow path)', () => {
+    stubNarrowViewport();
+    renderCatalog('es');
+
+    expect(screen.getByRole('button', { name: 'Todas' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pecho' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Espalda' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+7 más' })).toBeInTheDocument();
+  });
+});
+
+describe('CatalogScreen — content-language select (pill-overflow-ux S2, AC7)', () => {
+  it('replaces the pill row with a labelled select whose change re-renders equipment names', async () => {
+    const user = userEvent.setup();
+    renderCatalog('es');
+
+    // The old ES/EN/BE pill row is gone…
+    expect(screen.queryByRole('button', { name: 'ES' })).not.toBeInTheDocument();
+    // …replaced by a labelled combobox showing the current language.
+    const select = screen.getByRole('combobox', { name: 'Idioma del contenido' });
+
+    await user.selectOptions(select, 'en');
+
+    // Equipment display follows the screen-local override (pwa-ui-language
+    // AC13/AC14 contract preserved through the new control): an English name
+    // appears that was absent under es.
+    expect(await screen.findByText('Chest Press')).toBeInTheDocument();
   });
 });

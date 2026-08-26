@@ -39,6 +39,7 @@ export default {
   'settings.title': 'Settings',
   'settings.open': 'Settings',
   'settings.languageHeading': 'Language',
+  'settings.uiLanguageLabel': "Interface language",
 
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Club access',
@@ -153,6 +154,9 @@ export default {
   'muscle.tensorFasciaeLatae': 'Tensor fasciae latae',
   'muscle.triceps': 'Triceps',
   'muscle.upperChest': 'Upper chest',
+  'muscles.showMore': "Show {n} more muscles",
+  'muscles.showMoreOne': "Show {n} more muscle",
+  'muscles.showLess': "Less",
 
   // ── difficulty (difficulty.js — tokens easy|normal|hard are frozen) ─────
   'difficulty.easy': 'Easy',
@@ -177,6 +181,10 @@ export default {
   'progress.last7Days': 'Last 7 days',
   'progress.last30Days': 'Last 30 days',
   'progress.currentStreak': 'Current streak',
+  'progress.exerciseLabel': "Exercise",
+  'progress.pickerTitle': "Choose exercise",
+  'progress.searchPlaceholder': "Search exercise…",
+  'progress.noResults': "No results for \"{query}\"",
 
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Equipment catalog',
@@ -188,6 +196,9 @@ export default {
   'catalog.clubRowButton': 'Choose club',
   'catalog.onlyMyClubPill': 'Only my club',
   'catalog.categoryFilterLabel': 'Category',
+  'catalog.languageLabel': "Content language",
+  'catalog.showMoreCategories': "+{n} more",
+  'catalog.showLessCategories': "Less",
   'catalog.categoryAll': 'All',
   'catalog.categoryChest': 'Chest',
   'catalog.categoryBack': 'Back',

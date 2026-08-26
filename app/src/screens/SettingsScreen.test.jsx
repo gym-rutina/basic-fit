@@ -71,39 +71,47 @@ describe('SettingsScreen (AC11)', () => {
   });
 });
 
-describe('SettingsScreen — the language picker (AC11, a11y)', () => {
-  it('is a radiogroup with one option per shipped locale', () => {
+describe('SettingsScreen — the language picker (select swap, AC11-lineage a11y)', () => {
+  /**
+   * pill-overflow-ux S3 (AC21 surgery): these five assertions are the
+   * select-control equivalents of the radio-based suite they replace —
+   * every original intent survives, re-expressed against the combobox.
+   */
+  it('is a labelled select with one option per shipped locale', () => {
     renderSettings();
-    const group = screen.getByRole('radiogroup', { name: /idioma/i });
-    expect(within(group).getAllByRole('radio')).toHaveLength(UI_LOCALES.length);
+    const select = screen.getByRole('combobox', { name: /idioma/i });
+    expect(within(select).getAllByRole('option')).toHaveLength(UI_LOCALES.length);
   });
 
-  it('marks exactly the active locale as checked', () => {
+  it('marks exactly the active locale as the selected option', () => {
+    // Rendered under `be`, so the control's accessible name localizes —
+    // query by role; this screen has exactly one select.
     renderSettings({ locale: 'be' });
-    const checked = screen.getAllByRole('radio').filter((r) => r.getAttribute('aria-checked') === 'true');
-    expect(checked).toHaveLength(1);
-    expect(checked[0]).toHaveTextContent('Беларуская');
+    // A native select can hold only ONE selected option — the uniqueness the
+    // old aria-checked sweep proved is structural now; what must still hold
+    // is WHICH option it is.
+    const selected = within(screen.getByRole('combobox')).getAllByRole('option', { selected: true });
+    expect(selected).toHaveLength(1);
+    expect(selected[0]).toHaveTextContent('Беларуская');
   });
 
   // onboarding-request-fields Rev5 (locale-code / country-code collision fix,
-  // tech-plan.md §2.10): pills themselves now render the autonym directly —
-  // l.toUpperCase() ('BE') read as Belgium's country code, visually
-  // indistinguishable from the Belarusian language pill. The now-redundant
-  // muted subtitle line that used to carry this same text a second time is
-  // REMOVED (two elements with identical text would break getByText's
-  // single-match assumption), so this test moves from asserting the subtitle
-  // to asserting the pills' own accessible names directly.
-  it('every pill shows its own language autonym as its accessible name, not a 2-letter code (Rev5)', () => {
+  // tech-plan.md §2.10): pills used to render l.toUpperCase() ('BE') which
+  // read as Belgium's country code; the autonym rule carries over to the
+  // select's options unchanged (tech-plan D-C).
+  it('every option shows its own language autonym as its accessible name, not a 2-letter code (Rev5)', () => {
     renderSettings({ locale: 'en' });
     for (const locale of UI_LOCALES) {
-      expect(screen.getByRole('radio', { name: LOCALE_AUTONYMS[locale] })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: LOCALE_AUTONYMS[locale] })).toBeInTheDocument();
     }
   });
 
   it('does not render a 2-letter code anywhere in the language picker (Rev5 — the collision this fix removes)', () => {
+    // Rendered under `en` (as before), so query by role — the accessible
+    // name localizes with the locale.
     renderSettings({ locale: 'en' });
-    const group = screen.getByRole('radiogroup', { name: /language/i });
-    expect(group.textContent).not.toMatch(/\bBE\b/);
+    const select = screen.getByRole('combobox');
+    expect(select.textContent).not.toMatch(/\bBE\b/);
   });
 
   it('shows one option per shipped locale — never an empty or loading state', () => {
@@ -111,16 +119,19 @@ describe('SettingsScreen — the language picker (AC11, a11y)', () => {
     // loading/empty/retry states do not exist here. The count is derived,
     // not hardcoded (expand-ui-locales R5.1: six locales now ship).
     renderSettings();
-    expect(screen.getAllByRole('radio')).toHaveLength(UI_LOCALES.length);
+    expect(screen.getAllByRole('option')).toHaveLength(UI_LOCALES.length);
   });
 });
 
 describe('SettingsScreen — switching (AC12)', () => {
+  /** pill-overflow-ux S3 (AC21 surgery): each it below is the selectOptions
+   * equivalent of the pill-click version it replaces — same asserted
+   * contract, new control. */
   it('re-renders in place, with no navigation', async () => {
     const user = userEvent.setup();
     renderSettings();
 
-    await user.click(screen.getByRole('radio', { name: /english/i }));
+    await user.selectOptions(screen.getByRole('combobox', { name: /idioma/i }), 'en');
 
     expect(screen.getByTestId('pathname')).toHaveTextContent('/settings');
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
@@ -131,7 +142,7 @@ describe('SettingsScreen — switching (AC12)', () => {
     renderSettings();
     expect(screen.getByText('Inicio')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('radio', { name: /english/i }));
+    await user.selectOptions(screen.getByRole('combobox', { name: /idioma/i }), 'en');
 
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
@@ -139,19 +150,20 @@ describe('SettingsScreen — switching (AC12)', () => {
   it('persists the choice', async () => {
     const user = userEvent.setup();
     renderSettings();
-    await user.click(screen.getByRole('radio', { name: /беларуская/i }));
+    await user.selectOptions(screen.getByRole('combobox', { name: /idioma/i }), 'be');
     expect(localStorage.getItem(UI_LANG_KEY)).toBe('be');
   });
 
-  it('keeps focus on the option the user tapped', async () => {
-    // ux-design.md: switching must not steal or move focus.
+  it('keeps focus on the control the user operated', async () => {
+    // ux-design.md: switching must not steal or move focus. With a native
+    // select the control IS the focus point during selection.
     const user = userEvent.setup();
     renderSettings();
-    const option = screen.getByRole('radio', { name: /english/i });
+    const select = screen.getByRole('combobox', { name: /idioma/i });
 
-    await user.click(option);
+    await user.selectOptions(select, 'en');
 
-    expect(document.activeElement).toBe(screen.getByRole('radio', { name: /english/i }));
+    expect(document.activeElement).toBe(select);
   });
 
   it('keeps the previous locale active, and stays silent, when persistence fails', async () => {
@@ -162,7 +174,7 @@ describe('SettingsScreen — switching (AC12)', () => {
     const user = userEvent.setup();
     renderSettings();
 
-    await user.click(screen.getByRole('radio', { name: /english/i }));
+    await user.selectOptions(screen.getByRole('combobox', { name: /idioma/i }), 'en');
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
@@ -183,6 +195,52 @@ describe('SettingsScreen — the Acceso al club section (club-invite-link wiring
   it('renders the Acceso al club section alongside the language block', () => {
     renderSettings();
     expect(screen.getByText('Acceso al club')).toBeInTheDocument();
-    expect(screen.getByRole('radiogroup', { name: /idioma/i })).toBeInTheDocument();
+    // pill-overflow-ux S3: the language control is the select now — same
+    // "section sits beside the language block" intent.
+    expect(screen.getByRole('combobox', { name: /idioma/i })).toBeInTheDocument();
+  });
+});
+
+/**
+ * pill-overflow-ux — S3: the UI-language radiogroup becomes a SelectField
+ * (native <select>, user-ratified OQ1). These describes are the REPLACEMENTS
+ * for the radio-based suites above; Cmok deletes those per AC21 when the
+ * markup swaps (tech-plan §4 step 6). RED until then — the current screen
+ * still renders pills, so every combobox query below fails at the right
+ * assertion.
+ */
+describe('SettingsScreen — UI language select (pill-overflow-ux S3, AC8/AC9)', () => {
+  it('renders a labelled combobox instead of a pill radiogroup', () => {
+    renderSettings();
+
+    expect(screen.getByRole('combobox', { name: 'Idioma de la interfaz' })).toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup', { name: /idioma/i })).not.toBeInTheDocument();
+  });
+
+  it('offers one autonym option per shipped locale — six today, layout-blind to more (AC9)', () => {
+    renderSettings();
+
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(UI_LOCALES.length);
+    ['Español', 'English', 'Беларуская', 'Français', 'Nederlands', 'Deutsch'].forEach((a) => {
+      expect(screen.getByRole('option', { name: a })).toBeInTheDocument();
+    });
+  });
+
+  it('marks the active locale as the selected value', () => {
+    renderSettings({ locale: 'be' });
+
+    expect(screen.getByRole('combobox')).toHaveValue('be');
+  });
+
+  it('switches the shared i18n context synchronously and persists the choice (AC12 contract preserved)', async () => {
+    const user = userEvent.setup();
+    renderSettings();
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma de la interfaz' }), 'en');
+
+    expect(localStorage.getItem(UI_LANG_KEY)).toBe('en');
+    // In-place re-render proof: the heading itself follows the new locale.
+    expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument();
   });
 });

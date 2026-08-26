@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
 import { ClubAccessSection } from '../components/ClubAccessSection.jsx';
-import { FilterPill } from '../../../design-system/components/primitives/FilterPill.jsx';
+import { SelectField } from '../../../design-system/components/primitives/SelectField.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { useI18n, UI_LOCALES, LOCALE_AUTONYMS } from '../i18n/index.js';
 
@@ -13,9 +13,12 @@ import { useI18n, UI_LOCALES, LOCALE_AUTONYMS } from '../i18n/index.js';
  * "came from" screen needs to be tracked explicitly. Does not pass its own
  * `onSettings` to `ScreenHeader` — Settings does not offer a way into itself.
  *
- * Switching is synchronous and in-place (AC12): tapping a pill updates the
- * shared i18n context, which is what re-renders the tab bar and every other
- * mounted screen without a navigation or reload.
+ * Switching is synchronous and in-place (AC12): changing the select updates
+ * the shared i18n context via `setLocale`, which is what re-renders the tab
+ * bar and every other mounted screen without a navigation or reload. The
+ * contract lives in setLocale, not in the control (pill-overflow-ux D-C:
+ * the pill radiogroup became a SelectField; option labels ARE the autonyms,
+ * so Rev5's no-2-letter-code rule survives verbatim).
  */
 export function SettingsScreen() {
   const navigate = useNavigate();
@@ -47,28 +50,18 @@ export function SettingsScreen() {
       />
 
       <div style={{ maxWidth: 480, margin: '0 auto', paddingInline: 'var(--page-pad-x)', paddingTop: 'var(--space-6)' }}>
-        <span
-          style={{
-            font: 'var(--text-label)',
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-          }}
-        >
-          {t('settings.languageHeading')}
-        </span>
-
-        <div
-          role="radiogroup"
-          aria-label={t('settings.languageHeading')}
-          style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}
-        >
-          {UI_LOCALES.map((l) => (
-            <FilterPill key={l} active={locale === l} onClick={() => setLocale(l)} role="radio" aria-checked={locale === l}>
-              {LOCALE_AUTONYMS[l]}
-            </FilterPill>
-          ))}
-        </div>
+        {/* pill-overflow-ux S3 (D-C): the pill radiogroup is now a SelectField.
+            The `<label for>` binding replaces the radiogroup's aria-label; a
+            native select exposes value + option-list semantics to AT, which
+            AC8 sanctions as the dropdown-appropriate equivalent of the old
+            role="radio"/aria-checked pair. */}
+        <SelectField
+          id="settings-ui-language"
+          label={t('settings.uiLanguageLabel')}
+          value={locale}
+          options={UI_LOCALES.map((l) => ({ value: l, label: LOCALE_AUTONYMS[l] }))}
+          onChange={setLocale}
+        />
 
         <hr aria-hidden="true" style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 'var(--space-8) 0 0' }} />
 

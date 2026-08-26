@@ -44,6 +44,7 @@ export default {
   'settings.title': 'Instellingen',
   'settings.open': 'Instellingen',
   'settings.languageHeading': 'Taal',
+  'settings.uiLanguageLabel': "Interfacetaal",
 
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Toegang tot de club',
@@ -159,6 +160,9 @@ export default {
   'muscle.tensorFasciaeLatae': 'Tensor fasciae latae',
   'muscle.triceps': 'Triceps',
   'muscle.upperChest': 'Bovenste borstspieren',
+  'muscles.showMore': "Bekijk {n} extra spieren",
+  'muscles.showMoreOne': "Bekijk {n} extra spier",
+  'muscles.showLess': "Minder",
 
   // ── difficulty (difficulty.js — tokens easy|normal|hard are frozen) ─────
   'difficulty.easy': 'Makkelijk',
@@ -183,6 +187,10 @@ export default {
   'progress.last7Days': 'Laatste 7 dagen',
   'progress.last30Days': 'Laatste 30 dagen',
   'progress.currentStreak': 'Huidige reeks',
+  'progress.exerciseLabel': "Oefening",
+  'progress.pickerTitle': "Kies een oefening",
+  'progress.searchPlaceholder': "Zoek een oefening…",
+  'progress.noResults': "Geen resultaten voor \"{query}\"",
 
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Apparatuurcatalogus',
@@ -194,6 +202,9 @@ export default {
   'catalog.clubRowButton': 'Club kiezen',
   'catalog.onlyMyClubPill': 'Alleen mijn club',
   'catalog.categoryFilterLabel': 'Categorie',
+  'catalog.languageLabel': "Contenttaal",
+  'catalog.showMoreCategories': "+{n} meer",
+  'catalog.showLessCategories': "Minder",
   'catalog.categoryAll': 'Alle',
   'catalog.categoryChest': 'Borst',
   'catalog.categoryBack': 'Rug',
