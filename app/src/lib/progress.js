@@ -107,20 +107,49 @@ function buildRutinaMap(rutina) {
 }
 
 /**
- * Computes per-session total volume (Σ sets × reps × weightUsed) for all
- * past sessions (status !== 'active'), joined against the current rutina by
- * exercise key. Exercises absent from the current rutina are excluded.
- * Abandoned sessions with no completed exercises appear with volume: 0.
+ * Per-session planned-volume resolution under a MULTI-rutina library
+ * (multi-rutina-library D-D, fixes spec C2). Three tiers, per session:
+ *
+ * 1. SNAPSHOT — every logged-with-weight exercise carries the creation-time
+ *    sets/reps snapshot (sessionMachine stamps it unconditionally) → volume
+ *    from the snapshot alone. Works across ALL phases: a Fase-1 session keeps
+ *    its own prescription even when Fase 2 is active and dropped the exercise.
+ * 2. SCOPED LEGACY JOIN — no snapshot, but session.rutinaId === rutina.id →
+ *    the pre-library behaviour: join against the ACTIVE rutina's map by
+ *    exercise key. Only sessions of the active rutina qualify; unattributed
+ *    fixtures plus an id-less rutina also land here (undefined === undefined),
+ *    which is what keeps single-rutina history readable with zero migration.
+ * 3. EXCLUDED — everything else (a cross-rutina session whose exercises
+ *    cannot be joined). The session is left out of the series ENTIRELY —
+ *    never plotted as a zero-volume bar (AC19). A zero bar now means one
+ *    thing only: a session that genuinely logged no weight (tier 1 with no
+ *    contributing exercise).
  *
  * @param {Array} sessions
- * @param {object} rutina
+ * @param {object} rutina - the ACTIVE entry (carries .id post-library)
  * @returns {Array<{sessionId: string, date: string, volume: number}>} chronological ascending
  */
 export function buildSessionVolumes(sessions = [], rutina) {
   const rutinaMap = buildRutinaMap(rutina);
   const past = sessions.filter((s) => s.status !== 'active');
-  return past
-    .map((s) => {
+
+  function resolveVolumePoint(s) {
+    const contributing = (s.exercises || []).filter(
+      (ex) => ex.completedAt != null && ex.weightUsed != null
+    );
+
+    // Tier 1 — planned-volume snapshot (both numbers must be present; a half
+    // snapshot would silently NaN the product).
+    if (contributing.every((ex) => ex.sets != null && ex.reps != null)) {
+      let volume = 0;
+      for (const ex of contributing) {
+        volume += ex.sets * ex.reps * ex.weightUsed;
+      }
+      return volume;
+    }
+
+    // Tier 2 — legacy join, scoped to the ACTIVE rutina's own sessions.
+    if (s.rutinaId === (rutina && rutina.id)) {
       let volume = 0;
       for (const ex of s.exercises || []) {
         if (ex.completedAt == null) continue;
@@ -130,9 +159,21 @@ export function buildSessionVolumes(sessions = [], rutina) {
         if (ex.weightUsed == null) continue;
         volume += rutinaEx.sets * rutinaEx.reps * ex.weightUsed;
       }
+      return volume;
+    }
+
+    // Tier 3 — unjoinable cross-rutina session: honest absence.
+    return null;
+  }
+
+  return past
+    .map((s) => {
+      const volume = resolveVolumePoint(s);
+      if (volume === null) return null;
       const dateRef = s.endedAt || s.startedAt;
       return { sessionId: s.id, date: localDateKey(new Date(dateRef)), volume };
     })
+    .filter((point) => point != null)
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 }
 

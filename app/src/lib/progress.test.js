@@ -237,10 +237,19 @@ describe('buildSessionVolumes', () => {
     ]);
   });
 
-  it('excludes exercises missing from the current rutina and keeps 0-volume past sessions', () => {
+  // REWRITTEN for multi-rutina-library (tech-plan.md §3): the old contract
+  // kept an unjoinable session as a 0-VOLUME BAR ("excludes exercises
+  // missing from the current rutina"). Under a library that bar lies — it is
+  // really another phase's session (spec C2/AC19), so it is now EXCLUDED
+  // from the series entirely. The fixture makes that explicit: the unjoinable
+  // session belongs to a DIFFERENT rutinaId than the active one. A zero bar
+  // survives only for genuinely weightless sessions (the abandoned-empty
+  // case, unchanged below).
+  it('EXCLUDES an unjoinable cross-rutina session instead of plotting a 0-volume bar (AC19)', () => {
     const sessions = [
       session({
         id: 'gone',
+        rutinaId: 'r-other-phase', // not the active rutina → cannot join → excluded
         startedAt: '2026-07-01T09:00:00.000Z',
         endedAt: '2026-07-01T09:20:00.000Z',
         exercises: [
@@ -270,7 +279,6 @@ describe('buildSessionVolumes', () => {
       }),
     ];
     expect(buildSessionVolumes(sessions, RUTINA)).toEqual([
-      { sessionId: 'gone', date: '2026-07-01', volume: 0 },
       { sessionId: 'abandoned-empty', date: '2026-07-02', volume: 0 },
     ]);
   });
@@ -544,5 +552,68 @@ describe('buildSessionVolumes — exercise-level rutina join (AC11)', () => {
 
     const shoulderOnly = [session({ id: 'b', exercises: [ex(SHOULDER, 10, '2026-07-06T09:20:00.000Z')] })];
     expect(buildSessionVolumes(shoulderOnly, TWO_ON_ONE_MACHINE)[0].volume).toBe(320);
+  });
+});
+
+/**
+ * multi-rutina-library AC19/C2 — volume under multiple rutinas.
+ * Matrix (tech-plan D-D): snapshot-first → scoped legacy join (same rutina)
+ * → honest exclusion (other rutina, no snapshot). Zero bars remain possible
+ * only for genuinely weightless sessions.
+ * RED until Cmok implements the three-tier resolution.
+ */
+describe('buildSessionVolumes — multiple rutinas (multi-rutina-library AC19)', () => {
+  const ACTIVE = {
+    id: 'r-active',
+    days: [{ label: 'Día A', exercises: [{ equipmentId: 'g3-s10', name: 'Prensa', sets: 3, reps: 10 }] }],
+  };
+
+  const baseEx = (over = {}) => ({
+    equipmentId: 'g3-s10',
+    name: 'Prensa',
+    weightUsed: 50,
+    completedAt: '2026-03-01T09:10:00.000Z',
+    ...over,
+  });
+
+  it('counts a SNAPSHOT-carrying session from ANOTHER rutina at its own planned volume', () => {
+    const sessions = [{
+      id: 'f1', status: 'completed', startedAt: '2026-03-01T09:00:00Z', endedAt: '2026-03-01T09:30:00Z',
+      rutinaId: 'r-old',
+      exercises: [baseEx({ sets: 5, reps: 5 })], // 5×5×50 = 1250, NOT active's 3×10×50=1500
+    }];
+    const result = buildSessionVolumes(sessions, ACTIVE);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ sessionId: 'f1', volume: 1250 });
+  });
+
+  it('keeps the legacy join for a NO-snapshot session of the ACTIVE rutina', () => {
+    const sessions = [{
+      id: 'leg', status: 'completed', startedAt: '2026-03-01T09:00:00Z', endedAt: '2026-03-01T09:30:00Z',
+      rutinaId: 'r-active',
+      exercises: [baseEx()], // no snapshot → join against active's 3×10
+    }];
+    const result = buildSessionVolumes(sessions, ACTIVE);
+    expect(result[0].volume).toBe(1500);
+  });
+
+  it('EXCLUDES a no-snapshot session from a DIFFERENT rutina — not a zero bar (AC19)', () => {
+    const sessions = [
+      { id: 'gone', status: 'completed', startedAt: '2026-03-01T08:00:00Z', endedAt: '2026-03-01T08:30:00Z', rutinaId: 'r-old', exercises: [baseEx()] },
+      { id: 'kept', status: 'completed', startedAt: '2026-03-01T09:00:00Z', endedAt: '2026-03-01T09:30:00Z', rutinaId: 'r-active', exercises: [baseEx({ sets: 3, reps: 10 })] },
+    ];
+    const result = buildSessionVolumes(sessions, ACTIVE);
+    expect(result.map((r) => r.sessionId)).toEqual(['kept']);
+  });
+
+  it('zero-volume bar survives ONLY as a genuinely weightless snapshot session', () => {
+    const sessions = [{
+      id: 'zw', status: 'completed', startedAt: '2026-03-01T09:00:00Z', endedAt: '2026-03-01T09:30:00Z',
+      rutinaId: 'r-old',
+      exercises: [baseEx({ sets: 3, reps: 10, weightUsed: null })],
+    }];
+    const result = buildSessionVolumes(sessions, ACTIVE);
+    expect(result).toHaveLength(1);
+    expect(result[0].volume).toBe(0);
   });
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
 import { SectionBanner } from '../../../design-system/components/composite/SectionBanner.jsx';
@@ -8,10 +8,9 @@ import { RuleItem } from '../../../design-system/components/primitives/RuleItem.
 import { NoteItem } from '../../../design-system/components/primitives/NoteItem.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
-import { ConfirmSheet } from '../components/ConfirmSheet.jsx';
 import { getEquipmentById, mainImageUrl, equipmentDisplayName } from '../data/equipment.js';
 import { dayFocusLabels, muscleGroupLabels } from '../lib/muscleGroups.js';
-import { getActiveSession, listSessions, clearActiveRutina } from '../lib/db.js';
+import { hasSeenLibraryNotice, markLibraryNoticeSeen } from '../lib/libraryNoticeStorage.js';
 import { buildVideoQuery } from '../lib/videoQuery.js';
 import { useI18n } from '../i18n/index.js';
 
@@ -24,66 +23,46 @@ function SectionTitle({ children }) {
 /**
  * Data-driven rewrite of the mockup's RoutineScreen.jsx (tech-plan.md's
  * Porting Plan). ONE component, branching on whether :dayIndex is present
- * in the route — ProgramScreen({ rutina, dayIndex }) per tech-plan.md's
- * literal file layout (a single ProgramScreen.jsx, not two files): "/program"
- * is the day-list overview (phase info, warmup/cooldown, derived summary
- * table, rules, notes); "/program/:dayIndex" drills into one day's full
- * exercise render. Mirrors ux-design.md's "Program → Day list → Day detail"
- * flow, replacing the original single-page anchor-nav document.
+ * in the route — ProgramScreen({ rutina }) per tech-plan.md's literal file
+ * layout (a single ProgramScreen.jsx, not two files): "/program" is the
+ * day-list overview (phase info, warmup/cooldown, derived summary table,
+ * rules, notes); "/program/:dayIndex" drills into one day's full exercise
+ * render. Mirrors ux-design.md's "Program → Day list → Day detail" flow,
+ * replacing the original single-page anchor-nav document.
  *
  * pwa-ui-language D10: the settings affordance appears on the OVERVIEW only
  * — the day-detail header already has its own `leading` back control and is
  * one level deep from the tab root, so it does not get a second global
  * affordance (Q3). The overview constructs its own `navigate('/settings')`
  * handler rather than receiving one as a prop.
+ *
+ * multi-rutina-library S3/D-H: the bottom action stack is ONE outline row —
+ * "Mis rutinas" → /library. "Reemplazar programa", "Eliminar programa" and
+ * their four ConfirmSheet variants are DELETED, not commented: management of
+ * other entries lives on /library now, and "replace" is incoherent when
+ * importing adds instead of overwrites (AC22's spirit applied to Programa).
+ * Programa stops being a destructive surface. A one-shot migration notice
+ * (gated by the localStorage flag in libraryNoticeStorage.js) tells existing
+ * users where those actions went — shown only here, where they used to live.
  */
-export function ProgramScreen({ rutina, onGoImport, onRutinaCleared }) {
+export function ProgramScreen({ rutina }) {
   const { dayIndex } = useParams();
   if (dayIndex === undefined) {
-    return <ProgramOverview rutina={rutina} onGoImport={onGoImport} onRutinaCleared={onRutinaCleared} />;
+    return <ProgramOverview rutina={rutina} />;
   }
   return <ProgramDayDetail rutina={rutina} dayIndex={Number(dayIndex)} />;
 }
 
-function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
+function ProgramOverview({ rutina }) {
   const navigate = useNavigate();
-  const { t, locale } = useI18n();
-  const [sheet, setSheet] = useState(null); // null | 'replace-warn' | 'remove-b' | 'remove-c' | 'remove-d'
-  const [removing, setRemoving] = useState(false);
-  const [removeError, setRemoveError] = useState(false);
+  const { t } = useI18n();
+  // One-shot notice: read synchronously at mount; dismissed for good on ack.
+  const [showNotice, setShowNotice] = useState(() => !hasSeenLibraryNotice());
 
-  const handleReplaceClick = async () => {
-    const activeSession = await getActiveSession();
-    if (activeSession) {
-      setSheet('replace-warn');
-    } else {
-      onGoImport();
-    }
-  };
-
-  const handleRemoveClick = async () => {
-    const [activeSession, sessions] = await Promise.all([getActiveSession(), listSessions()]);
-    if (activeSession) {
-      setSheet('remove-d');
-    } else if (sessions.length > 0) {
-      setSheet('remove-c');
-    } else {
-      setSheet('remove-b');
-    }
-  };
-
-  const handleRemoveConfirm = async () => {
-    setSheet(null);
-    setRemoving(true);
-    setRemoveError(false);
-    try {
-      await clearActiveRutina();
-      onRutinaCleared();
-    } catch {
-      setRemoving(false);
-      setRemoveError(true);
-    }
-  };
+  function dismissNotice() {
+    markLibraryNoticeSeen(); // never throws (degrades to show-again-next-boot)
+    setShowNotice(false);
+  }
 
   const { program, phaseInfo, warmup, cooldown, days, rules, notes } = rutina;
 
@@ -120,6 +99,23 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
         onSettings={() => navigate('/settings')}
       />
       <div style={{ ...wrap, paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-10)' }}>
+        {showNotice && (
+          <div
+            role="note"
+            style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', display: 'grid', gap: 6 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, font: '700 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
+              <span style={{ color: 'var(--bf-purple)', flexShrink: 0 }}>
+                <Icon name="info" size={16} />
+              </span>
+              {t('library.noticeTitle')}
+            </div>
+            <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: 0 }}>{t('library.noticeBody')}</p>
+            <Button variant="outline" size="sm" style={{ justifySelf: 'start' }} onClick={dismissNotice}>
+              {t('library.noticeAck')}
+            </Button>
+          </div>
+        )}
         <SectionBanner tone="neutral" title={t('program.phaseObjectivesTitle')} subtitle={<span dir="auto">{phaseInfo.objective}</span>}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 10, marginTop: 16 }}>
             {phaseStats.map(([k, v]) => (
@@ -218,79 +214,17 @@ function ProgramOverview({ rutina, onGoImport, onRutinaCleared }) {
 
         <div style={{ marginTop: 'var(--space-8)' }}>
           <hr aria-hidden="true" style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: '0 0 var(--space-6)' }} />
+          {/* multi-rutina-library S3 — the whole management stack is ONE row.
+              Reemplazar/Eliminar and their four sheets live only in git
+              history; per-entry activate/delete is /library's job. */}
           <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
-            <Button
-              variant="outline"
-              style={{ width: '100%' }}
-              disabled={removing}
-              onClick={handleReplaceClick}
-            >
-              {t('program.replaceAction')}
+            <Button variant="outline" style={{ width: '100%' }} onClick={() => navigate('/library')}>
+              {t('program.libraryAction')}
             </Button>
-            {(!sheet || sheet === 'replace-warn') && (
-              <Button
-                variant="ghost"
-                style={{ width: '100%', color: 'var(--bf-danger)' }}
-                disabled={removing}
-                onClick={handleRemoveClick}
-              >
-                {removing ? t('program.removingLabel') : t('program.removeAction')}
-              </Button>
-            )}
-            {removeError && (
-              <p role="alert" style={{ font: 'var(--text-body-sm)', color: 'var(--bf-danger)', margin: 'var(--space-3) 0 0' }}>
-                {t('program.removeErrorBody')}
-              </p>
-            )}
           </div>
         </div>
       </div>
     </div>
-
-    {sheet === 'replace-warn' && (
-      <ConfirmSheet
-        title={t('program.activeSessionTitle')}
-        description={t('program.replaceWarnBody')}
-        primaryLabel={t('program.goImportAction')}
-        onPrimary={() => onGoImport()}
-        cancelLabel={t('common.cancel')}
-        onCancel={() => setSheet(null)}
-        danger={false}
-      />
-    )}
-    {sheet === 'remove-b' && (
-      <ConfirmSheet
-        title={t('program.removeAction')}
-        description={t('program.removeBBody')}
-        primaryLabel={t('common.delete')}
-        onPrimary={handleRemoveConfirm}
-        cancelLabel={t('common.cancel')}
-        onCancel={() => setSheet(null)}
-        danger={true}
-      />
-    )}
-    {sheet === 'remove-c' && (
-      <ConfirmSheet
-        title={t('program.removeAction')}
-        description={t('program.removeCBody')}
-        primaryLabel={t('program.removeAnyway')}
-        onPrimary={handleRemoveConfirm}
-        cancelLabel={t('common.cancel')}
-        onCancel={() => setSheet(null)}
-        danger={true}
-      />
-    )}
-    {sheet === 'remove-d' && (
-      <ConfirmSheet
-        title={t('program.activeSessionTitle')}
-        description={t('program.removeDBody')}
-        primaryLabel={t('program.removeAnyway')}
-        onPrimary={handleRemoveConfirm}
-        cancelLabel={t('common.cancel')}
-        onCancel={() => setSheet(null)}
-        danger={true}
-      />
-    )}
     </>
   );
 }

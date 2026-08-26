@@ -253,20 +253,7 @@ export default {
   'program.colExercises': 'Übungen',
   'program.rulesTitle': 'Allgemeine Regeln',
   'program.notesTitle': 'Notizen',
-  'program.replaceAction': 'Programm ersetzen',
-  'program.removingLabel': 'Wird gelöscht...',
-  'program.removeAction': 'Programm löschen',
-  'program.removeErrorBody': 'Fehler beim Löschen des Programms. Versuche es erneut.',
-  'program.activeSessionTitle': 'Laufende Session',
-  'program.replaceWarnBody':
-    'Du hast eine laufende Session. Wenn du das Programm jetzt ersetzst, könnte sie veralten. Trotzdem fortfahren?',
-  'program.goImportAction': 'Zum Importieren',
-  'program.removeBBody': 'Das aktive Programm wird gelöscht. Du kannst jederzeit ein neues importieren.',
-  'program.removeCBody':
-    'Das aktive Programm wird gelöscht. Dein Sitzungsverlauf bleibt erhalten, ist aber nicht mehr mit einem Programm verknüpft.',
-  'program.removeAnyway': 'Trotzdem löschen',
-  'program.removeDBody':
-    'Du hast eine laufende Session. Wenn du das Programm jetzt löschst, könnte sie veralten. Trotzdem fortfahren?',
+  'program.libraryAction': 'Meine Routinen',
   'program.dayNotFound': 'Tag nicht gefunden.',
   'program.backToProgram': 'Zurück zum Programm',
   'program.setsReps': 'Sätze × Wiederholungen',
@@ -274,6 +261,34 @@ export default {
   'program.equipmentLabel': 'Equipment:',
   'program.alternativeLabel': 'Alternative:',
   'program.techniqueLabel': 'Technik',
+
+  // ── library (LibraryScreen.jsx / ProgramScreen.jsx — multi-rutina-library) ──
+  'library.title': 'Meine Routinen',
+  'library.activaLabel': 'Aktiv',
+  'library.activateAction': 'Aktivieren',
+  'library.activatingLabel': 'Wird aktiviert…',
+  'library.importCta': 'Routine importieren',
+  'library.deleteAria': '{name}, {phase} löschen',
+  'library.metaDays': '{n} Tage',
+  'library.errorBody': 'Meine Routinen konnten nicht geladen werden.',
+  'library.deleteTitle': 'Routine löschen',
+  'library.deleteInactiveBody':
+    '{entry} wird gelöscht. Deine Sessions dieser Routine bleiben im Verlauf erhalten.',
+  'library.deleteLastBody':
+    'Das ist deine einzige Routine. Nach dem Löschen kehrst du zum Import-Bildschirm zurück. Dein Verlauf bleibt erhalten.',
+  'library.deletePickTitle': 'Aktives Programm löschen',
+  'library.deletePickBody':
+    'Das ist deine aktive Routine. Wähle, welche der übrigen beim Löschen aktiv wird.',
+  'library.deletePickAction': 'Löschen und aktivieren…',
+  'library.pickSuccessorAria': 'Wähle die Routine, die aktiv wird',
+  'library.activateSessionTitle': 'Aktive Session',
+  'library.activateSessionBody':
+    'Du hast eine aktive Session. Sie bleibt mit ihrer ursprünglichen Routine verknüpft. {entry} trotzdem aktivieren?',
+  'library.activateAnywayAction': 'Fortfahren und aktivieren',
+  'library.actionErrorBody': 'Der Vorgang konnte nicht abgeschlossen werden. Versuche es erneut.',
+  'library.noticeTitle': 'Dein Programm wohnt jetzt in Meine Routinen.',
+  'library.noticeBody': 'Du kannst mehrere Routinen speichern und ohne Verlust wechseln.',
+  'library.noticeAck': 'Verstanden',
 
   // ── session (ActiveSessionScreen.jsx) ────────────────────────────────────
   'session.difficultyQuestion': 'Wie war die Übung?',
@@ -329,6 +344,9 @@ export default {
     '{n} Sessions werden aus dem Verlauf gelöscht. Die vorgeschlagenen Gewichte für ihre Übungen werden ebenfalls neu berechnet. Das kann nicht rückgängig gemacht werden.',
   'history.deleteSingleError': 'Die Session konnte nicht gelöscht werden.',
   'history.deleteMultiError': 'Die Sessions konnten nicht gelöscht werden.',
+  'history.filterLabel': 'Nach Programm filtern',
+  'history.filterTodas': 'Alle',
+  'history.desconocido': 'unbekanntes Programm',
 
   // ── import (ImportScreen.jsx) ────────────────────────────────────────────
   'import.title': 'Importiere deine Routine, um loszulegen',
@@ -342,10 +360,12 @@ export default {
   'import.validating': 'Wird validiert...',
   'import.importAction': 'Importieren',
   'import.loadExample': 'Beispiel laden',
-  'import.replaceTitle': 'Aktive Routine ersetzen',
-  'import.replaceBody':
-    'Du hast bereits ein aktives Programm mit gespeicherten Sessions. Beim Import dieses rutina.json wird es als aktives Programm ersetzt — dein Sitzungsverlauf bleibt erhalten, aber eine laufende Session könnte veralten.',
-  'import.replaceAction': 'Ersetzen',
+  'import.successTitle': 'Routine validiert',
+  'import.successSavedToLibrary': 'Sie wird in Meine Routinen gespeichert.',
+  'import.successNoChange': 'Dein aktives Programm ändert sich nicht, solange du es nicht aktivierst.',
+  'import.successActivateNow': 'Jetzt aktivieren',
+  'import.successSaveWithout': 'Speichern ohne Aktivierung',
+  'import.successSaveError': 'Die Routine konnte nicht gespeichert werden. Versuche es erneut.',
 
   // ── export (ExportScreen.jsx / exportFormat.js) ──────────────────────────
   'export.unfinishedSessions': 'Nicht abgeschlossene Sessions:',

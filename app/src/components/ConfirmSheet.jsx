@@ -35,6 +35,16 @@ export function ConfirmSheet({
   destructiveAction,
   busy = false,
   error,
+  children,
+  // multi-rutina-library — renders the primary present-but-disabled (the
+  // successor picker stays untappable until a radio is chosen, AC7). Absent
+  // everywhere else, so existing sheets are unchanged.
+  primaryDisabled = false,
+  // multi-rutina-library: 'alertdialog' (assertive) remains the default and
+  // what every pre-existing caller gets. /library passes 'dialog' — its
+  // successor-picker sheet is a choice surface, not purely an assertion, and
+  // its contract queries role="dialog" explicitly.
+  role = 'alertdialog',
 }) {
   const { t } = useI18n();
   const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
@@ -83,7 +93,7 @@ export function ConfirmSheet({
     >
       <div
         ref={sheetRef}
-        role="alertdialog"
+        role={role}
         aria-modal="true"
         aria-labelledby="confirm-sheet-title"
         style={{
@@ -104,11 +114,15 @@ export function ConfirmSheet({
             <Icon name="alert-triangle" size={16} style={{ flexShrink: 0 }} /> {error}
           </div>
         )}
+        {/* multi-rutina-library — optional content slot between description
+            and buttons (the successor-picker radiogroup). Absent everywhere
+            else, so existing renders are byte-identical. */}
+        {children}
         <div style={{ display: 'grid', gap: 10 }}>
           {onPrimary && (
             <Button
               variant="primary"
-              disabled={busy}
+              disabled={busy || primaryDisabled}
               style={{ width: '100%', ...(danger ? { background: 'var(--bf-danger)', borderColor: 'var(--bf-danger)' } : {}) }}
               onClick={onPrimary}
             >

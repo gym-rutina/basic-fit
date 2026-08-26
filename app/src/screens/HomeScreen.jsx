@@ -59,7 +59,18 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
     listSessions().then((sessions) => {
       if (cancelled) return;
       setRecentSessions(sessions.filter((s) => s.status !== 'active').slice(0, 2));
-      setPastSessions(sessions.map((s) => ({ dayIndex: s.dayIndex, status: s.status })));
+      // multi-rutina-library D-E (AC18, spec C1): dayIndex is positional and
+      // has no meaning outside its own rutina, so rotation history is scoped
+      // STRICTLY to the active rutina's id — a completed day-0 from another
+      // phase must never mark this phase's day 0 as done. Strict === is safe
+      // because the v3→v4 migration backfilled every pre-feature row and
+      // createSession stamps all new ones. nextDay.js stays pure; this call
+      // site owns the filter (drift-notes D1).
+      setPastSessions(
+        sessions
+          .filter((s) => s.rutinaId === rutina.id)
+          .map((s) => ({ dayIndex: s.dayIndex, status: s.status }))
+      );
     });
     return () => {
       cancelled = true;
@@ -99,7 +110,16 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
     }
     setStarting(true);
     const day = rutina.days[dayIndex];
-    const session = createSession(day.label, dayIndex, day.exercises, new Date().toISOString());
+    // multi-rutina-library D-C (AC12): every new session carries the active
+    // rutina's id plus a display snapshot — immutable afterwards, so
+    // Historial keeps attributing the session even if this entry is later
+    // activated-away or deleted (AC13/AC14).
+    const session = createSession(day.label, dayIndex, day.exercises, new Date().toISOString(), {
+      rutinaId: rutina.id,
+      rutinaName: rutina.program.name,
+      phaseName: rutina.program.phaseName,
+      phaseNumber: rutina.program.phaseNumber,
+    });
     await saveSession(session);
     setStarting(false);
     // Shell owns activeSession (AC10-AC13) — without this, Inicio/other tabs

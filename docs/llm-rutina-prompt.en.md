@@ -203,14 +203,18 @@ uses, so two things matter when you write the next phase's REQUEST:
   exercise name and the equipment name — set `videoQuery` only when you want to override
   it (a specific variant, a preferred demo, etc.).
 
+You can plan several phases ahead, too: ask the LLM for a **multi-phase plan** and import
+each phase separately, as its own `rutina.json` — they'll be kept side by side in
+**Mis rutinas** (Programa tab), ready to activate in order.
+
 ---
 
 ## Updating your program
 
-Once a program is loaded, you can replace or remove it from the **Programa** tab:
+Your programs are managed in **Mis rutinas**, inside the **Programa** tab:
 
-1. Open the **Programa** tab and scroll to the bottom of the overview.
-2. Tap **Reemplazar programa** (Replace program) to go to the import screen and paste a new rutina.json.
-3. Or tap **Eliminar programa** (Remove program) to clear the active program and return to first-run state.
+1. Open the **Programa** tab and tap **Mis rutinas**.
+2. Tap **Importar rutina** and paste a rutina.json to add it as a **new entry** — importing never overwrites what you already have.
+3. Tap **Activar** (Activate) on an entry to make it your current program, or its **Eliminar** (Delete) action to remove just that one.
 
-Session history is preserved on remove — records are kept but are no longer linked to a program.
+Deleting an entry never touches your history: past sessions remain in **Historial**, still attributed to their program even after that program has been deleted. Logged weights carry across programs, too — a repeated exercise keeps its weight trend whichever entry is active.

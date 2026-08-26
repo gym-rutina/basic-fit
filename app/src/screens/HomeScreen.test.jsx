@@ -27,7 +27,12 @@ vi.mock('../lib/db.js');
 
 // Labels deliberately do NOT match Spanish weekday names, so resolveTodayDay()
 // falls through to its completedIndexes branch — which is what AC25 exercises.
+// `id` added by multi-rutina-library (§3 surgery): the AC18 rotation filter is
+// strict rutinaId === rutina.id, so the active fixture carries an id and every
+// session fixture that should drive rotation carries the matching rutinaId
+// (unattributed fixtures are inert by design under the filter).
 const RUTINA = {
+  id: 'r-home',
   schemaVersion: 1,
   program: { name: 'Fuerza', phaseName: 'Fase 1', phaseNumber: 1, durationWeeks: 4 },
   days: [
@@ -180,6 +185,7 @@ describe('HomeScreen — day proposal after deletion (AC25)', () => {
         status: 'completed',
         startedAt: '2026-08-01T09:00:00.000Z',
         endedAt: '2026-08-01T10:00:00.000Z',
+        rutinaId: 'r-home', // §3 surgery — matches RUTINA.id so the AC18 filter lets it drive rotation
         exercises: [],
       },
     ]);
@@ -247,8 +253,8 @@ const TWO_RECENT = [
 describe('HomeScreen — next-day rotation (home-next-workout-and-picker §A)', () => {
   it('proposes Día 3 right after Día 2 completes, mid-program (AC1)', async () => {
     db.listSessions.mockResolvedValue([
-      { id: 'x', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
-      { id: 'y', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'x', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
+      { id: 'y', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
     ]);
     renderHome();
 
@@ -257,9 +263,9 @@ describe('HomeScreen — next-day rotation (home-next-workout-and-picker §A)', 
 
   it('wraps to Día 1 after completing the last day — on the Nth pass too (AC5)', async () => {
     db.listSessions.mockResolvedValue([
-      { id: 'c', dayLabel: 'Día 3', dayIndex: 2, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
-      { id: 'b', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
-      { id: 'a', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'c', dayLabel: 'Día 3', dayIndex: 2, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
+      { id: 'b', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
+      { id: 'a', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
     ]);
     renderHome();
 
@@ -277,11 +283,11 @@ describe('HomeScreen — next-day rotation (home-next-workout-and-picker §A)', 
     // The abandoned session's label is deliberately unique ("Full Z") so the
     // assertion cannot collide with the last-session card below the proposal.
     db.listSessions.mockResolvedValue([
-      { id: 'z', dayLabel: 'Full Z', dayIndex: 1, status: 'abandoned', startedAt: '', endedAt: '', exercises: [] },
-      { id: 'y', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
-      { id: 'x', dayLabel: 'Día 3', dayIndex: 2, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
-      { id: 'w', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
-      { id: 'v', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'z', dayLabel: 'Full Z', dayIndex: 1, status: 'abandoned', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
+      { id: 'y', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
+      { id: 'x', dayLabel: 'Día 3', dayIndex: 2, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
+      { id: 'w', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
+      { id: 'v', dayLabel: 'Día 1', dayIndex: 0, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
     ]);
     renderHome();
 
@@ -370,7 +376,7 @@ describe('HomeScreen — day picker (home-next-workout-and-picker §B)', () => {
 
   it('marks exactly the auto-proposed row as Próximo inside the list (AC12)', async () => {
     db.listSessions.mockResolvedValue([
-      { id: 'x', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', exercises: [] },
+      { id: 'x', dayLabel: 'Día 2', dayIndex: 1, status: 'completed', startedAt: '', endedAt: '', rutinaId: 'r-home', exercises: [] },
     ]);
     const user = userEvent.setup();
     renderHome();
@@ -594,5 +600,51 @@ describe('HomeScreen — club access button, pinned placement (club-invite-amend
     expect(container.querySelector('[data-club-access-pinned]')).toBeNull();
     // No pinned layer ⇒ no compensation: root keeps today's exact clearance.
     expect(container.firstChild.style.paddingBottom).toBe('90px');
+  });
+});
+
+/**
+ * multi-rutina-library AC18/C1 — rotation considers ONLY the active rutina's
+ * sessions. HomeScreen receives rutina (now carrying .id) and filters
+ * pastSessions by strict rutinaId equality before resolving the proposal;
+ * nextDay.js stays pure and untouched. RED until Cmok adds the call-site
+ * filter.
+ */
+describe('HomeScreen — cross-rutina rotation guard (multi-rutina-library AC18)', () => {
+  const RUTINA_A = {
+    id: 'r-a',
+    schemaVersion: 1,
+    program: { name: 'Fase 2', phaseName: 'Fase 2', phaseNumber: 2, durationWeeks: 6 },
+    days: [
+      { label: 'Día A1', intro: '', exercises: [{ equipmentId: 'g3-s10', name: 'Prensa' }] },
+      { label: 'Día A2', intro: '', exercises: [{ equipmentId: 'g3-s20', name: 'Remo' }] },
+    ],
+  };
+
+  it('a completed day-0 of ANOTHER rutina never marks this rutina\'s day 0 as done', async () => {
+    db.listSessions.mockResolvedValue([
+      { id: 'x', dayLabel: 'Día B1', dayIndex: 0, status: 'completed', startedAt: '2026-02-01T09:00:00Z', endedAt: '', rutinaId: 'r-b', exercises: [] },
+    ]);
+    renderHome({ rutina: RUTINA_A });
+
+    // Settle on the POST-read state first (the recent-list row proves the
+    // history landed) — asserting earlier catches the pre-load flash of
+    // Día A1 and passes vacuously even over the bug.
+    await screen.findByText('Día B1');
+
+    // Strict filter ⇒ Fase-2's day 0 is still uncompleted ⇒ STILL proposed.
+    expect(screen.queryByText('Día A1')).toBeInTheDocument();
+    expect(screen.queryByText('Día A2')).not.toBeInTheDocument();
+  });
+
+  it('same-rutina completed sessions DO advance the rotation (filter is not over-broad)', async () => {
+    db.listSessions.mockResolvedValue([
+      { id: 'y', dayLabel: 'Día A1', dayIndex: 0, status: 'completed', startedAt: '2026-03-01T09:00:00Z', endedAt: '', rutinaId: 'r-a', exercises: [] },
+    ]);
+    renderHome({ rutina: RUTINA_A });
+
+    // Settle post-read, then require the ADVANCED proposal.
+    await screen.findAllByText('Día A1'); // recent row + (pre-rotation) proposal
+    expect(await screen.findByText('Día A2')).toBeInTheDocument();
   });
 });

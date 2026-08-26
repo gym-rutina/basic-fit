@@ -449,3 +449,97 @@ describe('HistoryScreen — per-exercise trends (AC9)', () => {
     expect(screen.queryByText(/G3-/i)).not.toBeInTheDocument();
   });
 });
+
+/**
+ * multi-rutina-library S4 — attribution line + per-rutina filter.
+ * Threshold rule (ux §0): attribution appears only when history spans ≥2
+ * distinct rutinaIds; single-rutina UI stays byte-identical. Names resolve
+ * library-first, then the session's denormalised snapshot, else "programa
+ * desconocido". Filter is view state (AC17); stats stay global (AC20).
+ * RED until Cmok lands both.
+ */
+const MULTI = [
+  {
+    id: 'm1', dayLabel: 'Día A', dayIndex: 0, status: 'completed',
+    startedAt: '2026-03-01T09:00:00.000Z', endedAt: '2026-03-01T10:00:00.000Z',
+    rutinaId: 'r-1', rutinaName: 'Hipertrofia', phaseName: 'Fuerza', phaseNumber: 1,
+    exercises: [],
+  },
+  {
+    id: 'm2', dayLabel: 'Día A', dayIndex: 0, status: 'completed',
+    startedAt: '2026-04-01T09:00:00.000Z', endedAt: '2026-04-01T10:00:00.000Z',
+    rutinaId: 'r-2', rutinaName: 'Hipertrofia', phaseName: 'Fuerza', phaseNumber: 2,
+    exercises: [],
+  },
+];
+
+describe('HistoryScreen — attribution line (multi-rutina-library AC16/AC14)', () => {
+  beforeEach(() => {
+    db.listSessions.mockResolvedValue(MULTI);
+  });
+
+  it('shows each row\'s originating rutina when history spans ≥2 rutinas', async () => {
+    render(<MemoryRouter><HistoryScreen /></MemoryRouter>);
+
+    expect(await screen.findAllByText(/Hipertrofia · Fuerza · Fase 1/i)).not.toHaveLength(0);
+    expect(screen.getAllByText(/Fase 2/i).length).toBeGreaterThan(0);
+  });
+
+  it('uses the denormalised snapshot for a DELETED-origin rutina and "programa desconocido" for orphans', async () => {
+    const withOrphan = [...MULTI, { ...MULTI[0], id: 'orphan', startedAt: '2026-05-01T09:00:00Z', endedAt: '2026-05-01T10:00:00Z', rutinaId: undefined }];
+    db.listSessions.mockResolvedValue(withOrphan);
+    render(<MemoryRouter><HistoryScreen /></MemoryRouter>);
+
+    // Snapshot text still renders for known ids even with an empty library…
+    expect(await screen.findAllByText(/Hipertrofia/i).then((r) => r.length)).toBeGreaterThan(0);
+    // …and the orphan degrades to the neutral attribution instead of disappearing.
+    expect(await screen.findByText(/programa desconocido/i)).toBeInTheDocument();
+  });
+
+  it('stays byte-silent about attribution for single-rutina history (AC25 floor)', async () => {
+    db.listSessions.mockResolvedValue([MULTI[0]]);
+    render(<MemoryRouter><HistoryScreen /></MemoryRouter>);
+
+    await screen.findByText('Día A');
+    expect(screen.queryByText(/programa desconocido/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/filtrar por programa/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('HistoryScreen — per-rutina filter (multi-rutina-library AC17/AC20)', () => {
+  beforeEach(() => {
+    db.listSessions.mockResolvedValue(MULTI);
+  });
+
+  it('renders Todas + one pill per distinct rutinaId, filters ONLY the session list', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<MemoryRouter><HistoryScreen /></MemoryRouter>);
+
+    const group = await screen.findByRole('radiogroup', { name: /filtrar por programa/i });
+    expect(within(group).getAllByRole('radio')).toHaveLength(3); // Todas + r-1 + r-2
+
+    // Both sessions share dayLabel 'Día A' (AC16's legibility case): filtering
+    // to Fase 2 must drop exactly one of the two rows.
+    const occurrences = () => (container.textContent.match(/Día A/g) || []).length;
+    expect(occurrences()).toBe(2);
+
+    await user.click(within(group).getByRole('radio', { name: /fase 2/i }));
+    expect(occurrences()).toBe(1);
+  });
+
+  it('resets to Todas on remount — view state, never persisted (AC17)', async () => {
+    const user = userEvent.setup();
+    const first = render(<MemoryRouter><HistoryScreen /></MemoryRouter>);
+    await user.click((await screen.findByRole('radiogroup', { name: /filtrar por programa/i }))
+      .querySelector('[role="radio"]:not([aria-checked="true"])'));
+    first.unmount();
+
+    render(<MemoryRouter><HistoryScreen /></MemoryRouter>);
+    // Settle the fresh mount first — the session read is async, so querying
+    // roles synchronously would race the loading-null render.
+    await screen.findByRole('radiogroup', { name: /filtrar por programa/i });
+    const checked = screen.getAllByRole('radio').filter((r) => r.getAttribute('aria-checked') === 'true');
+    expect(checked).toHaveLength(1);
+    expect(checked[0]).toHaveTextContent(/todas/i);
+  });
+});

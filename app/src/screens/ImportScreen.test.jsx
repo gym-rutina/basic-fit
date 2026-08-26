@@ -1,14 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ImportScreen } from './ImportScreen.jsx';
+import * as db from '../lib/db.js';
 import { I18nProvider } from '../i18n/index.js';
 
 vi.mock('../lib/db.js', () => ({
+  // multi-rutina-library §3 surgery — the mock factory gained the library API
+  // (listRutinas/saveRutinaEntry/activateRutina); the legacy single-slot fns
+  // stay only because earlier describes' module graph still names them.
   saveActiveRutina: vi.fn(),
   getActiveRutina: vi.fn().mockResolvedValue(null),
   getActiveSession: vi.fn().mockResolvedValue(null),
   listSessions: vi.fn().mockResolvedValue([]),
+  listRutinas: vi.fn().mockResolvedValue([]),
+  saveRutinaEntry: vi.fn(),
+  activateRutina: vi.fn(),
 }));
 
 vi.mock('../lib/onboardingStorage.js', () => ({
@@ -117,5 +124,115 @@ describe('ImportScreen — load-example button still works (R7.5, AC39)', () => 
     const textarea = screen.getByLabelText(/rutina\.json/i);
     expect(textarea.value.length).toBeGreaterThan(0);
     expect(() => JSON.parse(textarea.value)).not.toThrow();
+  });
+});
+
+/**
+ * multi-rutina-library D-G / §3 surgery — the replace-warning describes this
+ * file never had are SUPERSEDED by success-panel describes: importing now
+ * ADDS to the library, so the only post-validation behaviour left to pin is
+ * the documented activation rule (AC23): empty library → silent save+activate
+ * (byte-identical first-run, AC25); non-empty → panel with "Activar ahora" /
+ * "Guardar sin activar". Validation suites above stay untouched (AC24).
+ */
+describe('ImportScreen — library dual path (multi-rutina-library AC22/AC23/AC25)', () => {
+  const onImported = vi.fn();
+
+  function renderImport() {
+    return render(<ImportScreen onImported={onImported} />);
+  }
+
+  async function importExample(user) {
+    await user.click(screen.getByRole('button', { name: /ejemplo/i }));
+    await user.click(screen.getByRole('button', { name: /^importar$/i }));
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    db.listRutinas.mockResolvedValue([]);
+    db.saveRutinaEntry.mockResolvedValue({ id: 'entry-1', importedAt: '2026-08-26T00:00:00.000Z' });
+    db.activateRutina.mockResolvedValue(undefined);
+  });
+
+  it('EMPTY library: saves, activates silently, navigates home — no sheet ever (AC23, AC25)', async () => {
+    db.listRutinas.mockResolvedValue([]);
+    const user = userEvent.setup();
+    renderImport();
+
+    await importExample(user);
+
+    await waitFor(() => expect(db.saveRutinaEntry).toHaveBeenCalledTimes(1));
+    expect(db.activateRutina).toHaveBeenCalledWith('entry-1');
+    expect(onImported).toHaveBeenCalledWith('/');
+    // AC22 — the replace-warning ConfirmSheet is gone from the flow entirely.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('NON-EMPTY library: shows the success panel and writes nothing yet (AC23)', async () => {
+    db.listRutinas.mockResolvedValue([{ id: 'existing' }]);
+    const user = userEvent.setup();
+    renderImport();
+
+    await importExample(user);
+
+    const panel = await screen.findByTestId('import-success-panel');
+    expect(panel.textContent).toMatch(/mis rutinas/i);
+    expect(panel.textContent).toMatch(/activo no cambia/i);
+    expect(db.saveRutinaEntry).not.toHaveBeenCalled();
+    expect(db.activateRutina).not.toHaveBeenCalled();
+    expect(onImported).not.toHaveBeenCalled();
+  });
+
+  it('"Activar ahora": save + activate + navigate home (AC23)', async () => {
+    db.listRutinas.mockResolvedValue([{ id: 'existing' }]);
+    const user = userEvent.setup();
+    renderImport();
+
+    await importExample(user);
+    await user.click(await screen.findByRole('button', { name: /activar ahora/i }));
+
+    await waitFor(() => expect(db.activateRutina).toHaveBeenCalledWith('entry-1'));
+    expect(onImported).toHaveBeenCalledWith('/');
+  });
+
+  it('"Guardar sin activar": save WITHOUT activation, navigate to /library (AC23)', async () => {
+    db.listRutinas.mockResolvedValue([{ id: 'existing' }]);
+    const user = userEvent.setup();
+    renderImport();
+
+    await importExample(user);
+    await user.click(await screen.findByRole('button', { name: /guardar sin activar/i }));
+
+    await waitFor(() => expect(db.saveRutinaEntry).toHaveBeenCalledTimes(1));
+    expect(db.activateRutina).not.toHaveBeenCalled();
+    expect(onImported).toHaveBeenCalledWith('/library');
+  });
+
+  it('save error: alert appears under the panel and both buttons recover (§3 save-error state)', async () => {
+    db.listRutinas.mockResolvedValue([{ id: 'existing' }]);
+    db.saveRutinaEntry.mockRejectedValue(new Error('IDB write failed'));
+    const user = userEvent.setup();
+    renderImport();
+
+    await importExample(user);
+    await user.click(await screen.findByRole('button', { name: /guardar sin activar/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/no se pudo guardar/i);
+    expect(screen.getByRole('button', { name: /activar ahora/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /guardar sin activar/i })).toBeEnabled();
+  });
+
+  it('INVALID payload: validation block unchanged and NO entry is created (AC24)', async () => {
+    const user = userEvent.setup();
+    renderImport();
+
+    // fireEvent, not user.type — user-event parses "{...}" as key modifiers.
+    fireEvent.change(screen.getByLabelText(/rutina\.json/i), { target: { value: '{ "schemaVersion": 1 }' } });
+    await user.click(screen.getByRole('button', { name: /^importar$/i }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument(); // the existing errors block
+    expect(db.listRutinas).not.toHaveBeenCalled();
+    expect(db.saveRutinaEntry).not.toHaveBeenCalled();
   });
 });

@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProgramScreen } from './ProgramScreen.jsx';
-import * as db from '../lib/db.js';
+import * as libraryNotice from '../lib/libraryNoticeStorage.js';
 
-vi.mock('../lib/db.js');
+vi.mock('../lib/libraryNoticeStorage.js', () => ({
+  hasSeenLibraryNotice: vi.fn(),
+  markLibraryNoticeSeen: vi.fn(),
+}));
 
 // Minimal rutina fixture satisfying ProgramScreen's destructuring.
 // Empty days/rules/notes to avoid exercise-card rendering complexity.
@@ -20,204 +23,85 @@ const RUTINA = {
   notes: [],
 };
 
-function renderOverview({ onGoImport = vi.fn(), onRutinaCleared = vi.fn() } = {}) {
-  return {
-    onGoImport,
-    onRutinaCleared,
-    ...render(
-      <MemoryRouter initialEntries={['/program']}>
-        <Routes>
-          <Route
-            path="/program"
-            element={
-              <ProgramScreen
-                rutina={RUTINA}
-                onGoImport={onGoImport}
-                onRutinaCleared={onRutinaCleared}
-              />
-            }
-          />
-          <Route
-            path="/program/:dayIndex"
-            element={
-              <ProgramScreen
-                rutina={RUTINA}
-                onGoImport={onGoImport}
-                onRutinaCleared={onRutinaCleared}
-              />
-            }
-          />
-        </Routes>
-      </MemoryRouter>
-    ),
-  };
+/**
+ * multi-rutina-library §3 surgery — the four-sheet/action-stack describes are
+ * REWRITTEN as Mis-rutinas navigation + notice-once suites: "Reemplazar
+ * programa", "Eliminar programa" and their ConfirmSheets are DELETED from the
+ * overview (management lives on /library now), so those contracts moved with
+ * them (LibraryScreen.test.jsx owns the delete/activate variants).
+ */
+function renderOverview() {
+  return render(
+    <MemoryRouter initialEntries={['/program']}>
+      <Routes>
+        <Route path="/program" element={<ProgramScreen rutina={RUTINA} />} />
+        <Route path="/program/:dayIndex" element={<ProgramScreen rutina={RUTINA} />} />
+        <Route path="/library" element={<div>LIBRARY SCREEN</div>} />
+      </Routes>
+    </MemoryRouter>
+  );
 }
 
-describe('ProgramScreen — program management actions (AC-1 through AC-6)', () => {
+describe('ProgramScreen — Mis rutinas entry (multi-rutina-library)', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    db.getActiveSession.mockResolvedValue(null);
-    db.listSessions.mockResolvedValue([]);
-    db.clearActiveRutina.mockResolvedValue(undefined);
+    vi.clearAllMocks();
+    libraryNotice.hasSeenLibraryNotice.mockReturnValue(true); // notice off unless a test asks
   });
 
-  // AC-1 -----------------------------------------------------------------------
-
-  it('renders "Reemplazar programa" and "Eliminar programa" buttons', () => {
-    renderOverview();
-    expect(screen.getByRole('button', { name: /reemplazar programa/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /eliminar programa/i })).toBeInTheDocument();
-  });
-
-  // AC-2: Replace flow ---------------------------------------------------------
-
-  it('calls onGoImport immediately when replacing with no active session', async () => {
-    const user = userEvent.setup();
-    const onGoImport = vi.fn();
-    db.getActiveSession.mockResolvedValue(null);
-    renderOverview({ onGoImport });
-
-    await user.click(screen.getByRole('button', { name: /reemplazar programa/i }));
-
-    await waitFor(() => expect(onGoImport).toHaveBeenCalledOnce());
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-  });
-
-  it('shows replace-warn ConfirmSheet when active session exists', async () => {
-    const user = userEvent.setup();
-    db.getActiveSession.mockResolvedValue({ id: 's1', status: 'active' });
+  it('renders ONE "Mis rutinas" outline action; Reemplazar/Eliminar are gone', () => {
     renderOverview();
 
-    await user.click(screen.getByRole('button', { name: /reemplazar programa/i }));
-
-    await screen.findByRole('alertdialog');
-    expect(screen.getByText('Sesión en curso')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /ir a importar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /mis rutinas/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /reemplazar programa/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /eliminar programa/i })).not.toBeInTheDocument();
   });
 
-  it('calls onGoImport on confirming replace-warn sheet', async () => {
+  it('navigates to /library on tap', async () => {
     const user = userEvent.setup();
-    const onGoImport = vi.fn();
-    db.getActiveSession.mockResolvedValue({ id: 's1', status: 'active' });
-    renderOverview({ onGoImport });
-
-    await user.click(screen.getByRole('button', { name: /reemplazar programa/i }));
-    await screen.findByRole('alertdialog');
-    await user.click(screen.getByRole('button', { name: /ir a importar/i }));
-
-    expect(onGoImport).toHaveBeenCalledOnce();
-  });
-
-  it('dismisses replace-warn sheet on cancel', async () => {
-    const user = userEvent.setup();
-    db.getActiveSession.mockResolvedValue({ id: 's1', status: 'active' });
     renderOverview();
 
-    await user.click(screen.getByRole('button', { name: /reemplazar programa/i }));
-    await screen.findByRole('alertdialog');
-    await user.click(screen.getByRole('button', { name: /cancelar/i }));
+    await user.click(screen.getByRole('button', { name: /mis rutinas/i }));
+
+    expect(await screen.findByText('LIBRARY SCREEN')).toBeInTheDocument();
+  });
+
+  it('opens no confirm sheet on tap — the overview is no longer destructive (AC22 spirit)', async () => {
+    const user = userEvent.setup();
+    renderOverview();
+
+    await user.click(screen.getByRole('button', { name: /mis rutinas/i }));
+    await screen.findByText('LIBRARY SCREEN');
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});
+
+describe('ProgramScreen — one-shot migration notice (multi-rutina-library D-H)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  // AC-3: Remove flow — variant selection -------------------------------------
-
-  it('shows variant-B ConfirmSheet (simple copy) when no history and no active session', async () => {
-    const user = userEvent.setup();
-    db.getActiveSession.mockResolvedValue(null);
-    db.listSessions.mockResolvedValue([]);
-    renderOverview();
-
-    await user.click(screen.getByRole('button', { name: /eliminar programa/i }));
-
-    const dialog = await screen.findByRole('alertdialog');
-    expect(within(dialog).getByText('Eliminar programa')).toBeInTheDocument();
-    expect(screen.getByText(/Podrás importar uno nuevo/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^eliminar$/i })).toBeInTheDocument();
-  });
-
-  it('shows variant-C ConfirmSheet (history-aware copy) when history exists but no active session', async () => {
-    const user = userEvent.setup();
-    db.getActiveSession.mockResolvedValue(null);
-    db.listSessions.mockResolvedValue([{ id: 's1', status: 'completed' }]);
-    renderOverview();
-
-    await user.click(screen.getByRole('button', { name: /eliminar programa/i }));
-
-    await screen.findByRole('alertdialog');
-    expect(screen.getByText(/historial de sesiones se conserva/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /eliminar de todas formas/i })).toBeInTheDocument();
-  });
-
-  it('shows variant-D ConfirmSheet (session-in-progress) when active session exists', async () => {
-    const user = userEvent.setup();
-    db.getActiveSession.mockResolvedValue({ id: 's1', status: 'active' });
-    renderOverview();
-
-    await user.click(screen.getByRole('button', { name: /eliminar programa/i }));
-
-    await screen.findByRole('alertdialog');
-    expect(screen.getByText('Sesión en curso')).toBeInTheDocument();
-    expect(screen.getByText(/Si eliminas el programa ahora/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /eliminar de todas formas/i })).toBeInTheDocument();
-  });
-
-  // AC-3: Remove confirm / cancel ---------------------------------------------
-
-  it('calls clearActiveRutina and onRutinaCleared when remove is confirmed', async () => {
-    const user = userEvent.setup();
-    const onRutinaCleared = vi.fn();
-    db.getActiveSession.mockResolvedValue(null);
-    db.listSessions.mockResolvedValue([]);
-    renderOverview({ onRutinaCleared });
-
-    await user.click(screen.getByRole('button', { name: /eliminar programa/i }));
-    await screen.findByRole('alertdialog');
-    await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
-
-    await waitFor(() => expect(db.clearActiveRutina).toHaveBeenCalledOnce());
-    expect(onRutinaCleared).toHaveBeenCalledOnce();
-  });
-
-  it('does not call clearActiveRutina when remove is cancelled', async () => {
+  it('shows the notice once when the flag is unset; Entendido hides it and marks seen', async () => {
+    libraryNotice.hasSeenLibraryNotice.mockReturnValue(false);
     const user = userEvent.setup();
     renderOverview();
 
-    await user.click(screen.getByRole('button', { name: /eliminar programa/i }));
-    await screen.findByRole('alertdialog');
-    await user.click(screen.getByRole('button', { name: /cancelar/i }));
+    expect(await screen.findByText(/tu programa ahora vive en mis rutinas\./i)).toBeInTheDocument();
+    expect(screen.getByText(/puedes guardar varias rutinas/i)).toBeInTheDocument();
 
-    expect(db.clearActiveRutina).not.toHaveBeenCalled();
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /entendido/i }));
+
+    expect(libraryNotice.markLibraryNoticeSeen).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/tu programa ahora vive en mis rutinas\./i)).not.toBeInTheDocument();
   });
 
-  // AC-5: IDB error state -----------------------------------------------------
-
-  it('shows inline error and stays on ProgramOverview when clearActiveRutina throws', async () => {
-    const user = userEvent.setup();
-    db.clearActiveRutina.mockRejectedValue(new Error('IDB write failed'));
+  it('stays hidden once the flag is set', () => {
+    libraryNotice.hasSeenLibraryNotice.mockReturnValue(true);
     renderOverview();
 
-    await user.click(screen.getByRole('button', { name: /eliminar programa/i }));
-    await screen.findByRole('alertdialog');
-    await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
-
-    const errorEl = await screen.findByRole('alert');
-    expect(errorEl).toHaveTextContent(/Error al eliminar/i);
-  });
-
-  it('does not call onRutinaCleared when clearActiveRutina fails', async () => {
-    const user = userEvent.setup();
-    const onRutinaCleared = vi.fn();
-    db.clearActiveRutina.mockRejectedValue(new Error('IDB write failed'));
-    renderOverview({ onRutinaCleared });
-
-    await user.click(screen.getByRole('button', { name: /eliminar programa/i }));
-    await screen.findByRole('alertdialog');
-    await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
-
-    await screen.findByRole('alert');
-    expect(onRutinaCleared).not.toHaveBeenCalled();
+    expect(screen.queryByText(/tu programa ahora vive en mis rutinas\./i)).not.toBeInTheDocument();
+    expect(libraryNotice.markLibraryNoticeSeen).not.toHaveBeenCalled();
   });
 });
 
@@ -271,9 +155,8 @@ function renderDay() {
 
 describe('ProgramScreen — day detail tutorial link (AC17, AC18′)', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    db.getActiveSession.mockResolvedValue(null);
-    db.listSessions.mockResolvedValue([]);
+    vi.clearAllMocks();
+    libraryNotice.hasSeenLibraryNotice.mockReturnValue(true);
   });
 
   it('links to a query composed from the exercise and its equipment (AC17)', async () => {

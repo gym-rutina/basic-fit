@@ -82,6 +82,11 @@ const ALLOWLIST = [
     text: 'Prior progress export (optional — paste Markdown from Rutina app Export, or leave blank)',
     why: 'REQUEST-field scaffolding label, hardcoded English by design (DD-001 — never looked up via t()); "Rutina" here is the app\'s own proper noun (Export screen name), not Spanish prose.',
   },
+  {
+    file: 'lib/libraryNoticeStorage.js',
+    text: 'rutina:libraryNoticeSeen',
+    why: 'localStorage key (multi-rutina-library D-H), not user-visible copy — same rutina: namespace convention as rutina:uiLang / rutina:onboardingSeen / rutina:clubInviteUrl.',
+  },
 ];
 
 function stripComments(source) {
@@ -155,7 +160,7 @@ describe('no stray Spanish literals outside the catalogs (AC9)', () => {
       expect(entry.text, 'allowlist entry needs the literal').toBeTruthy();
       expect(entry.why, `allowlist entry for ${entry.file} needs a reason`).toBeTruthy();
     }
-    expect(ALLOWLIST.length, 'allowlist should stay small — every entry is a hole in AC9').toBeLessThanOrEqual(9);
+    expect(ALLOWLIST.length, 'allowlist should stay small — every entry is a hole in AC9').toBeLessThanOrEqual(10);
   });
 
   it('actually detects a stray literal when one exists (the tripwire has a trigger)', () => {

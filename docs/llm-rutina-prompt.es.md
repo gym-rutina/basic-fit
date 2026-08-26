@@ -210,14 +210,18 @@ equipamiento que usa, así que al escribir el REQUEST de la siguiente fase:
   nombre del ejercicio y del equipamiento; define `videoQuery` solo cuando quieras
   sobrescribirla (una variante específica, una demostración preferida, etc.).
 
+Tampoco tienes que limitarte a una fase cada vez: pide al LLM un **plan de varias fases**
+e importa cada fase por separado, como su propio `rutina.json` — se quedarán guardadas
+juntas en **Mis rutinas** (pestaña Programa), listas para activarlas en orden.
+
 ---
 
 ## Actualizar tu programa
 
-Una vez que hay un programa cargado, puedes reemplazarlo o eliminarlo desde la pestaña **Programa**:
+Tus programas se gestionan en **Mis rutinas**, dentro de la pestaña **Programa**:
 
-1. Ve a la pestaña **Programa** y desplázate hasta el final de la vista general.
-2. Pulsa **Reemplazar programa** para ir a la pantalla de importación y pegar un nuevo rutina.json.
-3. O pulsa **Eliminar programa** para borrar el programa activo y volver al estado inicial.
+1. Abre la pestaña **Programa** y pulsa **Mis rutinas**.
+2. Pulsa **Importar rutina** y pega un rutina.json para añadirlo como **entrada nueva** — la importación nunca sobrescribe las que ya tienes.
+3. Pulsa **Activar** en una entrada para convertirla en tu programa actual, o su acción **Eliminar** para quitar solo esa.
 
-El historial de sesiones se conserva al eliminar — los registros se mantienen pero ya no estarán vinculados a un programa.
+Al eliminar una entrada nunca se borra tu historial: las sesiones pasadas siguen en **Historial**, atribuidas a su programa incluso después de eliminarlo. Los pesos registrados también viajan entre programas — un ejercicio repetido conserva su tendencia de peso con cualquier entrada activa.

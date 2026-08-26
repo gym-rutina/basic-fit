@@ -252,20 +252,7 @@ export default {
   'program.colExercises': 'Exercices',
   'program.rulesTitle': 'Règles générales',
   'program.notesTitle': 'Notes',
-  'program.replaceAction': 'Remplacer le programme',
-  'program.removingLabel': 'Suppression...',
-  'program.removeAction': 'Supprimer le programme',
-  'program.removeErrorBody': 'Erreur lors de la suppression du programme. Réessaie.',
-  'program.activeSessionTitle': 'Séance en cours',
-  'program.replaceWarnBody':
-    'Tu as une séance en cours. Si tu remplaces le programme maintenant, la séance risque de devenir obsolète. Continuer quand même ?',
-  'program.goImportAction': 'Aller à l’import',
-  'program.removeBBody': 'Le programme actif sera supprimé. Tu pourras en importer un nouveau à tout moment.',
-  'program.removeCBody':
-    'Le programme actif sera supprimé. Ton historique de séances est conservé, mais ne sera plus lié à un programme.',
-  'program.removeAnyway': 'Supprimer quand même',
-  'program.removeDBody':
-    'Tu as une séance en cours. Si tu supprimes le programme maintenant, la séance risque de devenir obsolète. Continuer quand même ?',
+  'program.libraryAction': 'Mes programmes',
   'program.dayNotFound': 'Jour introuvable.',
   'program.backToProgram': 'Retour au programme',
   'program.setsReps': 'Séries × Répétitions',
@@ -273,6 +260,34 @@ export default {
   'program.equipmentLabel': 'Matériel :',
   'program.alternativeLabel': 'Alternative :',
   'program.techniqueLabel': 'Technique',
+
+  // ── library (LibraryScreen.jsx / ProgramScreen.jsx — multi-rutina-library) ──
+  'library.title': 'Mes programmes',
+  'library.activaLabel': 'Active',
+  'library.activateAction': 'Activer',
+  'library.activatingLabel': 'Activation…',
+  'library.importCta': 'Importer un programme',
+  'library.deleteAria': 'Supprimer {name}, {phase}',
+  'library.metaDays': '{n} jours',
+  'library.errorBody': 'Impossible de charger Mes programmes.',
+  'library.deleteTitle': 'Supprimer le programme',
+  'library.deleteInactiveBody':
+    '{entry} sera supprimé. Tes séances de cette routine restent dans l’Historique.',
+  'library.deleteLastBody':
+    'C’est ta seule routine. En la supprimant, tu reviendras à l’écran d’importation. Ton historique est conservé.',
+  'library.deletePickTitle': 'Supprimer le programme actif',
+  'library.deletePickBody':
+    'Ceci est ta routine active. Choisis laquelle des autres deviendra active lors de la suppression.',
+  'library.deletePickAction': 'Supprimer et activer…',
+  'library.pickSuccessorAria': 'Choisis la routine qui deviendra active',
+  'library.activateSessionTitle': 'Séance active',
+  'library.activateSessionBody':
+    'Tu as une séance active. Elle restera liée à sa routine d’origine. Activer {entry} quand même ?',
+  'library.activateAnywayAction': 'Continuer et activer',
+  'library.actionErrorBody': 'Impossible d’effectuer l’opération. Réessaie.',
+  'library.noticeTitle': 'Ton programme vit maintenant dans Mes programmes.',
+  'library.noticeBody': 'Tu peux garder plusieurs routines et passer de l’une à l’autre sans rien perdre.',
+  'library.noticeAck': 'Compris',
 
   // ── session (ActiveSessionScreen.jsx) ────────────────────────────────────
   'session.difficultyQuestion': 'Comment s’est passé l’exercice ?',
@@ -328,6 +343,9 @@ export default {
     '{n} séances seront supprimées de l’historique. Les poids suggérés de leurs exercices seront aussi recalculés. Action irréversible.',
   'history.deleteSingleError': 'Impossible de supprimer la séance.',
   'history.deleteMultiError': 'Impossible de supprimer les séances.',
+  'history.filterLabel': 'Filtrer par programme',
+  'history.filterTodas': 'Toutes',
+  'history.desconocido': 'programme inconnu',
 
   // ── import (ImportScreen.jsx) ────────────────────────────────────────────
   'import.title': 'Importe ta routine pour commencer',
@@ -341,10 +359,12 @@ export default {
   'import.validating': 'Validation...',
   'import.importAction': 'Importer',
   'import.loadExample': 'Charger un exemple',
-  'import.replaceTitle': 'Remplacer la routine active',
-  'import.replaceBody':
-    'Tu as déjà un programme actif avec des séances enregistrées. Importer ce rutina.json le remplacera comme programme actif — ton historique de séances est conservé, mais une séance en cours pourrait devenir obsolète.',
-  'import.replaceAction': 'Remplacer',
+  'import.successTitle': 'Routine validée',
+  'import.successSavedToLibrary': 'Elle sera enregistrée dans Mes programmes.',
+  'import.successNoChange': 'Ton programme actif ne change pas tant que tu ne l’actives pas.',
+  'import.successActivateNow': 'Activer maintenant',
+  'import.successSaveWithout': 'Enregistrer sans activer',
+  'import.successSaveError': 'Impossible d’enregistrer la routine. Réessaie.',
 
   // ── export (ExportScreen.jsx / exportFormat.js) ──────────────────────────
   'export.unfinishedSessions': 'Séances non terminées :',

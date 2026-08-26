@@ -141,3 +141,43 @@ describe('sessionReducer', () => {
     expect(resumed).toEqual(session);
   });
 });
+
+/**
+ * multi-rutina-library D-C — createSession stamps immutable attribution
+ * (rutinaId + display snapshot) AND a planned sets/reps snapshot per exercise
+ * (the C2 root-cause fix: progress no longer needs the active rutina to know
+ * a historical session's planned volume). RED until the 5th param lands.
+ */
+describe('createSession — attribution + planned-volume snapshot (multi-rutina-library)', () => {
+  const DAY = [{
+    equipmentId: 'g3-s10',
+    name: 'Prensa',
+    sets: 4,
+    reps: 8,
+  }];
+
+  it('stamps rutinaId and the display snapshot from the attribution param', () => {
+    const s = createSession('Día A', 0, DAY, '2026-03-01T09:00:00.000Z', {
+      rutinaId: 'r-1',
+      rutinaName: 'Hipertrofia',
+      phaseName: 'Fuerza',
+      phaseNumber: 2,
+    });
+
+    expect(s.rutinaId).toBe('r-1');
+    expect(s.rutinaName).toBe('Hipertrofia');
+    expect(s.phaseName).toBe('Fuerza');
+    expect(s.phaseNumber).toBe(2);
+  });
+
+  it('snapshots planned sets/reps onto each logged exercise', () => {
+    const s = createSession('Día A', 0, DAY, '2026-03-01T09:00:00.000Z', { rutinaId: 'r-1' });
+    expect(s.exercises[0]).toMatchObject({ sets: 4, reps: 8 });
+  });
+
+  it('works without the attribution param (legacy call shape keeps compiling)', () => {
+    const s = createSession('Día A', 0, DAY, '2026-03-01T09:00:00.000Z');
+    expect(s.rutinaId).toBeUndefined();
+    expect(s.exercises[0].sets).toBe(4);
+  });
+});

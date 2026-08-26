@@ -32,12 +32,27 @@ function generateId() {
 
 /**
  * Starts a new active session for a day. `exercises` is that day's
- * exercises (rutina.days[dayIndex].exercises); only `equipmentId` and
- * `name` are carried into the per-session tracking record — everything
- * else (sets/reps/rest/technique) stays in the rutina and is joined back
- * in at render time, never duplicated into session state.
+ * exercises (rutina.days[dayIndex].exercises).
+ *
+ * multi-rutina-library D-C — two things are now SNAPSHOTTED at creation:
+ *
+ * 1. `attribution` (optional 5th param): { rutinaId, rutinaName, phaseName,
+ *    phaseNumber } stamped top-level on the session. AC12: the rutinaId never
+ *    changes afterwards — activating or deleting library entries never
+ *    touches it; Historial resolves deleted origins from the denormalised
+ *    display fields (OQ-6). Legacy call sites without the param still work —
+ *    the fields simply stay undefined (the v3→v4 migration backfilled all
+ *    pre-feature rows, so undefined can only mean "created by a caller that
+ *    chose not to attribute").
+ * 2. Per-exercise planned volume: `sets`/`reps` are copied onto each tracking
+ *    record UNCONDITIONALLY (even when attribution is absent). This is the C2
+ *    root-cause fix: buildSessionVolumes previously had to join against the
+ *    ACTIVE rutina to know a historical session's sets×reps, which zeroed out
+ *    every cross-rutina bar. rest/technique stay join-at-render — only the
+ *    numbers progress charts need travel with the record.
  */
-export function createSession(dayLabel, dayIndex, exercises, now) {
+export function createSession(dayLabel, dayIndex, exercises, now, attribution) {
+  const a = attribution || {};
   return {
     id: generateId(),
     dayLabel,
@@ -45,9 +60,15 @@ export function createSession(dayLabel, dayIndex, exercises, now) {
     status: 'active',
     startedAt: now,
     endedAt: null,
+    rutinaId: a.rutinaId,
+    rutinaName: a.rutinaName,
+    phaseName: a.phaseName,
+    phaseNumber: a.phaseNumber,
     exercises: exercises.map((ex) => ({
       equipmentId: ex.equipmentId,
       name: ex.name,
+      sets: ex.sets,
+      reps: ex.reps,
       weightUsed: null,
       difficulty: null,
       completedAt: null,

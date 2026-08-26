@@ -249,20 +249,7 @@ export default {
   'program.colExercises': 'Практыкаванні',
   'program.rulesTitle': 'Агульныя правілы',
   'program.notesTitle': 'Заўвагі',
-  'program.replaceAction': 'Замяніць праграму',
-  'program.removingLabel': 'Выдаленне...',
-  'program.removeAction': 'Выдаліць праграму',
-  'program.removeErrorBody': 'Памылка пры выдаленні праграмы. Паспрабуйце зноў.',
-  'program.activeSessionTitle': 'Сесія ў працэсе',
-  'program.replaceWarnBody':
-    'У вас ёсць сесія ў працэсе. Калі вы зараз заменіце праграму, сесія можа стаць састарэлай. Усё роўна працягнуць?',
-  'program.goImportAction': 'Перайсці да імпарту',
-  'program.removeBBody': 'Актыўная праграма будзе выдалена. Вы зможаце імпартаваць новую ў любы момант.',
-  'program.removeCBody':
-    'Актыўная праграма будзе выдалена. Ваша гісторыя сесій захоўваецца, але больш не будзе звязана з праграмай.',
-  'program.removeAnyway': 'Усё роўна выдаліць',
-  'program.removeDBody':
-    'У вас ёсць сесія ў працэсе. Калі вы зараз выдаліце праграму, сесія можа стаць састарэлай. Усё роўна працягнуць?',
+  'program.libraryAction': 'Мае праграмы',
   'program.dayNotFound': 'Дзень не знойдзены.',
   'program.backToProgram': 'Вярнуцца да праграмы',
   'program.setsReps': 'Падыходы × Паўторы',
@@ -270,6 +257,34 @@ export default {
   'program.equipmentLabel': 'Абсталяванне:',
   'program.alternativeLabel': 'Альтэрнатыва:',
   'program.techniqueLabel': 'Тэхніка',
+
+  // ── library (LibraryScreen.jsx / ProgramScreen.jsx — multi-rutina-library) ──
+  'library.title': 'Мае праграмы',
+  'library.activaLabel': 'Актыўная',
+  'library.activateAction': 'Актывізаваць',
+  'library.activatingLabel': 'Актывізацыя…',
+  'library.importCta': 'Імпартаваць праграму',
+  'library.deleteAria': 'Выдаліць {name}, {phase}',
+  'library.metaDays': '{n} дзён',
+  'library.errorBody': 'Не ўдалося загрузіць «Мае праграмы».',
+  'library.deleteTitle': 'Выдаліць праграму',
+  'library.deleteInactiveBody':
+    'Будзе выдалена: {entry}. Сесіі гэтай праграмы застаюцца ў Гісторыі.',
+  'library.deleteLastBody':
+    'Гэта ваша адзіная праграма. Пасля выдалення вы вернецеся да экрана імпарту. Гісторыя застаецца.',
+  'library.deletePickTitle': 'Выдаліць актыўную праграму',
+  'library.deletePickBody':
+    'Гэта ваша актыўная праграма. Выберыце, якая з астатніх стане актыўнай пасля выдалення.',
+  'library.deletePickAction': 'Выдаліць і актывізаваць…',
+  'library.pickSuccessorAria': 'Выберыце праграму, яка стане актыўнай',
+  'library.activateSessionTitle': 'Актыўная сесія',
+  'library.activateSessionBody':
+    'У вас ёсць актыўная сесія. Яна застанецца звязанай са сваёй праграмай. Усё роўна актывізаваць {entry}?',
+  'library.activateAnywayAction': 'Працягнуць і актывізаваць',
+  'library.actionErrorBody': 'Не ўдалося выканаць аперацыю. Паспрабуйце зноў.',
+  'library.noticeTitle': 'Ваша праграма цяпер жыве у «Маіх праграмах».',
+  'library.noticeBody': 'Можна захоўваць некалькі праграм і пераключацца паміж імі без страт.',
+  'library.noticeAck': 'Зразумела',
 
   // ── session (ActiveSessionScreen.jsx) ────────────────────────────────────
   'session.difficultyQuestion': 'Як прайшло практыкаванне?',
@@ -325,6 +340,9 @@ export default {
     '{n} сесій будзе выдалена з гісторыі. Прапанаваная вага для іх практыкаванняў таксама будзе пералічана. Гэта немагчыма адрабіць.',
   'history.deleteSingleError': 'Не ўдалося выдаліць сесію.',
   'history.deleteMultiError': 'Не ўдалося выдаліць сесіі.',
+  'history.filterLabel': 'Фільтр па праграмах',
+  'history.filterTodas': 'Усе',
+  'history.desconocido': 'невядомая праграма',
 
   // ── import (ImportScreen.jsx) ────────────────────────────────────────────
   'import.title': 'Імпартуйце сваю руціну, каб пачаць',
@@ -338,10 +356,12 @@ export default {
   'import.validating': 'Праверка...',
   'import.importAction': 'Імпартаваць',
   'import.loadExample': 'Загрузіць прыклад',
-  'import.replaceTitle': 'Замяніць актыўную руціну',
-  'import.replaceBody':
-    'У вас ужо ёсць актыўная праграма з захаванымі сесіямі. Імпарт гэтага rutina.json заменіць яе як актыўную праграму — ваша гісторыя сесій захоўваецца, але сесія ў працэсе можа стаць састарэлай.',
-  'import.replaceAction': 'Замяніць',
+  'import.successTitle': 'Праграму праверана',
+  'import.successSavedToLibrary': 'Яна будзе захаваная ў «Мае праграмы».',
+  'import.successNoChange': 'Ваша актыўная праграма не змяняецца, пакуль вы яе не актывізуеце.',
+  'import.successActivateNow': 'Актывізаваць зараз',
+  'import.successSaveWithout': 'Захаваць без актывацыі',
+  'import.successSaveError': 'Не ўдалося захаваць праграму. Паспрабуйце зноў.',
 
   // ── export (ExportScreen.jsx / exportFormat.js) ──────────────────────────
   'export.unfinishedSessions': 'Незавершаныя сесіі:',

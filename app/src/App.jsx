@@ -13,6 +13,7 @@ import { ExportScreen } from './screens/ExportScreen.jsx';
 import { CatalogScreen } from './screens/CatalogScreen.jsx';
 import { SettingsScreen } from './screens/SettingsScreen.jsx';
 import { OnboardingOverlay } from './components/OnboardingOverlay.jsx';
+import { LibraryScreen } from './components/LibraryScreen.jsx';
 import { getActiveRutina } from './lib/db.js';
 import { hasSeenOnboarding } from './lib/onboardingStorage.js';
 import { useActiveSession } from './hooks/useActiveSession.js';
@@ -36,23 +37,28 @@ function Shell() {
 
   const loadRutina = () => {
     return getActiveRutina()
-      .then((r) => setRutina(r ? r.rutina : null))
+      // multi-rutina-library D-B: getActiveRutina() returns the JOINED entry
+      // ({key, rutinaId, id, rutina, importedAt}). The shell's single-rutina
+      // shape survives (spec D3) — screens now receive rutina WITH its stable
+      // library id attached, which is what Home's rotation filter and
+      // Progress' volume tiers key on.
+      .then((r) => setRutina(r ? { ...r.rutina, id: r.id } : null))
       .catch(() => { setLoadError(true); setRutina(null); });
   };
 
   useEffect(() => { loadRutina(); }, []);
 
   // One-shot redirect flag: ImportScreen has no navigation of its own (it
-  // just calls onImported() to refresh `rutina`), so without this a
-  // successful import silently saves and leaves the user staring at the
-  // same import form. Set on commit, cleared once we've actually left
-  // /import — so a later intentional revisit (onGoImport, to replace the
-  // active rutina) still lands on the real ImportScreen instead of bouncing
-  // straight back to "/".
-  const [justImported, setJustImported] = useState(false);
+  // just calls onImported(target) to refresh `rutina` and name the landing
+  // route), so without this a successful import silently saves and leaves
+  // the user staring at the same import form. Holds the TARGET ('/' after a
+  // silent/panel activation, '/library' after "Guardar sin activar" — UX §3),
+  // cleared once we've actually left /import — so a later intentional revisit
+  // still lands on the real ImportScreen instead of bouncing straight back.
+  const [justImportedTarget, setJustImportedTarget] = useState(null);
   useEffect(() => {
-    if (justImported && location.pathname !== '/import') setJustImported(false);
-  }, [location.pathname, justImported]);
+    if (justImportedTarget && location.pathname !== '/import') setJustImportedTarget(null);
+  }, [location.pathname, justImportedTarget]);
 
   const hideNav = location.pathname === '/import';
 
@@ -73,9 +79,17 @@ function Shell() {
             <Route
               path="/import"
               element={
-                justImported
-                  ? <Navigate to="/" replace />
-                  : <ImportScreen onImported={() => { loadRutina().then(() => setJustImported(true)); }} />
+                justImportedTarget
+                  ? <Navigate to={justImportedTarget} replace />
+                  : <ImportScreen onImported={(target) => { loadRutina().then(() => setJustImportedTarget(target || '/')); }} />
+              }
+            />
+            <Route
+              path="/library"
+              element={
+                rutina
+                  ? <LibraryScreen activeId={rutina.id} onActivated={() => { loadRutina(); }} />
+                  : <Navigate to="/import" replace />
               }
             />
             <Route
@@ -97,11 +111,11 @@ function Shell() {
             />
             <Route
               path="/program"
-              element={rutina ? <ProgramScreen rutina={rutina} onGoImport={() => { window.location.hash = '/import'; }} onRutinaCleared={() => { loadRutina(); }} /> : <Navigate to="/import" replace />}
+              element={rutina ? <ProgramScreen rutina={rutina} /> : <Navigate to="/import" replace />}
             />
             <Route
               path="/program/:dayIndex"
-              element={rutina ? <ProgramScreen rutina={rutina} onGoImport={() => { window.location.hash = '/import'; }} onRutinaCleared={() => { loadRutina(); }} /> : <Navigate to="/import" replace />}
+              element={rutina ? <ProgramScreen rutina={rutina} /> : <Navigate to="/import" replace />}
             />
             <Route path="/session" element={<ActiveSessionScreen onSessionEnded={activeSession.refresh} />} />
             <Route path="/history" element={<HistoryScreen />} />

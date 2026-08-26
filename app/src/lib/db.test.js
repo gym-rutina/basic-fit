@@ -477,11 +477,20 @@ describe('db — v1 to v2 migration (AC6)', () => {
   it('upgrades without error and keeps sessions and activeRutina intact', async () => {
     await seedV1();
 
-    // Any db.js call opens at DB_VERSION 2 and runs the upgrade.
+    // Any db.js call opens at DB_VERSION 4 and runs the upgrade. The
+    // multi-rutina-library v3→v4 migration (D-A) deliberately ADDS attribution
+    // to legacy session rows (OQ-6 backfill: rutinaId + display snapshot from
+    // the migrated current record) — that is a documented spec change, so the
+    // once-byte-identical expectation now includes the backfilled fields. The
+    // rutina payload itself stays untouched, as do lastWeights semantics.
     const sessions = await listSessions();
 
     expect(sessions).toHaveLength(1);
-    expect(sessions[0]).toEqual(V1_SESSION);
+    expect(sessions[0]).toEqual({
+      ...V1_SESSION,
+      rutinaId: expect.any(String),
+      rutinaName: 'Test', // RUTINA's program.name, snapshotted by the backfill
+    });
     expect((await getActiveRutina()).rutina).toEqual(RUTINA);
   });
 
@@ -503,11 +512,11 @@ describe('db — v1 to v2 migration (AC6)', () => {
 
     const db = await openCurrent();
     try {
-      // DB_VERSION is 3 as of gym-directory-and-catalog D4 — this migration
-      // test predates that bump. `openDB(name, DB_VERSION, {upgrade})` always
+      // DB_VERSION is 4 as of multi-rutina-library D-A — this migration test
+      // predates both later bumps. `openDB(name, DB_VERSION, {upgrade})` always
       // runs `upgrade` from the db's actual oldVersion (1, here) straight to
-      // the current DB_VERSION in one pass, so a v1 device lands on 3, not 2.
-      expect(db.version).toBe(3);
+      // the current DB_VERSION in one pass, so a v1 device lands on 4, not 2.
+      expect(db.version).toBe(4);
       expect(db.transaction('lastWeights').store.keyPath).toBe('exerciseKey');
     } finally {
       db.close();
@@ -595,13 +604,15 @@ describe('db — v2 to v3 migration (D4)', () => {
     db.close();
   }
 
-  it('opens at version 3', async () => {
+  it('opens at the current DB_VERSION (4 as of multi-rutina-library D-A)', async () => {
     await seedV2();
     await listSessions(); // any db.js call runs the upgrade
 
     const db = await openCurrent();
     try {
-      expect(db.version).toBe(3);
+      // The v2→v3 bump landed this describe at 3; multi-rutina-library moved
+      // the pin to 4. Same one-pass upgrade semantics as documented above.
+      expect(db.version).toBe(4);
     } finally {
       db.close();
     }
@@ -613,8 +624,10 @@ describe('db — v2 to v3 migration (D4)', () => {
 
     const db = await openCurrent();
     try {
+      // 'rutinas' joins at DB_VERSION 4 (multi-rutina-library D-A) — additive,
+      // like every store in this list.
       expect([...db.objectStoreNames].sort()).toEqual(
-        ['activeRutina', 'clubEquipment', 'lastWeights', 'sessions'].sort()
+        ['activeRutina', 'clubEquipment', 'lastWeights', 'rutinas', 'sessions'].sort()
       );
       expect(db.transaction('clubEquipment').store.keyPath).toBe('clubId');
     } finally {
@@ -622,15 +635,21 @@ describe('db — v2 to v3 migration (D4)', () => {
     }
   });
 
-  it('leaves v2 session data byte-for-byte intact', async () => {
+  it('leaves v2 session data intact except the documented v4 attribution backfill', async () => {
     await seedV2();
 
     const sessions = await listSessions();
 
     // toEqual, not toMatchObject — the v1→v2 bump dropped a store, so
-    // "additive" is a claim that has to be proven, not asserted.
+    // "additive" is a claim that has to be proven, not asserted. The one
+    // sanctioned delta is multi-rutina-library's OQ-6 backfill (D-A): legacy
+    // rows gain rutinaId + display snapshot from the migrated current record.
     expect(sessions).toHaveLength(1);
-    expect(sessions[0]).toEqual(V2_SESSION);
+    expect(sessions[0]).toEqual({
+      ...V2_SESSION,
+      rutinaId: expect.any(String),
+      rutinaName: 'Test',
+    });
   });
 
   it('leaves v2 lastWeights and activeRutina untouched', async () => {

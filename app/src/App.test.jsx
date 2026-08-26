@@ -14,6 +14,11 @@ vi.mock('./lib/db.js', () => ({
   saveActiveRutina: vi.fn(),
   getActiveSession: vi.fn().mockResolvedValue(null),
   listSessions: vi.fn().mockResolvedValue([]),
+  // multi-rutina-library — ImportScreen now imports the library API directly,
+  // so the factory must name these too or module init throws on access.
+  listRutinas: vi.fn().mockResolvedValue([]),
+  saveRutinaEntry: vi.fn(),
+  activateRutina: vi.fn(),
 }));
 
 vi.mock('./lib/onboardingStorage.js', () => ({

@@ -253,20 +253,7 @@ export default {
   'program.colExercises': 'Oefeningen',
   'program.rulesTitle': 'Algemene regels',
   'program.notesTitle': 'Notities',
-  'program.replaceAction': 'Programma vervangen',
-  'program.removingLabel': 'Verwijderen...',
-  'program.removeAction': 'Programma verwijderen',
-  'program.removeErrorBody': 'Fout bij het verwijderen van het programma. Probeer het opnieuw.',
-  'program.activeSessionTitle': 'Lopende sessie',
-  'program.replaceWarnBody':
-    'Je hebt een lopende sessie. Als je het programma nu vervangt, kan die sessie verouderd raken. Toch doorgaan?',
-  'program.goImportAction': 'Naar importeren',
-  'program.removeBBody': 'Het actieve programma wordt verwijderd. Je kunt op elk moment een nieuw programma importeren.',
-  'program.removeCBody':
-    'Het actieve programma wordt verwijderd. Je sessiegeschiedenis blijft bewaard, maar wordt niet langer aan een programma gekoppeld.',
-  'program.removeAnyway': 'Toch verwijderen',
-  'program.removeDBody':
-    'Je hebt een lopende sessie. Als je het programma nu verwijdert, kan die sessie verouderd raken. Toch doorgaan?',
+  'program.libraryAction': 'Mijn routines',
   'program.dayNotFound': 'Dag niet gevonden.',
   'program.backToProgram': 'Terug naar het programma',
   'program.setsReps': 'Sets × Herhalingen',
@@ -274,6 +261,34 @@ export default {
   'program.equipmentLabel': 'Materiaal:',
   'program.alternativeLabel': 'Alternatief:',
   'program.techniqueLabel': 'Techniek',
+
+  // ── library (LibraryScreen.jsx / ProgramScreen.jsx — multi-rutina-library) ──
+  'library.title': 'Mijn routines',
+  'library.activaLabel': 'Actief',
+  'library.activateAction': 'Activeren',
+  'library.activatingLabel': 'Activeren…',
+  'library.importCta': 'Routine importeren',
+  'library.deleteAria': '{name}, {phase} verwijderen',
+  'library.metaDays': '{n} dagen',
+  'library.errorBody': 'Mijn routines kon niet worden geladen.',
+  'library.deleteTitle': 'Routine verwijderen',
+  'library.deleteInactiveBody':
+    '{entry} wordt verwijderd. Je sessies van deze routine blijven in Geschiedenis staan.',
+  'library.deleteLastBody':
+    'Dit is je enige routine. Na het verwijderen ga je terug naar het importscherm. Je geschiedenis blijft bewaard.',
+  'library.deletePickTitle': 'Actief programma verwijderen',
+  'library.deletePickBody':
+    'Dit is je actieve routine. Kies welke van de andere actief wordt na het verwijderen.',
+  'library.deletePickAction': 'Verwijderen en activeren…',
+  'library.pickSuccessorAria': 'Kies de routine die actief wordt',
+  'library.activateSessionTitle': 'Actieve sessie',
+  'library.activateSessionBody':
+    'Je hebt een actieve sessie. Die blijft gekoppeld aan de oorspronkelijke routine. {entry} toch activeren?',
+  'library.activateAnywayAction': 'Doorgaan en activeren',
+  'library.actionErrorBody': 'De bewerking is niet gelukt. Probeer het opnieuw.',
+  'library.noticeTitle': 'Je programma woont nu in Mijn routines.',
+  'library.noticeBody': 'Je kunt meerdere routines bewaren en zonder verlies wisselen.',
+  'library.noticeAck': 'Begrepen',
 
   // ── session (ActiveSessionScreen.jsx) ────────────────────────────────────
   'session.difficultyQuestion': 'Hoe ging de oefening?',
@@ -329,6 +344,9 @@ export default {
     '{n} sessies worden uit de geschiedenis verwijderd. De voorgestelde gewichten voor de oefeningen worden ook opnieuw berekend. Dit kan niet ongedaan worden gemaakt.',
   'history.deleteSingleError': 'De sessie kon niet worden verwijderd.',
   'history.deleteMultiError': 'De sessies konden niet worden verwijderd.',
+  'history.filterLabel': 'Filteren op programma',
+  'history.filterTodas': 'Alles',
+  'history.desconocido': 'onbekend programma',
 
   // ── import (ImportScreen.jsx) ────────────────────────────────────────────
   'import.title': 'Importeer je routine om te beginnen',
@@ -342,10 +360,12 @@ export default {
   'import.validating': 'Valideren...',
   'import.importAction': 'Importeren',
   'import.loadExample': 'Voorbeeld laden',
-  'import.replaceTitle': 'Actieve routine vervangen',
-  'import.replaceBody':
-    'Je hebt al een actief programma met opgeslagen sessies. Als je dit rutina.json importeert, vervangt het het huidige programma — je sessiegeschiedenis blijft bewaard, maar een lopende sessie kan verouderd raken.',
-  'import.replaceAction': 'Vervangen',
+  'import.successTitle': 'Routine gevalideerd',
+  'import.successSavedToLibrary': 'Hij wordt bewaard in Mijn routines.',
+  'import.successNoChange': 'Je actieve programma verandert niet, tenzij je het activeert.',
+  'import.successActivateNow': 'Nu activeren',
+  'import.successSaveWithout': 'Bewaren zonder te activeren',
+  'import.successSaveError': 'De routine kon niet worden bewaard. Probeer het opnieuw.',
 
   // ── export (ExportScreen.jsx / exportFormat.js) ──────────────────────────
   'export.unfinishedSessions': 'Onvoltooide sessies:',

@@ -247,20 +247,7 @@ export default {
   'program.colExercises': 'Exercises',
   'program.rulesTitle': 'General rules',
   'program.notesTitle': 'Notes',
-  'program.replaceAction': 'Replace program',
-  'program.removingLabel': 'Removing...',
-  'program.removeAction': 'Remove program',
-  'program.removeErrorBody': 'Error removing the program. Try again.',
-  'program.activeSessionTitle': 'Session in progress',
-  'program.replaceWarnBody':
-    'You have a session in progress. Replacing the program now could leave it out of date. Continue anyway?',
-  'program.goImportAction': 'Go to import',
-  'program.removeBBody': 'The active program will be removed. You can import a new one at any time.',
-  'program.removeCBody':
-    'The active program will be removed. Your session history is kept, but will no longer be linked to a program.',
-  'program.removeAnyway': 'Remove anyway',
-  'program.removeDBody':
-    'You have a session in progress. Removing the program now could leave it out of date. Continue anyway?',
+  'program.libraryAction': 'My routines',
   'program.dayNotFound': 'Day not found.',
   'program.backToProgram': 'Back to program',
   'program.setsReps': 'Sets × Reps',
@@ -268,6 +255,34 @@ export default {
   'program.equipmentLabel': 'Equipment:',
   'program.alternativeLabel': 'Alternative:',
   'program.techniqueLabel': 'Technique',
+
+  // ── library (LibraryScreen.jsx / ProgramScreen.jsx — multi-rutina-library) ──
+  'library.title': 'My routines',
+  'library.activaLabel': 'Active',
+  'library.activateAction': 'Activate',
+  'library.activatingLabel': 'Activating…',
+  'library.importCta': 'Import routine',
+  'library.deleteAria': 'Delete {name}, {phase}',
+  'library.metaDays': '{n} days',
+  'library.errorBody': 'My routines could not be loaded.',
+  'library.deleteTitle': 'Delete routine',
+  'library.deleteInactiveBody':
+    '{entry} will be deleted. Your sessions from this routine are kept in History.',
+  'library.deleteLastBody':
+    "It's your only routine. Deleting it takes you back to the import screen. Your history is kept.",
+  'library.deletePickTitle': 'Delete active program',
+  'library.deletePickBody':
+    'This is your active routine. Choose which of the remaining ones becomes active when it is deleted.',
+  'library.deletePickAction': 'Delete and activate…',
+  'library.pickSuccessorAria': 'Choose the routine that will become active',
+  'library.activateSessionTitle': 'Active session',
+  'library.activateSessionBody':
+    'You have an active session. It stays linked to its original routine. Activate {entry} anyway?',
+  'library.activateAnywayAction': 'Continue and activate',
+  'library.actionErrorBody': 'The operation could not be completed. Try again.',
+  'library.noticeTitle': 'Your program now lives in My routines.',
+  'library.noticeBody': 'You can store several routines and switch between them without losing anything.',
+  'library.noticeAck': 'Got it',
 
   // ── session (ActiveSessionScreen.jsx) ────────────────────────────────────
   'session.difficultyQuestion': 'How was the exercise?',
@@ -323,6 +338,9 @@ export default {
     '{n} sessions will be deleted from your history. Suggested weights for their exercises will also be recalculated. This cannot be undone.',
   'history.deleteSingleError': "The session couldn't be deleted.",
   'history.deleteMultiError': "The sessions couldn't be deleted.",
+  'history.filterLabel': 'Filter by program',
+  'history.filterTodas': 'All',
+  'history.desconocido': 'unknown program',
 
   // ── import (ImportScreen.jsx) ────────────────────────────────────────────
   'import.title': 'Import your routine to get started',
@@ -336,10 +354,12 @@ export default {
   'import.validating': 'Validating...',
   'import.importAction': 'Import',
   'import.loadExample': 'Load example',
-  'import.replaceTitle': 'Replace active routine',
-  'import.replaceBody':
-    'You already have an active program with saved sessions. Importing this rutina.json will replace it as the active program — your session history is kept, but a session in progress could become out of date.',
-  'import.replaceAction': 'Replace',
+  'import.successTitle': 'Routine validated',
+  'import.successSavedToLibrary': 'It will be saved to My routines.',
+  'import.successNoChange': 'Your active program does not change unless you activate it.',
+  'import.successActivateNow': 'Activate now',
+  'import.successSaveWithout': 'Save without activating',
+  'import.successSaveError': 'The routine could not be saved. Try again.',
 
   // ── export (ExportScreen.jsx / exportFormat.js) ──────────────────────────
   'export.unfinishedSessions': 'Unfinished sessions:',

@@ -2,14 +2,32 @@ import { openDB } from 'idb';
 import { exerciseKey } from './exerciseKey.js';
 
 /**
- * IndexedDB wrapper (db name `basicfit-rutina`, version 3). Storage schema
+ * IndexedDB wrapper (db name `basicfit-rutina`, version 4). Storage schema
  * per tech-plan.md:
- *   activeRutina  — fixed key "current": { key, rutina, importedAt }
- *   sessions      — keyPath id, indexes by-status / by-startedAt
+ *   rutinas       — keyPath id: { id, rutina, importedAt, seq } — the LIBRARY
+ *                    (multi-rutina-library, DB_VERSION 4, tech-plan.md D-A).
+ *                    One validated rutina payload per entry; `seq` is a
+ *                    monotonic insertion counter so listRutinas() can honour
+ *                    insertion order despite random UUID keys (IndexedDB's
+ *                    getAll returns primary-key order).
+ *   activeRutina  — fixed key "current", REPURPOSED at v4 as the ACTIVE
+ *                    POINTER: { key, rutinaId }. Exactly one pointer row means
+ *                    activation is a single atomic write (AC2) and a field-on-
+ *                    -entry scheme's clear-old/set-new window cannot exist.
+ *                    The pre-v4 shape { key, rutina, importedAt } is migrated
+ *                    into `rutinas` by the v3→v4 upgrade below.
+ *   sessions      — keyPath id, indexes by-status / by-startedAt. Sessions
+ *                    created post-v4 carry attribution (rutinaId + display
+ *                    snapshot); rows that predate it were backfilled during
+ *                    the v3→v4 migration when a migratable current record
+ *                    existed (AC14/OQ-6).
  *   lastWeights   — keyPath exerciseKey: { exerciseKey, weight, loggedAt,
  *                    equipmentId, name } (exercise-level-tracking, DB_VERSION 2 —
  *                    equipmentId/name are plain, non-key fields, retained for
- *                    debuggability and a future re-key, DD-001)
+ *                    debuggability and a future re-key, DD-001).
+ *                    UNTOUCHED BY THE LIBRARY ON PURPOSE (spec D2): weight
+ *                    prefill is a property of the EXERCISE, not of the program
+ *                    that scheduled it — never re-key this store per rutina.
  *   clubEquipment — keyPath clubId: { clubId, excludedEquipmentIds[], updatedAt }
  *                    (gym-directory-and-catalog, DB_VERSION 3 — tech-plan.md D4).
  *                    The equipment overlay's per-club exclusion list (R7.4).
@@ -38,26 +56,94 @@ import { exerciseKey } from './exerciseKey.js';
  */
 
 const DB_NAME = 'basicfit-rutina';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
+
+/** Mirrors sessionMachine.js's id helper — a local, non-security-sensitive record id. */
+function generateId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+/**
+ * multi-rutina-library D-A — the v3→v4 data migration, run INSIDE the
+ * version-change transaction (`tx`) so IndexedDB's own atomicity covers all
+ * of it: either the whole shape change commits or none of it does. Steps:
+ *
+ * 1. Read `activeRutina.current`. Migrate it ONLY if it carries `.rutina` —
+ *    the OLD value shape ({key, rutina, importedAt}). This is a VALUE-SHAPE
+ *    check, deliberately not an oldVersion check: re-entering with an
+ *    already-migrated pointer ({key, rutinaId}) is a harmless no-op, and a
+ *    fresh install (no current row at all) passes through untouched. The
+ *    v1→v2 "drop because unmigratable" precedent does NOT apply — dropping
+ *    the current record would be data loss (AC4).
+ * 2. Seed the library: put({id, rutina, importedAt}) preserving the ORIGINAL
+ *    importedAt (AC4), then overwrite current with the pointer
+ *    {key:'current', rutinaId}.
+ * 3. Backfill attribution onto every session lacking rutinaId (OQ-6
+ *    denormalisation): {rutinaId, rutinaName, phaseName, phaseNumber}
+ *    snapshotted from the migrated rutina, so Historial can attribute
+ *    pre-feature sessions even after the originating entry is deleted
+ *    (AC13/AC14). No migratable current ⇒ sessions stay orphaned and render
+ *    the neutral "programa desconocido" attribution instead. Post-upgrade,
+ *    undefined rutinaIds can never be created again (createSession always
+ *    stamps), so downstream matching is strict ===.
+ */
+async function migrateLegacyCurrentIntoLibrary(tx) {
+  const activeStore = tx.objectStore('activeRutina');
+  const current = await activeStore.get('current');
+  if (!current || typeof current !== 'object' || !('rutina' in current)) return;
+
+  const migratedId = generateId();
+  await tx.objectStore('rutinas').put({
+    id: migratedId,
+    rutina: current.rutina,
+    importedAt: current.importedAt != null ? current.importedAt : new Date().toISOString(),
+    seq: 1,
+  });
+  await activeStore.put({ key: 'current', rutinaId: migratedId });
+
+  const program = (current.rutina && current.rutina.program) || {};
+  const sessionsStore = tx.objectStore('sessions');
+  const legacySessions = await sessionsStore.getAll();
+  for (const s of legacySessions) {
+    if (!s || s.rutinaId !== undefined) continue;
+    await sessionsStore.put({
+      ...s,
+      rutinaId: migratedId,
+      rutinaName: program.name,
+      phaseName: program.phaseName,
+      phaseNumber: program.phaseNumber,
+    });
+  }
+}
 
 /**
  * `idb`'s upgrade callback is `(db, oldVersion, newVersion, tx, event)` —
- * only `oldVersion` is needed here. `lastWeights` moves from keyPath
- * `equipmentId` to keyPath `exerciseKey` at version 2: the store is DROPPED
- * and recreated rather than migrated in place, because a v1 row carries no
- * `name` field, so no exercise key can be derived from it — it is
- * unmigratable. Not re-seeded (DD-002); prefill self-heals after one
- * workout per exercise. `sessions` and `activeRutina` are untouched.
+ * `oldVersion` gates store drops; `tx` carries the data migration. The async
+ * body is fine here: idb keeps the version-change transaction alive across
+ * awaits on its wrapped requests.
  *
- * gym-directory-and-catalog D4 — version 3 adds `clubEquipment`, purely
- * additively: `sessions`, `activeRutina` and `lastWeights` are untouched.
- * The `if (!contains(...))` guard (not an `oldVersion` check) is deliberate
- * — a BRAND-NEW install never runs the v2→v3 branch, and creating the store
- * only inside an `oldVersion < 3` guard would leave every fresh install
- * missing it, silently failing to persist exclusions for exactly the users
- * least likely to report it.
+ * History of the branches below:
+ * - v1→v2: `lastWeights` moves from keyPath `equipmentId` to keyPath
+ *   `exerciseKey`: the store is DROPPED and recreated rather than migrated in
+ *   place, because a v1 row carries no `name` field, so no exercise key can be
+ *   derived from it — it is unmigratable. Not re-seeded (DD-002); prefill
+ *   self-heals after one workout per exercise.
+ * - v2→v3 (gym-directory-and-catalog D4): adds `clubEquipment`, purely
+ *   additively. The `if (!contains(...))` guards (not oldVersion checks) are
+ *   deliberate — a BRAND-NEW install never runs any old branch, and creating
+ *   a store only inside an oldVersion guard would leave fresh installs
+ *   missing it.
+ * - v3→v4 (multi-rutina-library D-A): adds `rutinas`, then seeds it from the
+ *   legacy current record via migrateLegacyCurrentIntoLibrary above.
  */
-function upgrade(db, oldVersion) {
+async function upgrade(db, oldVersion, newVersion, tx) {
   if (!db.objectStoreNames.contains('activeRutina')) {
     db.createObjectStore('activeRutina', { keyPath: 'key' });
   }
@@ -75,6 +161,10 @@ function upgrade(db, oldVersion) {
   if (!db.objectStoreNames.contains('clubEquipment')) {
     db.createObjectStore('clubEquipment', { keyPath: 'clubId' });
   }
+  if (!db.objectStoreNames.contains('rutinas')) {
+    db.createObjectStore('rutinas', { keyPath: 'id' });
+  }
+  await migrateLegacyCurrentIntoLibrary(tx);
 }
 
 async function withDb(fn) {
@@ -86,19 +176,143 @@ async function withDb(fn) {
   }
 }
 
+// ── Rutina library (multi-rutina-library D-B) ─────────────────────────────
+//
+// All IDB access stays centralised here. The library is N entries in
+// `rutinas` plus ONE pointer row in `activeRutina` — activation writes only
+// the pointer, so "zero or two active" states cannot be observed (AC2), and
+// delete-and-activate spans both stores in one transaction (AC7).
+
+/**
+ * Adds a validated rutina payload as a NEW library entry — never overwrites
+ * (AC1). `importedAt` is stamped here; the caller-supplied rutina object is
+ * stored as-is so round-trips are byte-identical.
+ *
+ * @param {object} rutina - a validateImportedRutina-passed payload
+ * @returns {Promise<{id: string, rutina: object, importedAt: string, seq: number}>}
+ */
+export async function saveRutinaEntry(rutina) {
+  return withDb(async (db) => {
+    const tx = db.transaction('rutinas', 'readwrite');
+    const store = tx.objectStore('rutinas');
+    const existing = await store.getAll();
+    const entry = {
+      id: generateId(),
+      rutina,
+      importedAt: new Date().toISOString(),
+      seq: existing.reduce((max, e) => Math.max(max, (e && e.seq) || 0), 0) + 1,
+    };
+    await store.put(entry);
+    await tx.done;
+    return entry;
+  });
+}
+
+/** @returns {Promise<Array<{id, rutina, importedAt, seq}>>} insertion order; UI may re-sort */
+export async function listRutinas() {
+  return withDb(async (db) => {
+    const entries = await db.getAll('rutinas');
+    return entries.sort((a, b) => ((a && a.seq) || 0) - ((b && b.seq) || 0));
+  });
+}
+
+/**
+ * Points 'current' at the given entry — ONE put, atomic by construction
+ * (AC2). The transaction spans both library stores so a concurrent
+ * delete/activate pair serialises against the same lock set.
+ *
+ * @param {string} id
+ */
+export async function activateRutina(id) {
+  return withDb(async (db) => {
+    const tx = db.transaction(['rutinas', 'activeRutina'], 'readwrite');
+    await tx.objectStore('activeRutina').put({ key: 'current', rutinaId: id });
+    await tx.done;
+  });
+}
+
+/**
+ * The joined active entry ({id, rutina, importedAt, seq}) or exactly `null`
+ * when no pointer exists or it dangles (entry deleted without a successor —
+ * AC5's empty state). Never returns undefined.
+ */
+export async function getActiveEntry() {
+  return withDb(async (db) => {
+    const pointer = await db.get('activeRutina', 'current');
+    if (!pointer || pointer.rutinaId == null) return null;
+    const entry = await db.get('rutinas', pointer.rutinaId);
+    return entry ?? null;
+  });
+}
+
+/**
+ * Removes one entry ONLY. Callers pick the variant (plain delete vs
+ * delete+activate); the pointer is deliberately left alone — a dangling
+ * pointer after deleting the last entry reads as null via getActiveEntry/
+ * getActiveRutina, which is exactly the AC5 empty state, and deleting a
+ * NON-active entry must not disturb the pointer (AC6). Sessions are NOT
+ * touched (AC13).
+ *
+ * @param {string} id
+ */
+export async function deleteRutina(id) {
+  return withDb(async (db) => {
+    await db.delete('rutinas', id);
+  });
+}
+
+/**
+ * Deletes one entry and activates its chosen successor in ONE readwrite
+ * transaction over both stores (AC7's atomicity: no observable window where
+ * the old entry is gone but the pointer still names it).
+ *
+ * @param {string} deleteId
+ * @param {string} activateId
+ */
+export async function deleteAndActivateRutina(deleteId, activateId) {
+  return withDb(async (db) => {
+    const tx = db.transaction(['rutinas', 'activeRutina'], 'readwrite');
+    await tx.objectStore('rutinas').delete(deleteId);
+    await tx.objectStore('activeRutina').put({ key: 'current', rutinaId: activateId });
+    await tx.done;
+  });
+}
+
+// ── Legacy single-rutina shell API (kept for contract compatibility) ──────
+
+/**
+ * DEPRECATED production-wise (multi-rutina-library moved imports onto
+ * saveRutinaEntry + activateRutina) but kept working for the established
+ * shell contract: saves the payload as a NEW library entry and points
+ * 'current' at it. Two calls create two entries — this is an add, not an
+ * overwrite, because silently replacing library data is what this feature
+ * exists to stop.
+ */
 export async function saveActiveRutina(rutina) {
-  return withDb(async (db) => {
-    await db.put('activeRutina', { key: 'current', rutina, importedAt: new Date().toISOString() });
-  });
+  const entry = await saveRutinaEntry(rutina);
+  await activateRutina(entry.id);
+  return entry;
 }
 
+/**
+ * Shell compatibility (D-B): same name, same consumers, but now returns the
+ * JOINED active entry — the legacy { key, rutina, importedAt } shape with the
+ * entry's stable `id` (and `rutinaId`, `seq`) added. App.jsx reads `.rutina`
+ * exactly as before; screens gain `rutina.id`. Null when there is no pointer,
+ * it dangles, or nothing was ever saved.
+ */
 export async function getActiveRutina() {
-  return withDb(async (db) => {
-    const record = await db.get('activeRutina', 'current');
-    return record ?? null;
-  });
+  const entry = await getActiveEntry();
+  if (!entry) return null;
+  return { key: 'current', rutinaId: entry.id, ...entry };
 }
 
+/**
+ * Clears the ACTIVE POINTER only. Library entries are never destroyed here —
+ * deletion is a deliberate per-entry act on /library (AC5-AC7). With no
+ * pointer, getActiveRutina()/getActiveEntry() read null and the Shell
+ * redirects to /import.
+ */
 export async function clearActiveRutina() {
   return withDb(async (db) => {
     await db.delete('activeRutina', 'current');
