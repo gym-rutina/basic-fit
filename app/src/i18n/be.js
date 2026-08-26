@@ -45,6 +45,8 @@ export default {
 
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Доступ у клуб',
+  'access.audienceHint':
+    'Няма ўласнай падпіскі? Калі сябар падзяліўся з вамі запрашэннем, гэтая спасылка імгненна адкрые QR-код для доступу ў клуб.',
   'access.inputLabel': 'Спасылка-запрашэнне',
   'access.inputPlaceholder': 'Устаўце сюды спасылку з запрашэння',
   'access.saveAction': 'Захаваць',

@@ -100,3 +100,47 @@ describe('validateInviteUrl — trims before validating and storing (AC6)', () =
     expect(result.scheme).toBe('javascript:');
   });
 });
+
+/**
+ * club-invite-amendments (A1/A4) — extractInviteUrl: users paste the link
+ * together with surrounding message text. Extraction finds https:// tokens,
+ * strips trailing prose punctuation, and runs each through the SAME
+ * https-allowlist validator — nothing reaches storage that didn't pass it.
+ * RED until Cmok adds the function.
+ */
+import { extractInviteUrl } from './inviteUrl.js';
+
+describe('extractInviteUrl (club-invite-amendments)', () => {
+  it('extracts the bare link from mixed WhatsApp-style text', () => {
+    const result = extractInviteUrl(
+      '¡Pásate al gym! https://member.basic-fit.com/friends/es-ES/join/QQRQ0FG9 ¡nos vemos!'
+    );
+    expect(result).toEqual({ ok: true, url: 'https://member.basic-fit.com/friends/es-ES/join/QQRQ0FG9' });
+  });
+
+  it('strips trailing sentence punctuation from the extracted token', () => {
+    const result = extractInviteUrl('Tu enlace: https://invite.basic-fit.com/xKb92a1c.');
+    expect(result.ok).toBe(true);
+    expect(result.url).toBe('https://invite.basic-fit.com/xKb92a1c');
+  });
+
+  it('takes the FIRST link when a paste contains several', () => {
+    const result = extractInviteUrl(
+      'primero https://a.example.com/one y luego https://b.example.com/two'
+    );
+    expect(result.ok).toBe(true);
+    expect(result.url).toBe('https://a.example.com/one');
+  });
+
+  it('rejects text with NO https token as invalid-url (no scheme invention for www.)', () => {
+    const result = extractInviteUrl('mira www.member.basic-fit.com/friends no sirve sin el enlace completo');
+    expect(result).toMatchObject({ ok: false, reason: 'invalid-url' });
+  });
+
+  it('plain-link pastes behave identically through the extraction path (AC-A4 back-compat)', () => {
+    expect(extractInviteUrl('  https://invite.basic-fit.com/xKb92a1c\n')).toEqual({
+      ok: true,
+      url: 'https://invite.basic-fit.com/xKb92a1c',
+    });
+  });
+});

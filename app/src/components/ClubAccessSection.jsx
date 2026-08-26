@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
-import { validateInviteUrl } from '../lib/inviteUrl.js';
+import { extractInviteUrl, validateInviteUrl } from '../lib/inviteUrl.js';
 import { readInviteUrl, writeInviteUrl, clearInviteUrl } from '../lib/inviteStorage.js';
 import { useI18n } from '../i18n/index.js';
 
@@ -27,6 +27,11 @@ import { useI18n } from '../i18n/index.js';
  * No saving-busy state exists (D-G): validation + localStorage.setItem are
  * synchronous, so a busy tick would never paint — Guardar stays enabled
  * throughout and double-taps are idempotent writes of the same trimmed string.
+ *
+ * club-invite-amendments: the save path runs the draft through
+ * extractInviteUrl() first, so a paste carrying prose around the link saves
+ * the bare link and the input is replaced with it (user sees what was saved).
+ * Failure paths are byte-identical to the pre-extraction flow.
  */
 export function ClubAccessSection() {
   const { t } = useI18n();
@@ -37,9 +42,19 @@ export function ClubAccessSection() {
   const inputRef = useRef(null);
 
   function handleSave() {
-    const result = validateInviteUrl(draft);
+    // club-invite-amendments A1 (U1) — the paste may carry prose around the
+    // link; extraction finds https candidates and each one passes through the
+    // SAME https allowlist before storage, so AC4's choke is untouched.
+    const result = extractInviteUrl(draft);
     if (!result.ok) {
-      setError(result); // draft kept, stored value untouched (AC5)
+      // Byte-identical failures (T1): extraction only recognises https://
+      // tokens, so a WHOLE-draft unsafe scheme (`javascript:…` pasted bare)
+      // falls out of it as invalid-url. Re-validate the draft itself and let
+      // the pre-amendment unsafe-scheme alert name the scheme verbatim;
+      // everything else keeps the extraction verdict (draft kept, stored
+      // value untouched — AC5).
+      const whole = validateInviteUrl(draft);
+      setError(whole.reason === 'unsafe-scheme' ? whole : result);
       return;
     }
     setError(null);
@@ -49,6 +64,7 @@ export function ClubAccessSection() {
     }
     setStorageFailed(false);
     setSavedValue(result.url);
+    setDraft(result.url); // A1 — the input shows exactly what was saved
   }
 
   function handleRemove() {
@@ -72,6 +88,13 @@ export function ClubAccessSection() {
       >
         {t('access.sectionTitle')}
       </span>
+
+      {/* club-invite-amendments A4 (U4) — answers "what is this for?" (who the
+          link is for) BEFORE asking for a paste; the AC14 disclosure below
+          still says WHAT happens with it, verbatim. */}
+      <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: 'var(--space-3) 0 0' }}>
+        {t('access.audienceHint')}
+      </p>
 
       <label
         htmlFor="club-invite-url"

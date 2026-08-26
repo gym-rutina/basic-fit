@@ -48,6 +48,8 @@ export default {
 
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Zugang zum Club',
+  'access.audienceHint':
+    'Kein eigenes Abo? Wenn ein Freund dir seine Einladung geteilt hat, öffnet dieser Link sofort den QR-Code für den Zugang zum Club.',
   'access.inputLabel': 'Einladungslink',
   'access.inputPlaceholder': 'Füge hier deinen Einladungslink ein',
   'access.saveAction': 'Speichern',

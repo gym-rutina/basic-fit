@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nProvider } from '../i18n/index.js';
 import { ClubAccessSection } from './ClubAccessSection.jsx';
@@ -62,11 +62,17 @@ describe('ClubAccessSection — unset state (frame A)', () => {
 });
 
 describe('ClubAccessSection — save & replace (frames A→B)', () => {
+  // Long pastes use fireEvent.change (one-shot value insert), not per-char
+  // type: this is a PASTE box — the real gesture IS one insert — and per-
+  // keystroke timing on a loaded machine blew the 5s default on these exact
+  // sequences. (user-event's type was load-flaky and its paste is broken in
+  // jsdom 25 — clipboardData.getData missing; both gate-FAILed 2026-08-26.
+  // fireEvent.change is the dependency-free one-shot insert.)
   it('saves a pasted https URL: Guardado line + Eliminar appear (AC1)', async () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.type(input(), URL_A);
+    fireEvent.change(input(), { target: { value: URL_A } });
     await user.click(saveButton());
 
     expect(screen.getByText(/guardado:/i)).toBeInTheDocument();
@@ -194,5 +200,46 @@ describe('ClubAccessSection — storage degraded (frame D, D-B honest failure)',
     // Nothing pretends success: no Guardado line, no Eliminar, nothing stored.
     expect(screen.queryByText(/guardado:/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Eliminar' })).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * club-invite-amendments — A1/A3/A4: extract-on-save, audience explainer.
+ * RED until Cmok wires extraction + the hint line.
+ */
+describe('ClubAccessSection — paste-with-text extraction (club-invite-amendments A1/A3)', () => {
+  it('saves the BARE link from mixed text and shows it as the draft (AC-A1)', async () => {
+    const user = userEvent.setup();
+    renderSection();
+
+    fireEvent.change(input(), { target: { value: '¡Pásate! https://member.basic-fit.com/friends/es-ES/join/QQRQ0FG9 ¡nos vemos!' } });
+    await user.click(saveButton());
+
+    // Storage holds the bare URL…
+    expect(localStorage.getItem(INVITE_KEY)).toBe('https://member.basic-fit.com/friends/es-ES/join/QQRQ0FG9');
+    expect(screen.getByText('https://member.basic-fit.com/friends/es-ES/join/QQRQ0FG9')).toBeInTheDocument();
+    // …and the input now shows exactly what was saved, not the surrounding prose.
+    expect(input()).toHaveValue('https://member.basic-fit.com/friends/es-ES/join/QQRQ0FG9');
+  });
+
+  it('text without any link → invalid alert, stored value intact, draft preserved (AC-A3)', async () => {
+    localStorage.setItem(INVITE_KEY, URL_A);
+    const user = userEvent.setup();
+    renderSection();
+
+    await user.clear(input());
+    fireEvent.change(input(), { target: { value: 'mensaje sin ningún enlace, solo texto' } });
+    await user.click(saveButton());
+
+    expect(screen.getByRole('alert').textContent).toMatch(/no parece un enlace válido/i);
+    expect(screen.getByText(URL_A)).toBeInTheDocument();
+    expect(input()).toHaveValue('mensaje sin ningún enlace, solo texto');
+  });
+
+  it('shows the audience explainer between heading and input (AC-A8)', () => {
+    renderSection();
+
+    const hint = screen.getByText(/si un amigo te compartió su invitación/i);
+    expect(hint.textContent).toMatch(/código qr/i);
   });
 });

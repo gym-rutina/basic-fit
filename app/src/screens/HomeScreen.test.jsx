@@ -539,3 +539,60 @@ describe('HomeScreen — club access button (club-invite-link)', () => {
   });
 });
 
+
+/**
+ * club-invite-amendments — A2 (pinned placement) + A3 (qr-code icon).
+ * The button moves from inline grid row to a fixed wrapper attached above the
+ * tab bar; root padding compensates so ÚLTIMAS SESIONES is never covered.
+ * RED until Cmok lands the wrapper + icon registry entry.
+ */
+describe('HomeScreen — club access button, pinned placement (club-invite-amendments)', () => {
+  const INVITE = 'https://invite.basic-fit.com/xKb92a1c';
+
+  beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem(INVITE_KEY, INVITE);
+    db.listSessions.mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  it('renders the Acceso link inside a FIXED wrapper attached above the tab bar (AC-A5)', async () => {
+    const { container } = renderHome();
+
+    const acceso = await screen.findByRole('link', { name: /^acceso$/i });
+    const wrapper = acceso.closest('[data-club-access-pinned]');
+    expect(wrapper).not.toBeNull();
+    expect(wrapper.style.position).toBe('fixed');
+    expect(wrapper.style.bottom).toContain('90px');
+    expect(parseInt(wrapper.style.zIndex, 10)).toBeLessThan(200); // below the tab bar's z 200
+    // Root clearance grows so the pinned layer never permanently covers recents.
+    expect(container.firstChild.style.paddingBottom).not.toBe('90px');
+  });
+
+  it('carries a decorative qr-code icon while the accessible name stays exactly "Acceso" (AC-A7)', async () => {
+    renderHome();
+
+    const acceso = await screen.findByRole('link', { name: /^acceso$/i });
+    const svg = acceso.querySelector('svg');
+    expect(svg).not.toBeNull();
+    // Exact-name assertion already proves the icon contributes nothing to it;
+    // decorative-ness is explicit:
+    const iconHolder = svg.closest('[aria-hidden="true"]') || svg;
+    expect(iconHolder.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('unset keeps structural absence AND the original 90px clearance (AC-A6)', async () => {
+    localStorage.removeItem(INVITE_KEY);
+    const { container } = renderHome();
+
+    await screen.findByRole('button', { name: /empezar entrenamiento/i });
+
+    expect(screen.queryByRole('link', { name: /^acceso$/i })).not.toBeInTheDocument();
+    expect(container.querySelector('[data-club-access-pinned]')).toBeNull();
+    // No pinned layer ⇒ no compensation: root keeps today's exact clearance.
+    expect(container.firstChild.style.paddingBottom).toBe('90px');
+  });
+});

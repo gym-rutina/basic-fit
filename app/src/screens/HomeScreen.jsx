@@ -109,7 +109,10 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
   }
 
   return (
-    <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: 90 }}>
+    // club-invite-amendments A2 — root clearance compensates for the pinned
+    // Acceso layer (158 ≈ 48px button row + bottom offset above tab bar) so
+    // ÚLTIMAS SESIONES is never permanently covered; unset keeps today's 90px.
+    <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: invite ? 158 : 90 }}>
       <ScreenHeader
         title={<span dir="auto">{rutina.program.name}</span>}
         trailing={<Badge tone="brand">{t('program.phaseLabel', { n: rutina.program.phaseNumber })}</Badge>}
@@ -261,19 +264,6 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
           </div>
         )}
 
-        {/* club-invite-link D-D — a plain anchor (Button renders <a> when href
-            is passed) with zero click handlers: AC11/AC13 hold by construction,
-            the browser hands off externally and React never hears about it.
-            Rendered for EVERY main-card branch (loading/error/active/idle) —
-            gate access does not depend on session-db health — and structurally
-            absent when nothing valid is stored (AC8). The full-screen loadError
-            early return above stays untouched. */}
-        {invite && (
-          <Button variant="outline" style={{ width: '100%' }} href={invite} target="_blank" rel="noopener noreferrer">
-            {t('home.accessAction')}
-          </Button>
-        )}
-
         {recentSessions.length > 0 && (
           <div style={{ background: 'var(--bf-white)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)' }}>
             <div style={{ font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>{t('home.recentSessionsLabel')}</div>
@@ -301,6 +291,37 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
           </div>
         )}
       </div>
+
+      {/* club-invite-link D-D / club-invite-amendments A2 — a plain anchor
+          (Button renders <a> when href is passed) with zero click handlers:
+          AC11/AC13 hold by construction, the browser hands off externally and
+          React never hears about it. Rendered for EVERY main-card branch
+          (loading/error/active/idle) — gate access does not depend on
+          session-db health — and structurally absent when nothing valid is
+          stored (AC8). The full-screen loadError early return above stays
+          untouched. The FIXED wrapper attaches the button above the tab bar
+          (90px clearance + safe-area inset, z 150 below the bar's 200): gate
+          access is Inicio's terminal action, not an inline row. The wrapper is
+          pointerEvents:none so its dead side-gutters never eat taps; the
+          button re-enables hits for itself. */}
+      {invite && (
+        <div
+          data-club-access-pinned="true"
+          style={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 'calc(90px + env(safe-area-inset-bottom, 0px))',
+            zIndex: 150,
+            paddingInline: 'var(--page-pad-x)',
+            pointerEvents: 'none',
+          }}
+        >
+          <Button variant="outline" style={{ width: '100%', pointerEvents: 'auto' }} href={invite} target="_blank" rel="noopener noreferrer">
+            <Icon name="qr-code" size={18} aria-hidden /> {t('home.accessAction')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
