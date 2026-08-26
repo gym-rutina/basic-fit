@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
+import { SheetShell, SheetCloseButton } from './sheet/SheetShell.jsx';
 import { COUNTRIES, citiesFor, loadClubs } from '../data/gyms.js';
 import { filterClubs, foldForSearch } from '../lib/clubFilter.js';
 import { writeClub } from '../lib/clubStorage.js';
@@ -45,32 +46,9 @@ export function ClubPickerSheet({ onSelect, onClose, returnFocusTo }) {
 
   const [clubs, setClubs] = useState([]);
 
+  // Shared with SheetShell: the shell autofocuses the ✕ on mount and restores
+  // focus to `returnFocusTo` (or the previously focused element) on unmount.
   const closeRef = useRef(null);
-  const sheetRef = useRef(null);
-  const previouslyFocusedRef = useRef(null);
-
-  useEffect(() => {
-    previouslyFocusedRef.current = document.activeElement;
-    closeRef.current?.focus();
-    return () => {
-      const toRestore = returnFocusTo?.current ?? previouslyFocusedRef.current;
-      if (toRestore && typeof toRestore.focus === 'function') toRestore.focus();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    function handleKey(e) {
-      if (e.key !== 'Escape') return;
-      if (expandedField) {
-        setExpandedField(null);
-      } else {
-        onClose && onClose();
-      }
-    }
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [expandedField, onClose]);
 
   useEffect(() => {
     let cancelled = false;
@@ -223,258 +201,246 @@ export function ClubPickerSheet({ onSelect, onClose, returnFocusTo }) {
   });
 
   return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(45,45,45,.5)', zIndex: 300, display: 'flex', alignItems: 'flex-end' }}
+    <SheetShell
+      onClose={onClose}
+      labelledBy="club-picker-title"
+      initialFocusRef={closeRef}
+      returnFocusTo={returnFocusTo}
+      maxHeight="88vh"
+      onEscape={() => {
+        // First Escape collapses an open listbox (keeping the partial
+        // selection visible); only a bare sheet closes. ux-design §5.
+        if (expandedField) {
+          setExpandedField(null);
+        } else {
+          onClose && onClose();
+        }
+      }}
     >
-      <div
-        ref={sheetRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="club-picker-title"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: 'var(--bf-white)',
-          width: '100%',
-          maxHeight: '88vh',
-          overflowY: 'auto',
-          borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
-          padding: 'var(--space-6) var(--page-pad-x) calc(var(--space-6) + env(safe-area-inset-bottom, 0px))',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
-          <h3 id="club-picker-title" style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: 0 }}>
-            {t('club.pickerTitle')}
-          </h3>
-          <button
-            ref={closeRef}
-            type="button"
-            aria-label={t('common.close')}
-            onClick={onClose}
-            style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-control)', cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0 }}
-          >
-            <Icon name="x" size={20} />
-          </button>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+        <h3 id="club-picker-title" style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: 0 }}>
+          {t('club.pickerTitle')}
+        </h3>
+        <SheetCloseButton ref={closeRef} onClick={onClose} />
+      </div>
 
         {/* ── COUNTRY ──────────────────────────────────────────────────── */}
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <label style={labelStyle} htmlFor="club-picker-country">
-            {t('club.country')}
-          </label>
-          <div style={inputWrap(false)}>
-            <Icon name="search" size={18} style={{ color: 'var(--bf-purple)', flexShrink: 0 }} />
-            <input
-              id="club-picker-country"
-              role="combobox"
-              aria-label={t('club.country')}
-              aria-expanded={expandedField === 'country'}
-              aria-controls="club-picker-country-listbox"
-              aria-activedescendant={
-                expandedField === 'country' && countryActive >= 0 ? `club-picker-country-option-${countryActive}` : undefined
-              }
-              value={countryQuery}
-              onFocus={() => {
-                setExpandedField('country');
-                setCountryActive(-1);
-              }}
-              onChange={(e) => {
-                setCountryQuery(e.target.value);
-                if (countryCode) resetCountry();
-                setExpandedField('country');
-              }}
-              onKeyDown={(e) =>
-                fieldKeyDown(e, {
-                  options: countryOptions,
-                  active: countryActive,
-                  setActive: setCountryActive,
-                  onSelectOption: pickCountry,
-                  fieldName: 'country',
-                })
-              }
-              style={inputStyle}
-            />
-            {countryCode && (
-              <button type="button" onClick={resetCountry} style={{ font: 'var(--text-caption)', color: 'var(--text-link)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                {t('club.change')}
-              </button>
-            )}
-          </div>
-          {expandedField === 'country' && (
-            <div id="club-picker-country-listbox" role="listbox" aria-label={t('club.country')} style={{ marginTop: 6, maxHeight: 180, overflowY: 'auto' }}>
-              {countryOptions.map((c, i) => (
-                <div
-                  key={c.code}
-                  id={`club-picker-country-option-${i}`}
-                  role="option"
-                  aria-selected={countryCode === c.code}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => pickCountry(c)}
-                  style={optionRow(i === countryActive)}
-                >
-                  <span style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{c.names[locale] || c.names.es}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          {/* Persistent, not gated on `expandedField === 'country'`: a
-              selection collapses the field (pickCountry sets expandedField
-              null) in the SAME render as the option count changing, and a
-              live region that unmounts in that instant announces nothing —
-              screen readers need the node to still exist to read the update
-              (R5.4/AC46, "on every filter change"). */}
-          <div className="sr-only" aria-live="polite">
-            {t('club.resultsCount', { n: countryOptions.length })}
-          </div>
-        </div>
-
-        {/* ── CITY ─────────────────────────────────────────────────────── */}
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <label style={labelStyle} htmlFor="club-picker-city">
-            {t('club.city')}
-          </label>
-          <div style={inputWrap(!countryCode)}>
-            <Icon name="search" size={18} style={{ color: countryCode ? 'var(--bf-purple)' : 'var(--text-muted)', flexShrink: 0 }} />
-            <input
-              id="club-picker-city"
-              role="combobox"
-              aria-label={t('club.city')}
-              aria-expanded={expandedField === 'city'}
-              aria-controls="club-picker-city-listbox"
-              aria-disabled={!countryCode}
-              disabled={!countryCode}
-              aria-activedescendant={expandedField === 'city' && cityActive >= 0 ? `club-picker-city-option-${cityActive}` : undefined}
-              value={cityQuery}
-              placeholder={countryCode ? t('club.cityPlaceholder') : t('club.cityPlaceholderDisabled')}
-              onFocus={() => {
-                setExpandedField('city');
-                setCityActive(-1);
-              }}
-              onChange={(e) => {
-                setCityQuery(e.target.value);
-                if (cityKey) {
-                  setCityKey(null);
-                  setClubQuery('');
-                }
-                setExpandedField('city');
-              }}
-              onKeyDown={(e) =>
-                fieldKeyDown(e, { options: cityOptions, active: cityActive, setActive: setCityActive, onSelectOption: pickCity, fieldName: 'city' })
-              }
-              style={inputStyle}
-            />
-          </div>
-          {!countryCode && (
-            <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('club.selectCountryFirst')}</p>
-          )}
-          {expandedField === 'city' && countryCode && (
-            <div id="club-picker-city-listbox" role="listbox" aria-label={t('club.city')} style={{ marginTop: 6, maxHeight: 180, overflowY: 'auto' }}>
-              {cityOptions.map((c, i) => (
-                <div
-                  key={c.key}
-                  id={`club-picker-city-option-${i}`}
-                  role="option"
-                  aria-selected={cityKey === c.key}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => pickCity(c)}
-                  style={{ ...optionRow(i === cityActive), display: 'flex', justifyContent: 'space-between' }}
-                >
-                  <span style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{c.name}</span>
-                  <span style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}>{c.clubCount}</span>
-                </div>
-              ))}
-              {cityOptions.length === 0 && (
-                <div style={{ padding: '10px 12px', font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>{t('club.noCitiesFound')}</div>
-              )}
-            </div>
-          )}
-          {/* Persistent — see the country field's identical comment above. */}
+      <div style={{ marginTop: 'var(--space-5)' }}>
+        <label style={labelStyle} htmlFor="club-picker-country">
+          {t('club.country')}
+        </label>
+        <div style={inputWrap(false)}>
+          <Icon name="search" size={18} style={{ color: 'var(--bf-purple)', flexShrink: 0 }} />
+          <input
+            id="club-picker-country"
+            role="combobox"
+            aria-label={t('club.country')}
+            aria-expanded={expandedField === 'country'}
+            aria-controls="club-picker-country-listbox"
+            aria-activedescendant={
+              expandedField === 'country' && countryActive >= 0 ? `club-picker-country-option-${countryActive}` : undefined
+            }
+            value={countryQuery}
+            onFocus={() => {
+              setExpandedField('country');
+              setCountryActive(-1);
+            }}
+            onChange={(e) => {
+              setCountryQuery(e.target.value);
+              if (countryCode) resetCountry();
+              setExpandedField('country');
+            }}
+            onKeyDown={(e) =>
+              fieldKeyDown(e, {
+                options: countryOptions,
+                active: countryActive,
+                setActive: setCountryActive,
+                onSelectOption: pickCountry,
+                fieldName: 'country',
+              })
+            }
+            style={inputStyle}
+          />
           {countryCode && (
-            <div className="sr-only" aria-live="polite">
-              {t('club.resultsCount', { n: cityOptions.length })}
-            </div>
+            <button type="button" onClick={resetCountry} style={{ font: 'var(--text-caption)', color: 'var(--text-link)', background: 'none', border: 'none', cursor: 'pointer' }}>
+              {t('club.change')}
+            </button>
           )}
         </div>
-
-        {/* ── CLUB ─────────────────────────────────────────────────────── */}
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <label style={labelStyle} htmlFor="club-picker-club">
-            {t('club.club')}
-          </label>
-          <div style={inputWrap(!cityKey)}>
-            <Icon name="search" size={18} style={{ color: cityKey ? 'var(--bf-purple)' : 'var(--text-muted)', flexShrink: 0 }} />
-            <input
-              id="club-picker-club"
-              role="combobox"
-              aria-label={t('club.club')}
-              aria-expanded={expandedField === 'club'}
-              aria-controls="club-picker-club-listbox"
-              aria-disabled={!cityKey}
-              disabled={!cityKey}
-              aria-activedescendant={expandedField === 'club' && clubActive >= 0 ? `club-picker-club-option-${clubActive}` : undefined}
-              value={clubQuery}
-              placeholder={cityKey ? t('club.clubPlaceholder') : t('club.clubPlaceholderDisabled')}
-              onFocus={() => {
-                setExpandedField('club');
-                setClubActive(-1);
-              }}
-              onChange={(e) => {
-                setClubQuery(e.target.value);
-                setExpandedField('club');
-              }}
-              onKeyDown={(e) =>
-                fieldKeyDown(e, { options: clubOptions, active: clubActive, setActive: setClubActive, onSelectOption: pickClub, fieldName: 'club' })
-              }
-              style={inputStyle}
-            />
-          </div>
-          {!cityKey && countryCode && (
-            <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('club.selectCityFirst')}</p>
-          )}
-          {expandedField === 'club' && cityKey && (
-            <>
-              <div id="club-picker-club-listbox" role="listbox" aria-label={t('club.club')} style={{ marginTop: 6, maxHeight: 280, overflowY: 'auto' }}>
-                {clubOptions.map((c, i) => (
-                  <div
-                    key={c.id}
-                    id={`club-picker-club-option-${i}`}
-                    role="option"
-                    aria-selected={false}
-                    aria-label={`${c.name}, ${c.address}`}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => pickClub(c)}
-                    style={{ ...optionRow(i === clubActive), borderBottom: '1px solid var(--bf-grey-2)' }}
-                  >
-                    <div style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{c.name}</div>
-                    <div style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)' }}>{c.address}</div>
-                  </div>
-                ))}
+        {expandedField === 'country' && (
+          <div id="club-picker-country-listbox" role="listbox" aria-label={t('club.country')} style={{ marginTop: 6, maxHeight: 180, overflowY: 'auto' }}>
+            {countryOptions.map((c, i) => (
+              <div
+                key={c.code}
+                id={`club-picker-country-option-${i}`}
+                role="option"
+                aria-selected={countryCode === c.code}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pickCountry(c)}
+                style={optionRow(i === countryActive)}
+              >
+                <span style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{c.names[locale] || c.names.es}</span>
               </div>
-              {clubOptions.length === 0 && (
-                <div style={{ padding: 'var(--space-4) 0', textAlign: 'center' }}>
-                  <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 6px' }}>{t('club.noClubsFound')}</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setExpandedField(null);
-                      onClose && onClose();
-                    }}
-                    style={{ font: '600 14px/1.2 var(--font-sans)', color: 'var(--text-link)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  >
-                    {t('club.editField6Manually')}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-          {/* Persistent — see the country field's identical comment above. */}
-          {cityKey && (
-            <div className="sr-only" aria-live="polite">
-              {t('club.resultsCount', { n: clubOptions.length })}
-            </div>
-          )}
+            ))}
+          </div>
+        )}
+        {/* Persistent, not gated on `expandedField === 'country'`: a
+            selection collapses the field (pickCountry sets expandedField
+            null) in the SAME render as the option count changing, and a
+            live region that unmounts in that instant announces nothing —
+            screen readers need the node to still exist to read the update
+            (R5.4/AC46, "on every filter change"). */}
+        <div className="sr-only" aria-live="polite">
+          {t('club.resultsCount', { n: countryOptions.length })}
         </div>
       </div>
-    </div>
+
+      {/* ── CITY ─────────────────────────────────────────────────────── */}
+      <div style={{ marginTop: 'var(--space-5)' }}>
+        <label style={labelStyle} htmlFor="club-picker-city">
+          {t('club.city')}
+        </label>
+        <div style={inputWrap(!countryCode)}>
+          <Icon name="search" size={18} style={{ color: countryCode ? 'var(--bf-purple)' : 'var(--text-muted)', flexShrink: 0 }} />
+          <input
+            id="club-picker-city"
+            role="combobox"
+            aria-label={t('club.city')}
+            aria-expanded={expandedField === 'city'}
+            aria-controls="club-picker-city-listbox"
+            aria-disabled={!countryCode}
+            disabled={!countryCode}
+            aria-activedescendant={expandedField === 'city' && cityActive >= 0 ? `club-picker-city-option-${cityActive}` : undefined}
+            value={cityQuery}
+            placeholder={countryCode ? t('club.cityPlaceholder') : t('club.cityPlaceholderDisabled')}
+            onFocus={() => {
+              setExpandedField('city');
+              setCityActive(-1);
+            }}
+            onChange={(e) => {
+              setCityQuery(e.target.value);
+              if (cityKey) {
+                setCityKey(null);
+                setClubQuery('');
+              }
+              setExpandedField('city');
+            }}
+            onKeyDown={(e) =>
+              fieldKeyDown(e, { options: cityOptions, active: cityActive, setActive: setCityActive, onSelectOption: pickCity, fieldName: 'city' })
+            }
+            style={inputStyle}
+          />
+        </div>
+        {!countryCode && (
+          <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('club.selectCountryFirst')}</p>
+        )}
+        {expandedField === 'city' && countryCode && (
+          <div id="club-picker-city-listbox" role="listbox" aria-label={t('club.city')} style={{ marginTop: 6, maxHeight: 180, overflowY: 'auto' }}>
+            {cityOptions.map((c, i) => (
+              <div
+                key={c.key}
+                id={`club-picker-city-option-${i}`}
+                role="option"
+                aria-selected={cityKey === c.key}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pickCity(c)}
+                style={{ ...optionRow(i === cityActive), display: 'flex', justifyContent: 'space-between' }}
+              >
+                <span style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{c.name}</span>
+                <span style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}>{c.clubCount}</span>
+              </div>
+            ))}
+            {cityOptions.length === 0 && (
+              <div style={{ padding: '10px 12px', font: 'var(--text-body-sm)', color: 'var(--text-muted)' }}>{t('club.noCitiesFound')}</div>
+            )}
+          </div>
+        )}
+        {/* Persistent — see the country field's identical comment above. */}
+        {countryCode && (
+          <div className="sr-only" aria-live="polite">
+            {t('club.resultsCount', { n: cityOptions.length })}
+          </div>
+        )}
+      </div>
+
+      {/* ── CLUB ─────────────────────────────────────────────────────── */}
+      <div style={{ marginTop: 'var(--space-5)' }}>
+        <label style={labelStyle} htmlFor="club-picker-club">
+          {t('club.club')}
+        </label>
+        <div style={inputWrap(!cityKey)}>
+          <Icon name="search" size={18} style={{ color: cityKey ? 'var(--bf-purple)' : 'var(--text-muted)', flexShrink: 0 }} />
+          <input
+            id="club-picker-club"
+            role="combobox"
+            aria-label={t('club.club')}
+            aria-expanded={expandedField === 'club'}
+            aria-controls="club-picker-club-listbox"
+            aria-disabled={!cityKey}
+            disabled={!cityKey}
+            aria-activedescendant={expandedField === 'club' && clubActive >= 0 ? `club-picker-club-option-${clubActive}` : undefined}
+            value={clubQuery}
+            placeholder={cityKey ? t('club.clubPlaceholder') : t('club.clubPlaceholderDisabled')}
+            onFocus={() => {
+              setExpandedField('club');
+              setClubActive(-1);
+            }}
+            onChange={(e) => {
+              setClubQuery(e.target.value);
+              setExpandedField('club');
+            }}
+            onKeyDown={(e) =>
+              fieldKeyDown(e, { options: clubOptions, active: clubActive, setActive: setClubActive, onSelectOption: pickClub, fieldName: 'club' })
+            }
+            style={inputStyle}
+          />
+        </div>
+        {!cityKey && countryCode && (
+          <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('club.selectCityFirst')}</p>
+        )}
+        {expandedField === 'club' && cityKey && (
+          <>
+            <div id="club-picker-club-listbox" role="listbox" aria-label={t('club.club')} style={{ marginTop: 6, maxHeight: 280, overflowY: 'auto' }}>
+              {clubOptions.map((c, i) => (
+                <div
+                  key={c.id}
+                  id={`club-picker-club-option-${i}`}
+                  role="option"
+                  aria-selected={false}
+                  aria-label={`${c.name}, ${c.address}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => pickClub(c)}
+                  style={{ ...optionRow(i === clubActive), borderBottom: '1px solid var(--bf-grey-2)' }}
+                >
+                  <div style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>{c.name}</div>
+                  <div style={{ font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)' }}>{c.address}</div>
+                </div>
+              ))}
+            </div>
+            {clubOptions.length === 0 && (
+              <div style={{ padding: 'var(--space-4) 0', textAlign: 'center' }}>
+                <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 6px' }}>{t('club.noClubsFound')}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExpandedField(null);
+                    onClose && onClose();
+                  }}
+                  style={{ font: '600 14px/1.2 var(--font-sans)', color: 'var(--text-link)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {t('club.editField6Manually')}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+        {/* Persistent — see the country field's identical comment above. */}
+        {cityKey && (
+          <div className="sr-only" aria-live="polite">
+            {t('club.resultsCount', { n: clubOptions.length })}
+          </div>
+        )}
+      </div>
+    </SheetShell>
   );
 }

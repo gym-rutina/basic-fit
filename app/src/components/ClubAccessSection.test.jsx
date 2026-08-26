@@ -62,12 +62,12 @@ describe('ClubAccessSection — unset state (frame A)', () => {
 });
 
 describe('ClubAccessSection — save & replace (frames A→B)', () => {
-  // Long pastes use fireEvent.change (one-shot value insert), not per-char
-  // type: this is a PASTE box — the real gesture IS one insert — and per-
-  // keystroke timing on a loaded machine blew the 5s default on these exact
-  // sequences. (user-event's type was load-flaky and its paste is broken in
-  // jsdom 25 — clipboardData.getData missing; both gate-FAILed 2026-08-26.
-  // fireEvent.change is the dependency-free one-shot insert.)
+  // ALL input insertion in this file is fireEvent.change (one-shot value
+  // set), never per-char userEvent.type: this is a PASTE box — the real
+  // gesture IS one insert. History: per-char typing was load-flaky past the
+  // 5s default AND a mid-sequence death leaked keystrokes into the NEXT
+  // test's DOM; user-event's paste() is broken under jsdom 25. Three gates
+  // FAILed 2026-08-26 before the whole file converged here.
   it('saves a pasted https URL: Guardado line + Eliminar appear (AC1)', async () => {
     const user = userEvent.setup();
     renderSection();
@@ -94,7 +94,7 @@ describe('ClubAccessSection — save & replace (frames A→B)', () => {
     renderSection();
 
     await user.clear(input());
-    await user.type(input(), URL_B);
+    fireEvent.change(input(), { target: { value: URL_B } });
     await user.click(saveButton());
 
     expect(screen.getByText(URL_B)).toBeInTheDocument();
@@ -106,7 +106,7 @@ describe('ClubAccessSection — save & replace (frames A→B)', () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.type(input(), `  ${URL_A}  `);
+    fireEvent.change(input(), { target: { value: `  ${URL_A}  ` } });
     await user.click(saveButton());
 
     expect(localStorage.getItem(INVITE_KEY)).toBe(URL_A);
@@ -124,7 +124,7 @@ describe('ClubAccessSection — failed saves never destroy a working invite (AC5
     renderSection();
 
     await user.clear(input());
-    await user.type(input(), 'javascript:alert(document.cookie)');
+    fireEvent.change(input(), { target: { value: 'javascript:alert(document.cookie)' } });
     await user.click(saveButton());
 
     const alert = screen.getByRole('alert');
@@ -144,7 +144,7 @@ describe('ClubAccessSection — failed saves never destroy a working invite (AC5
     renderSection();
 
     await user.clear(input());
-    await user.type(input(), 'hola mundo');
+    fireEvent.change(input(), { target: { value: 'hola mundo' } });
     await user.click(saveButton());
 
     expect(screen.getByRole('alert').textContent).toMatch(/no parece un enlace válido/i);
@@ -157,12 +157,12 @@ describe('ClubAccessSection — failed saves never destroy a working invite (AC5
     renderSection();
 
     await user.clear(input());
-    await user.type(input(), 'javascript:x');
+    fireEvent.change(input(), { target: { value: 'javascript:x' } });
     await user.click(saveButton());
     expect(saveButton()).toBeEnabled();
 
     await user.clear(input());
-    await user.type(input(), URL_B);
+    fireEvent.change(input(), { target: { value: URL_B } });
     await user.click(saveButton());
     expect(localStorage.getItem(INVITE_KEY)).toBe(URL_B);
   });
@@ -193,7 +193,7 @@ describe('ClubAccessSection — storage degraded (frame D, D-B honest failure)',
     const user = userEvent.setup();
     renderSection();
 
-    await user.type(input(), URL_A);
+    fireEvent.change(input(), { target: { value: URL_A } });
     await user.click(saveButton());
 
     expect(screen.getByText(/no se pudo guardar \(almacenamiento no disponible/i)).toBeInTheDocument();

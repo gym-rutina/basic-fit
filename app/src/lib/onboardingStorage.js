@@ -9,7 +9,14 @@
  * degrade to "always show onboarding" rather than throw and break app boot.
  */
 
-const ONBOARDING_SEEN_KEY = 'rutina:onboardingSeen';
+/**
+ * Exported like every other storage module's key constant (CLUB_KEY,
+ * INVITE_KEY, PROMPT_REQUEST_KEY, UI_LANG_KEY, …) so the future
+ * full-data-backup registry can enumerate all persisted keys by import
+ * instead of hardcoding strings (tech-debt audit 2026-08-26 F8). Do not make
+ * this module-private again.
+ */
+export const ONBOARDING_SEEN_KEY = 'rutina:onboardingSeen';
 
 /** @returns {boolean} true once the user has skipped or completed onboarding. */
 export function hasSeenOnboarding() {

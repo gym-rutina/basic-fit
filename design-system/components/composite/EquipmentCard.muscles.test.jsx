@@ -1,14 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { EquipmentCard } from '../../../design-system/components/composite/EquipmentCard.jsx';
+import { EquipmentCard } from './EquipmentCard.jsx';
 
 // pill-overflow-ux S5 — secondary muscle tags collapse into a single "+N"
 // chip (AC16–AC19). MoreMusclesChip is deliberately LOCAL to EquipmentCard
 // (user-ratified OQ4 — not a DS primitive), and because the design system is
 // i18n-free by architecture, the chip's accessible names arrive as PROPS
-// (tech-plan.md D-E). This test lives under app/src/ per D-G (vitest include
-// constraint), like SelectField's.
+// (tech-plan.md D-E). Colocated with its component since the tech-debt audit
+// (2026-08-26 F3) extended vitest.config.js's include glob to design-system/**
+// — like SelectField's test, it previously sat under app/src/components/.
 //
 // RED until Cmok edits EquipmentCard.jsx internals.
 

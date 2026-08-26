@@ -44,12 +44,14 @@ const CATEGORIES = ['all', ...new Set(EQUIPMENT.map((e) => e.category))];
  * user actually excludes something, so a first-time visitor sees no change.
  *
  * pwa-ui-language AC13/AC14 (tech-plan.md D12): equipment text (name,
- * description, video) follows this screen's own `Idioma` pill row, which
- * DEFAULTS to the active UI locale instead of hardcoding 'es' — and resets
- * to it whenever the screen remounts (tab re-entry), because it is never
- * persisted (`useState`, not storage). Chrome around it — title, category
- * filter, muscle labels — follows the shared UI locale via `t`/`locale`
- * from `useI18n()`, independent of this screen-local override.
+ * description, video) follows this screen's own language select (the
+ * `catalog-language` SelectField below; pill-overflow-ux S2 replaced the
+ * former pill row with it), which DEFAULTS to the active UI locale instead of
+ * hardcoding 'es' — and resets to it whenever the screen remounts (tab
+ * re-entry), because it is never persisted (`useState`, not storage). Chrome
+ * around it — title, category filter, muscle labels — follows the shared UI
+ * locale via `t`/`locale` from `useI18n()`, independent of this screen-local
+ * override.
  */
 export function CatalogScreen() {
   const navigate = useNavigate();

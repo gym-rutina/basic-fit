@@ -8,8 +8,11 @@
 import React from 'react';
 import { defaultT } from '../i18n/index.js';
 
-const PURPLE = 'var(--bf-purple-deep, #6200ee)';
-const MUTED = 'var(--border-default, #d4d4d4)';
+// Bare tokens, no hex fallbacks — the DS-wide convention (tech-debt audit
+// 2026-08-26 F9): tokens are guaranteed by the shared stylesheet, and a
+// fallback would silently mask a rename.
+const PURPLE = 'var(--bf-purple-deep)';
+const MUTED = 'var(--border-default)';
 
 // ─── WeightProgressChart ─────────────────────────────────────────────────────
 
@@ -192,8 +195,8 @@ export function FrequencyHeatmap({ cells = [], stats = {}, t = defaultT }) {
       </div>
       <p
         style={{
-          font: 'var(--text-body-sm, 12px/1.4 sans-serif)',
-          color: 'var(--text-muted, #666)',
+          font: 'var(--text-body-sm, 12px/1.4 sans-serif)', // non-colour token: fallback kept (F9 scoped to colour tokens)
+          color: 'var(--text-muted)',
           margin: '8px 0 0',
           overflowWrap: 'anywhere',
         }}

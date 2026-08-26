@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
+import { SheetShell, SheetCloseButton } from './sheet/SheetShell.jsx';
 import { foldForSearch } from '../lib/clubFilter.js';
 import { useI18n } from '../i18n/index.js';
 
@@ -33,27 +34,9 @@ export function ExercisePickerSheet({ items = [], selectedKey, onSelect, onClose
   const { t } = useI18n();
   const [query, setQuery] = useState('');
 
+  // Shared with SheetShell: the shell autofocuses the ✕ on mount and restores
+  // focus to `returnFocusTo` (or the previously focused element) on unmount.
   const closeRef = useRef(null);
-  const previouslyFocusedRef = useRef(null);
-
-  useEffect(() => {
-    previouslyFocusedRef.current = document.activeElement;
-    closeRef.current?.focus();
-    return () => {
-      const toRestore = returnFocusTo?.current ?? previouslyFocusedRef.current;
-      if (toRestore && typeof toRestore.focus === 'function') toRestore.focus();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount/unmount only, mirroring ClubPickerSheet
-  }, []);
-
-  useEffect(() => {
-    function handleKey(e) {
-      if (e.key !== 'Escape') return;
-      if (onClose) onClose();
-    }
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [onClose]);
 
   const visibleItems = useMemo(() => {
     const sorted = [...items].sort((a, b) => {
@@ -89,85 +72,59 @@ export function ExercisePickerSheet({ items = [], selectedKey, onSelect, onClose
   });
 
   return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(45,45,45,.5)', zIndex: 300, display: 'flex', alignItems: 'flex-end' }}
-    >
+    <SheetShell onClose={onClose} labelledBy="exercise-picker-title" initialFocusRef={closeRef} returnFocusTo={returnFocusTo} maxHeight="88vh">
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+        <h3 id="exercise-picker-title" style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: 0 }}>
+          {t('progress.pickerTitle')}
+        </h3>
+        <SheetCloseButton ref={closeRef} onClick={onClose} />
+      </div>
+
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="exercise-picker-title"
-        onClick={(e) => e.stopPropagation()}
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          border: '1px solid var(--border-control)',
+          borderRadius: 'var(--radius-control)',
+          padding: '11px 14px',
           background: 'var(--bf-white)',
-          width: '100%',
-          maxHeight: '88vh',
-          overflowY: 'auto',
-          borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
-          padding: 'var(--space-6) var(--page-pad-x) calc(var(--space-6) + env(safe-area-inset-bottom, 0px))',
+          marginTop: 'var(--space-4)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
-          <h3 id="exercise-picker-title" style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: 0 }}>
-            {t('progress.pickerTitle')}
-          </h3>
-          <button
-            ref={closeRef}
-            type="button"
-            aria-label={t('common.close')}
-            onClick={onClose}
-            style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-control)', cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0 }}
-          >
-            <Icon name="x" size={20} />
-          </button>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            border: '1px solid var(--border-control)',
-            borderRadius: 'var(--radius-control)',
-            padding: '11px 14px',
-            background: 'var(--bf-white)',
-            marginTop: 'var(--space-4)',
-          }}
-        >
-          <Icon name="search" size={18} style={{ color: 'var(--bf-purple)' }} />
-          {/* Real accessible label via aria-label — a placeholder alone does
-              NOT contribute an accessible name (tech-plan §3 gate note). */}
-          <input
-            id="exercise-picker-search"
-            type="text"
-            aria-label={t('progress.searchPlaceholder')}
-            placeholder={t('progress.searchPlaceholder')}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            style={{ border: 'none', outline: 'none', flex: 1, minWidth: 0, background: 'transparent', font: '400 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}
-          />
-        </div>
-
-        {visibleItems.length > 0 ? (
-          <ul role="list" style={{ listStyle: 'none', margin: 'var(--space-4) 0 0', padding: 0 }}>
-            {visibleItems.map((it) => {
-              const selected = it.key === selectedKey;
-              return (
-                <li key={it.key}>
-                  <button type="button" aria-current={selected || undefined} onClick={() => pick(it.key)} style={rowButtonStyle(selected)}>
-                    <span dir="auto">{it.label}</span>
-                    {selected && <Icon name="check" size={16} />}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p role="status" style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-5) 0 0' }}>
-            {t('progress.noResults', { query: query.trim() })}
-          </p>
-        )}
+        <Icon name="search" size={18} style={{ color: 'var(--bf-purple)' }} />
+        {/* Real accessible label via aria-label — a placeholder alone does
+            NOT contribute an accessible name (tech-plan §3 gate note). */}
+        <input
+          id="exercise-picker-search"
+          type="text"
+          aria-label={t('progress.searchPlaceholder')}
+          placeholder={t('progress.searchPlaceholder')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{ border: 'none', outline: 'none', flex: 1, minWidth: 0, background: 'transparent', font: '400 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}
+        />
       </div>
-    </div>
+
+      {visibleItems.length > 0 ? (
+        <ul role="list" style={{ listStyle: 'none', margin: 'var(--space-4) 0 0', padding: 0 }}>
+          {visibleItems.map((it) => {
+            const selected = it.key === selectedKey;
+            return (
+              <li key={it.key}>
+                <button type="button" aria-current={selected || undefined} onClick={() => pick(it.key)} style={rowButtonStyle(selected)}>
+                  <span dir="auto">{it.label}</span>
+                  {selected && <Icon name="check" size={16} />}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p role="status" style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-5) 0 0' }}>
+          {t('progress.noResults', { query: query.trim() })}
+        </p>
+      )}
+    </SheetShell>
   );
 }

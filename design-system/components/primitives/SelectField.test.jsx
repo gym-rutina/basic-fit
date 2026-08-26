@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SelectField } from '../../../design-system/components/primitives/SelectField.jsx';
+import { SelectField } from './SelectField.jsx';
 
 // pill-overflow-ux — OQ1/OQ2 ratified: SelectField is the design system's
 // FIRST form primitive, a thin wrapper around the native <select> (no listbox
-// machinery). It lives in design-system/ but its test lives under app/src/
-// because vitest.config.js includes only app/src/** and scripts/** — a test
-// colocated with the component would silently never run (tech-plan.md D-G,
-// DD-001 tracks the glob question).
+// machinery). Colocated with its component since the tech-debt audit
+// (2026-08-26 F3) extended vitest.config.js's include glob to design-system/**
+// — before that, a test here would silently never run, and this file lived
+// under app/src/components/ as an undocumented workaround.
 //
 // RED until Cmok creates SelectField.jsx.
 

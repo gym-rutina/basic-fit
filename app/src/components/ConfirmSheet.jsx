@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
+import { SheetShell } from './sheet/SheetShell.jsx';
 import { useI18n } from '../i18n/index.js';
 
 /**
@@ -15,12 +16,15 @@ import { useI18n } from '../i18n/index.js';
  * (AC28 back-compat for ConfirmSheet.test.jsx and the Import re-import
  * warning).
  *
- * Focus containment (AC26-AC28) is implemented ONCE here so every call site
+ * Focus containment (AC26-AC28) lives in SheetShell so every call site
  * inherits it with no per-caller change: on mount, focus moves into the
  * sheet and the previously focused element is remembered; Tab/Shift+Tab
- * wrap within the sheet's own focusable set; Escape triggers `onCancel`
- * UNLESS `busy` (a destructive transaction must never be orphaned
+ * wrap within the sheet's own focusable set (`trapFocus`); Escape triggers
+ * `onCancel` UNLESS `busy` (a destructive transaction must never be orphaned
  * mid-write); on unmount, focus returns to the element that opened it.
+ * This sheet also keeps its historical contract of NOT dismissing on scrim
+ * tap — an accidental backdrop touch must never abandon a confirmation
+ * mid-decision — hence `scrimCloses={false}` below.
  */
 export function ConfirmSheet({
   title,
@@ -48,113 +52,70 @@ export function ConfirmSheet({
 }) {
   const { t } = useI18n();
   const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
-  const sheetRef = useRef(null);
-  const previouslyFocusedRef = useRef(null);
+  // Read by the Escape handler below — SheetShell re-registers its document
+  // keydown listener per render, so the latest `busy` is always what gates it.
   const busyRef = useRef(busy);
   busyRef.current = busy;
 
-  useEffect(() => {
-    previouslyFocusedRef.current = document.activeElement;
-    const focusables = sheetRef.current ? Array.from(sheetRef.current.querySelectorAll('button:not(:disabled)')) : [];
-    if (focusables[0]) focusables[0].focus();
-    return () => {
-      const toRestore = previouslyFocusedRef.current;
-      if (toRestore && typeof toRestore.focus === 'function') toRestore.focus();
-    };
-  }, []);
-
-  function focusableButtons() {
-    return sheetRef.current ? Array.from(sheetRef.current.querySelectorAll('button:not(:disabled)')) : [];
-  }
-
-  function handleKeyDown(e) {
-    if (e.key === 'Escape') {
-      if (!busyRef.current) onCancel && onCancel();
-      return;
-    }
-    if (e.key !== 'Tab') return;
-    const focusables = focusableButtons();
-    if (focusables.length === 0) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  }
-
   return (
-    <div
-      onKeyDown={handleKeyDown}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(45,45,45,.5)', zIndex: 300, display: 'flex', alignItems: 'flex-end' }}
+    <SheetShell
+      role={role}
+      labelledBy="confirm-sheet-title"
+      scrimCloses={false}
+      trapFocus
+      onEscape={() => {
+        if (!busyRef.current) onCancel && onCancel();
+      }}
     >
-      <div
-        ref={sheetRef}
-        role={role}
-        aria-modal="true"
-        aria-labelledby="confirm-sheet-title"
-        style={{
-          background: 'var(--bf-white)',
-          width: '100%',
-          borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
-          paddingTop: 'var(--space-6)',
-          paddingInline: 'var(--page-pad-x)',
-          paddingBottom: 'calc(var(--space-6) + env(safe-area-inset-bottom, 0px))',
-        }}
-      >
-        <h3 id="confirm-sheet-title" style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }}>
-          {title}
-        </h3>
-        {description && <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 var(--space-5)' }}>{description}</p>}
-        {error && (
-          <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bf-danger-tint)', border: '1px solid var(--bf-danger)', borderRadius: 'var(--radius-md)', padding: '10px 14px', font: 'var(--text-body-sm)', color: 'var(--bf-danger)', marginBottom: 'var(--space-5)' }}>
-            <Icon name="alert-triangle" size={16} style={{ flexShrink: 0 }} /> {error}
-          </div>
-        )}
-        {/* multi-rutina-library — optional content slot between description
-            and buttons (the successor-picker radiogroup). Absent everywhere
-            else, so existing renders are byte-identical. */}
-        {children}
-        <div style={{ display: 'grid', gap: 10 }}>
-          {onPrimary && (
-            <Button
-              variant="primary"
-              disabled={busy || primaryDisabled}
-              style={{ width: '100%', ...(danger ? { background: 'var(--bf-danger)', borderColor: 'var(--bf-danger)' } : {}) }}
-              onClick={onPrimary}
-            >
-              {primaryLabel}
-            </Button>
-          )}
-          {onSecondary && (
-            <Button variant="outline" disabled={busy} style={{ width: '100%' }} onClick={onSecondary}>
-              {secondaryLabel}
-            </Button>
-          )}
-          {destructiveAction && (
-            <>
-              <div style={{ height: 1, background: 'var(--bf-grey-2)', margin: '2px 0' }} />
-              <Button
-                variant="ghost"
-                disabled={busy}
-                style={{ width: '100%', color: 'var(--bf-danger)', minHeight: 44 }}
-                onClick={destructiveAction.onClick}
-              >
-                {destructiveAction.label}
-              </Button>
-              <div style={{ height: 1, background: 'var(--bf-grey-2)', margin: '2px 0' }} />
-            </>
-          )}
-          {onCancel && (
-            <Button variant="ghost" disabled={busy} style={{ width: '100%' }} onClick={onCancel}>
-              {resolvedCancelLabel}
-            </Button>
-          )}
+      <h3 id="confirm-sheet-title" style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }}>
+        {title}
+      </h3>
+      {description && <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 var(--space-5)' }}>{description}</p>}
+      {error && (
+        <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bf-danger-tint)', border: '1px solid var(--bf-danger)', borderRadius: 'var(--radius-md)', padding: '10px 14px', font: 'var(--text-body-sm)', color: 'var(--bf-danger)', marginBottom: 'var(--space-5)' }}>
+          <Icon name="alert-triangle" size={16} style={{ flexShrink: 0 }} /> {error}
         </div>
+      )}
+      {/* multi-rutina-library — optional content slot between description
+          and buttons (the successor-picker radiogroup). Absent everywhere
+          else, so existing renders are byte-identical. */}
+      {children}
+      <div style={{ display: 'grid', gap: 10 }}>
+        {onPrimary && (
+          <Button
+            variant="primary"
+            disabled={busy || primaryDisabled}
+            style={{ width: '100%', ...(danger ? { background: 'var(--bf-danger)', borderColor: 'var(--bf-danger)' } : {}) }}
+            onClick={onPrimary}
+          >
+            {primaryLabel}
+          </Button>
+        )}
+        {onSecondary && (
+          <Button variant="outline" disabled={busy} style={{ width: '100%' }} onClick={onSecondary}>
+            {secondaryLabel}
+          </Button>
+        )}
+        {destructiveAction && (
+          <>
+            <div style={{ height: 1, background: 'var(--bf-grey-2)', margin: '2px 0' }} />
+            <Button
+              variant="ghost"
+              disabled={busy}
+              style={{ width: '100%', color: 'var(--bf-danger)', minHeight: 44 }}
+              onClick={destructiveAction.onClick}
+            >
+              {destructiveAction.label}
+            </Button>
+            <div style={{ height: 1, background: 'var(--bf-grey-2)', margin: '2px 0' }} />
+          </>
+        )}
+        {onCancel && (
+          <Button variant="ghost" disabled={busy} style={{ width: '100%' }} onClick={onCancel}>
+            {resolvedCancelLabel}
+          </Button>
+        )}
       </div>
-    </div>
+    </SheetShell>
   );
 }

@@ -1,6 +1,6 @@
 {
   "name": "basicfit-rutina",
-  "version": "1.17.0",
+  "version": "1.17.1",
   "description": "BasicFit Equipment Catalog and Routine Generator",
   "scripts": {
     "serve": "npx --yes serve . -p 3000",
