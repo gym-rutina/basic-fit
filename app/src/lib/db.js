@@ -1,5 +1,6 @@
 import { openDB } from 'idb';
 import { exerciseKey } from './exerciseKey.js';
+import { reconcileLastWeights } from './backupFormat.js';
 
 /**
  * IndexedDB wrapper (db name `basicfit-rutina`, version 4). Storage schema
@@ -470,6 +471,106 @@ export async function getLastWeight(key) {
 export async function setLastWeight(key, weight, loggedAt = new Date().toISOString(), { equipmentId, name } = {}) {
   return withDb(async (db) => {
     await db.put('lastWeights', { exerciseKey: key, weight, loggedAt, equipmentId, name });
+  });
+}
+
+// ── full-data-backup — bulk read + ATOMIC bulk-replace ───────────────────
+//
+// Both run inside ONE withDb call and ONE transaction over all four user-data
+// stores (tech-plan.md §1, AD-2) — NOT composed from the exported functions
+// above (each opens its own short-lived connection, per this module's
+// docblock, which would create a partial-write window and fail AC9).
+
+const BACKUP_STORES = ['rutinas', 'activeRutina', 'sessions', 'lastWeights'];
+
+/**
+ * Every user-data store, for the backup envelope. Pure read (readonly tx) —
+ * running it twice leaves the DB byte-identical (spec AC5).
+ * @returns {Promise<{ rutinas: any[], activeRutinaId: string|null, sessions: any[], lastWeights: any[] }>}
+ *   rutinas seq-sorted; activeRutinaId from the `activeRutina.current` pointer, or null.
+ */
+export async function readAllForBackup() {
+  return withDb(async (db) => {
+    const tx = db.transaction(BACKUP_STORES, 'readonly');
+    const rutinas = await tx.objectStore('rutinas').getAll();
+    const pointer = await tx.objectStore('activeRutina').get('current');
+    const sessions = await tx.objectStore('sessions').getAll();
+    const lastWeights = await tx.objectStore('lastWeights').getAll();
+    await tx.done;
+    rutinas.sort((a, b) => ((a && a.seq) || 0) - ((b && b.seq) || 0));
+    return {
+      rutinas,
+      activeRutinaId: pointer && pointer.rutinaId != null ? pointer.rutinaId : null,
+      sessions,
+      lastWeights,
+    };
+  });
+}
+
+/**
+ * Wholesale replace of all four user-data stores from a backup envelope's
+ * `data` block, in ONE readwrite transaction (spec AC9 — atomic: a failure
+ * mid-restore leaves the previous state fully intact). `lastWeights` is
+ * RECOMPUTED from `data.sessions` via reconcileLastWeights (spec AC8 —
+ * "sessions win"); the envelope's own `data.lastWeights` is never trusted.
+ *
+ * AC9 atomicity: any throw between the first clear() and `tx.done` is caught,
+ * the transaction is explicitly aborted (a naive one-tx restore WITHOUT
+ * `tx.abort()` commits the writes that already ran — Bagnik probed this), and
+ * the error is rethrown. `tx.abort()` also rejects `tx.done`; that rejection
+ * is pre-handled by `settled` so an aborted restore never leaves a floating
+ * AbortError (vitest fails the run on unhandled rejections).
+ *
+ * @param {{ rutinas: any[], activeRutinaId: string|null, sessions: any[], lastWeights?: any[] }} data
+ * @returns {Promise<void>}
+ */
+export async function restoreFromBackup(data) {
+  const src = data || {};
+  const rutinas = Array.isArray(src.rutinas) ? src.rutinas : [];
+  const sessions = Array.isArray(src.sessions) ? src.sessions : [];
+  const activeRutinaId = src.activeRutinaId != null ? src.activeRutinaId : null;
+  // Recompute BEFORE the tx opens — reconcileLastWeights is pure (spec AC8).
+  const lastWeights = reconcileLastWeights(sessions);
+
+  return withDb(async (db) => {
+    const tx = db.transaction(BACKUP_STORES, 'readwrite');
+    // Pre-handle the abort rejection: tx.abort() rejects tx.done with
+    // AbortError, and an unhandled rejection fails the vitest run.
+    const settled = tx.done.catch(() => {});
+    try {
+      const rutinasStore = tx.objectStore('rutinas');
+      const activeStore = tx.objectStore('activeRutina');
+      const sessionsStore = tx.objectStore('sessions');
+      const weightsStore = tx.objectStore('lastWeights');
+
+      await rutinasStore.clear();
+      await activeStore.clear();
+      await sessionsStore.clear();
+      await weightsStore.clear();
+
+      for (const entry of rutinas) {
+        await rutinasStore.put(entry);
+      }
+      if (activeRutinaId != null) {
+        await activeStore.put({ key: 'current', rutinaId: activeRutinaId });
+      }
+      for (const session of sessions) {
+        await sessionsStore.put(session);
+      }
+      for (const record of lastWeights) {
+        await weightsStore.put(record);
+      }
+
+      await tx.done;
+    } catch (err) {
+      try {
+        tx.abort();
+      } catch {
+        // Already aborted / transaction inactive — nothing to undo.
+      }
+      await settled;
+      throw err;
+    }
   });
 }
 

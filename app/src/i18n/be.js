@@ -58,6 +58,32 @@ export default {
   'access.errorUnsafeScheme': 'Прымаюцца толькі спасылкі https: — «{scheme}» небяспечная.',
   'access.errorInvalidUrl': 'Гэта не падобнае на сапраўдную спасылку. Скапіруйце яе нанова з зыходнага паведамлення.',
 
+  // ── backup (BackupSection.jsx / RestoreSheet.jsx — full-data-backup) ─────
+  'backup.sectionTitle': 'Рэзервовая копія',
+  'backup.exportAction': 'Спампаваць поўную копію',
+  'backup.exportingLabel': 'Падрыхтоўка…',
+  'backup.restoreAction': 'Аднавіць з копіі…',
+  'backup.chooseFileAction': 'Выбраць файл копіі',
+  'backup.disclosureBody':
+    'Копія змяшчае ўсё: праграмы, сесіі і налады. Аднаўленне ЗАМЯНЯЕ тое, што ёсць на гэтай прыладзе. Працуе без інтэрнэту.',
+  'backup.bearerWarning':
+    'Файл змяшчае спасылку доступу да клуба — хто яго мае, той можа зайсці ў залу. Стаўцеся да яго як да ключа.',
+  'backup.confirmTitle': 'Аднавіць з копіі',
+  'backup.confirmContents':
+    'Гэты файл змяшчае: {rutinas} праграм ({activa} актыўная), {sesiones} сесій, экспартавана {fecha}.',
+  'backup.confirmLoss':
+    'Бягучыя дадзеныя гэтай прылады БУДУЦЬ ВЫДАЛЕНЫ: {sesiones} сесій і {rutinas} праграм. Гэтае дзеянне немагчыма адмяніць.',
+  'backup.confirmEmpty': 'Будзе адноўлена {rutinas} праграм і {sesiones} сесій.',
+  'backup.confirmPrimary': 'Аднавіць і замяніць',
+  'backup.retryAction': 'Паўтарыць аднаўленне',
+  'backup.applyingLabel': 'Аднаўленне…',
+  'backup.doneAnnouncement': 'Копію адноўлена.',
+  'backup.errNewerVersion': 'Гэтая копія з навейшай версіі. Абнавіце праграму і паспрабуйце зноў.',
+  'backup.errInvalidFile': 'Файл несапраўдны або пашкоджаны. Праверце, што гэта файл «rutina-backup-….json».',
+  'backup.errInvalidRutina': 'Адна праграма ў файле несапраўдная: {error}. Усё аднаўленне скасавана.',
+  'backup.errApplyFailed': 'Не ўдалося аднавіць. Вашы бягучыя дадзеныя не закрануты.',
+  'backup.errExportFailed': 'Не ўдалося стварыць копію.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Прапусціць',
   'onboarding.next': 'Далей',
@@ -356,6 +382,7 @@ export default {
   'import.validating': 'Праверка...',
   'import.importAction': 'Імпартаваць',
   'import.loadExample': 'Загрузіць прыклад',
+  'import.restoreAction': 'Аднавіць з копіі…',
   'import.successTitle': 'Праграму праверана',
   'import.successSavedToLibrary': 'Яна будзе захаваная ў «Мае праграмы».',
   'import.successNoChange': 'Ваша актыўная праграма не змяняецца, пакуль вы яе не актывізуеце.',

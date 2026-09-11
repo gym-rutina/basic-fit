@@ -3,6 +3,7 @@ import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { GuideOverlay } from '../components/GuideOverlay.jsx';
 import { OnboardingOverlay } from '../components/OnboardingOverlay.jsx';
+import { RestoreSheet } from '../components/RestoreSheet.jsx';
 import { validateImportedRutina } from '../lib/validateImport.js';
 import { activateRutina, listRutinas, saveRutinaEntry } from '../lib/db.js';
 import exampleRutina from '../../../data/examples/phase1-monday.json';
@@ -38,6 +39,9 @@ export function ImportScreen({ onImported }) {
   // same OnboardingOverlay component, reopened here without touching the
   // persisted seen-flag (that's the overlay's own internal concern).
   const [showOnboarding, setShowOnboarding] = useState(false);
+  // full-data-backup S3 (ux-design.md §4) — the empty-state "Restaurar copia…"
+  // ghost entry opens the restore flow directly, bypassing the textarea.
+  const [showRestore, setShowRestore] = useState(false);
   // Validated payload awaiting the user's activate/save-only choice (the
   // non-empty-library branch of D-G). null = panel hidden.
   const [validatedRutina, setValidatedRutina] = useState(null);
@@ -198,9 +202,14 @@ export function ImportScreen({ onImported }) {
             {loading ? t('import.validating') : t('import.importAction')}
           </Button>
           {!text && (
-            <Button variant="ghost" style={{ width: '100%' }} onClick={loadExample}>
-              {t('import.loadExample')}
-            </Button>
+            <>
+              <Button variant="ghost" style={{ width: '100%' }} onClick={loadExample}>
+                {t('import.loadExample')}
+              </Button>
+              <Button variant="ghost" style={{ width: '100%' }} onClick={() => setShowRestore(true)}>
+                {t('import.restoreAction')}
+              </Button>
+            </>
           )}
         </div>
 
@@ -304,6 +313,13 @@ export function ImportScreen({ onImported }) {
             setShowOnboarding(false);
             onboardingLinkRef.current?.focus();
           }}
+        />
+      )}
+
+      {showRestore && (
+        <RestoreSheet
+          onClose={() => setShowRestore(false)}
+          onRestored={() => window.location.reload()}
         />
       )}
     </div>

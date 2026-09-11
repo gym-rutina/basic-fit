@@ -62,6 +62,32 @@ export default {
   'access.errorUnsafeScheme': 'Solo se aceptan enlaces https: — «{scheme}» no es seguro.',
   'access.errorInvalidUrl': 'No parece un enlace válido. Cópialo de nuevo desde el mensaje original.',
 
+  // ── backup (BackupSection.jsx / RestoreSheet.jsx — full-data-backup) ─────
+  'backup.sectionTitle': 'Copia de seguridad',
+  'backup.exportAction': 'Descargar copia completa',
+  'backup.exportingLabel': 'Preparando…',
+  'backup.restoreAction': 'Restaurar copia…',
+  'backup.chooseFileAction': 'Elegir archivo de copia',
+  'backup.disclosureBody':
+    'La copia contiene todo: rutinas, sesiones y ajustes. Restaurar REEMPLAZA lo que hay en este dispositivo. Funciona sin conexión.',
+  'backup.bearerWarning':
+    'El archivo incluye el enlace de acceso al club — quien lo tenga puede entrar al gimnasio. Trátalo como una llave.',
+  'backup.confirmTitle': 'Restaurar copia',
+  'backup.confirmContents':
+    'Este archivo contiene: {rutinas} rutinas ({activa} activa), {sesiones} sesiones, exportada el {fecha}.',
+  'backup.confirmLoss':
+    'Se BORRARÁ lo actual de este dispositivo: {sesiones} sesiones y {rutinas} rutinas. Esta acción no se puede deshacer.',
+  'backup.confirmEmpty': 'Se restaurarán {rutinas} rutinas y {sesiones} sesiones.',
+  'backup.confirmPrimary': 'Restaurar y reemplazar',
+  'backup.retryAction': 'Reintentar restauración',
+  'backup.applyingLabel': 'Restaurando…',
+  'backup.doneAnnouncement': 'Copia restaurada.',
+  'backup.errNewerVersion': 'Esta copia es de una versión más nueva. Actualiza la app e inténtalo de nuevo.',
+  'backup.errInvalidFile': 'El archivo no es válido o está dañado. Verifica que es el archivo «rutina-backup-….json».',
+  'backup.errInvalidRutina': 'Una rutina del archivo no es válida: {error}. Todo el restore se cancela.',
+  'backup.errApplyFailed': 'No se pudo restaurar. Tus datos actuales están intactos.',
+  'backup.errExportFailed': 'No se pudo generar la copia.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Saltar',
   'onboarding.next': 'Siguiente',
@@ -360,6 +386,7 @@ export default {
   'import.validating': 'Validando...',
   'import.importAction': 'Importar',
   'import.loadExample': 'Cargar ejemplo',
+  'import.restoreAction': 'Restaurar copia…',
   'import.successTitle': 'Rutina validada',
   'import.successSavedToLibrary': 'Se guardará en Mis rutinas.',
   'import.successNoChange': 'Tu programa activo no cambia salvo que la actives.',

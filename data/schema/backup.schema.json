@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Backup Envelope Schema",
+  "description": "The full-data-backup file: a complete, restorable snapshot of one device's user state. Produced by app/src/lib/backupFormat.js buildBackup() and consumed by parseBackup() + db.js restoreFromBackup(). This is ALSO the wire format synced by cloud-account-llm-rutina Section D (spec D4) — the future backend validates against a vendored copy of this file. Rutina payloads inside data.rutinas[].rutina are validated SEPARATELY, by id, against data/equipment.json via scripts/lib/rutina-validator.js (not expressible in JSON Schema alone) — same split as rutina.schema.json. additionalProperties is deliberately permissive at the envelope and data levels: spec AC10 requires unknown fields within a known formatVersion to be ignored, never fatal.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["formatVersion", "appVersion", "exportedAt", "data"],
+  "properties": {
+    "formatVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Backup format version. Starts at 1. A file with a HIGHER value than the app understands is rejected with 'update the app' (AC10); a LOWER known value is migrated forward."
+    },
+    "appVersion": {
+      "type": "string",
+      "description": "package.json version of the app that produced the file (AC2). Informational; not used to gate restore."
+    },
+    "exportedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of export (AC2). The only field that differs between two consecutive exports of an unchanged state (AC5)."
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["rutinas", "activeRutinaId", "sessions", "lastWeights", "settings"],
+      "properties": {
+        "rutinas": {
+          "type": "array",
+          "description": "The rutina library — every entry from the IndexedDB `rutinas` store, verbatim. Order is by `seq`.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["id", "rutina", "importedAt", "seq"],
+            "properties": {
+              "id": { "type": "string", "description": "Stable library entry id (UUID)." },
+              "rutina": { "type": "object", "description": "The validated rutina payload. Re-validated on restore against data/equipment.json (AC11)." },
+              "importedAt": { "type": "string", "description": "ISO timestamp the entry was added." },
+              "seq": { "type": "integer", "description": "Monotonic insertion counter — preserves library order across UUID keys." }
+            }
+          }
+        },
+        "activeRutinaId": {
+          "type": ["string", "null"],
+          "description": "The `id` of the active library entry, or null when none is active (empty-library state, spec AC5 of multi-rutina-library). Restores to activeRutina.current = {key:'current', rutinaId:<this>}."
+        },
+        "sessions": {
+          "type": "array",
+          "description": "Every session from the IndexedDB `sessions` store, all statuses, full exercises[] detail (weightUsed, difficulty, completedAt, dayIndex, rutinaId, attribution snapshot). Written verbatim on restore.",
+          "items": { "type": "object", "required": ["id"], "additionalProperties": true }
+        },
+        "lastWeights": {
+          "type": "array",
+          "description": "The per-exercise working-weight store, included for completeness/debuggability (AC1). NOT trusted on restore — db.js restoreFromBackup RECOMPUTES lastWeights from the restored sessions under saveSession's predicate; the sessions win (AC8).",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["exerciseKey", "weight"],
+            "properties": {
+              "exerciseKey": { "type": "string" },
+              "weight": { "type": "number" },
+              "loggedAt": { "type": "string" },
+              "equipmentId": { "type": ["string", "null"] },
+              "name": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "settings": {
+          "type": "object",
+          "description": "localStorage settings, keyed by their real storage key. ONLY the keys on app/src/lib/settingsRegistry.js's allowlist appear here — session tokens and the club-equipment outbox are structurally excluded (spec AC14 / cloud AC7). Values are the raw localStorage strings, restored verbatim. Unknown keys in a file are ignored on restore (AC10).",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

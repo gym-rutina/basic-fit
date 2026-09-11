@@ -61,6 +61,32 @@ export default {
   'access.errorUnsafeScheme': 'Seuls les liens https: sont acceptés — « {scheme} » n’est pas sûr.',
   'access.errorInvalidUrl': 'Ça ne ressemble pas à un lien valide. Recopie-le depuis le message d’origine.',
 
+  // ── backup (BackupSection.jsx / RestoreSheet.jsx — full-data-backup) ─────
+  'backup.sectionTitle': 'Sauvegarde',
+  'backup.exportAction': 'Télécharger la sauvegarde complète',
+  'backup.exportingLabel': 'Préparation…',
+  'backup.restoreAction': 'Restaurer une sauvegarde…',
+  'backup.chooseFileAction': 'Choisir le fichier de sauvegarde',
+  'backup.disclosureBody':
+    'La sauvegarde contient tout : programmes, séances et réglages. La restauration REMPLACE ce qui se trouve sur cet appareil. Fonctionne hors ligne.',
+  'backup.bearerWarning':
+    'Le fichier inclut ton lien d’accès au club — quiconque le possède peut entrer dans la salle. Traite-le comme une clé.',
+  'backup.confirmTitle': 'Restaurer une sauvegarde',
+  'backup.confirmContents':
+    'Ce fichier contient : {rutinas} programmes ({activa} actif), {sesiones} séances, exporté le {fecha}.',
+  'backup.confirmLoss':
+    'Ce qui se trouve sur cet appareil SERA SUPPRIMÉ : {sesiones} séances et {rutinas} programmes. Cette action est irréversible.',
+  'backup.confirmEmpty': '{rutinas} programmes et {sesiones} séances seront restaurés.',
+  'backup.confirmPrimary': 'Restaurer et remplacer',
+  'backup.retryAction': 'Réessayer la restauration',
+  'backup.applyingLabel': 'Restauration…',
+  'backup.doneAnnouncement': 'Sauvegarde restaurée.',
+  'backup.errNewerVersion': 'Cette sauvegarde provient d’une version plus récente. Mets à jour l’app et réessaie.',
+  'backup.errInvalidFile': 'Le fichier n’est pas valide ou est endommagé. Vérifie qu’il s’agit du fichier « rutina-backup-….json ».',
+  'backup.errInvalidRutina': 'Un programme du fichier n’est pas valide : {error}. Toute la restauration est annulée.',
+  'backup.errApplyFailed': 'Restauration impossible. Tes données actuelles sont intactes.',
+  'backup.errExportFailed': 'Impossible de générer la sauvegarde.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Passer',
   'onboarding.next': 'Suivant',
@@ -359,6 +385,7 @@ export default {
   'import.validating': 'Validation...',
   'import.importAction': 'Importer',
   'import.loadExample': 'Charger un exemple',
+  'import.restoreAction': 'Restaurer une sauvegarde…',
   'import.successTitle': 'Routine validée',
   'import.successSavedToLibrary': 'Elle sera enregistrée dans Mes programmes.',
   'import.successNoChange': 'Ton programme actif ne change pas tant que tu ne l’actives pas.',

@@ -56,6 +56,32 @@ export default {
   'access.errorUnsafeScheme': 'Only https: links are accepted — «{scheme}» is not safe.',
   'access.errorInvalidUrl': "Doesn't look like a valid link. Copy it again from the original message.",
 
+  // ── backup (BackupSection.jsx / RestoreSheet.jsx — full-data-backup) ─────
+  'backup.sectionTitle': 'Backup',
+  'backup.exportAction': 'Download full backup',
+  'backup.exportingLabel': 'Preparing…',
+  'backup.restoreAction': 'Restore backup…',
+  'backup.chooseFileAction': 'Choose backup file',
+  'backup.disclosureBody':
+    'The backup contains everything: routines, sessions and settings. Restoring REPLACES what is on this device. Works offline.',
+  'backup.bearerWarning':
+    'The file includes your club access link — anyone who has it can get into the gym. Treat it like a key.',
+  'backup.confirmTitle': 'Restore backup',
+  'backup.confirmContents':
+    'This file contains: {rutinas} routines ({activa} active), {sesiones} sessions, exported on {fecha}.',
+  'backup.confirmLoss':
+    'This will DELETE what is on this device: {sesiones} sessions and {rutinas} routines. This cannot be undone.',
+  'backup.confirmEmpty': '{rutinas} routines and {sesiones} sessions will be restored.',
+  'backup.confirmPrimary': 'Restore and replace',
+  'backup.retryAction': 'Retry restore',
+  'backup.applyingLabel': 'Restoring…',
+  'backup.doneAnnouncement': 'Backup restored.',
+  'backup.errNewerVersion': 'This backup is from a newer version. Update the app and try again.',
+  'backup.errInvalidFile': 'The file is not valid or is damaged. Check that it is the «rutina-backup-….json» file.',
+  'backup.errInvalidRutina': 'A routine in the file is not valid: {error}. The whole restore is cancelled.',
+  'backup.errApplyFailed': 'Could not restore. Your current data is intact.',
+  'backup.errExportFailed': 'Could not generate the backup.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Skip',
   'onboarding.next': 'Next',
@@ -354,6 +380,7 @@ export default {
   'import.validating': 'Validating...',
   'import.importAction': 'Import',
   'import.loadExample': 'Load example',
+  'import.restoreAction': 'Restore backup…',
   'import.successTitle': 'Routine validated',
   'import.successSavedToLibrary': 'It will be saved to My routines.',
   'import.successNoChange': 'Your active program does not change unless you activate it.',

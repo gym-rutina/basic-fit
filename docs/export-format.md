@@ -171,10 +171,16 @@ parenthetical because it has no `equipmentId` — and that the blocks are alphab
 
 ### Purpose
 
-A complete, machine-readable archive of every logged exercise, keyed by
-[exercise key](#exercise-key) rather than by machine. Nothing in the PWA re-imports
-this file — the Import screen only accepts `rutina.json` training programs — so treat
-it as a backup or a cross-reference against the Markdown text, not a round-trip format.
+A machine-readable archive of every logged **exercise**, keyed by
+[exercise key](#exercise-key) rather than by machine — a cross-reference against the
+Markdown text above, not a round-trip format: nothing in the PWA re-imports this file
+(the Import screen only accepts `rutina.json` training programs).
+
+**This is not a backup.** It is a lossy, per-exercise digest by design — it drops the
+rutina itself, session ids, statuses, timestamps, `dayIndex`, abandoned-session detail,
+and every app setting. For a complete, restorable copy of everything the app knows, use
+**Settings → Copia de seguridad** instead — see the
+[Backup Format Reference](backup-format.md).
 
 ### Format
 

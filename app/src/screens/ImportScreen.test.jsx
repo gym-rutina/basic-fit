@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ImportScreen } from './ImportScreen.jsx';
 import * as db from '../lib/db.js';
@@ -16,6 +16,10 @@ vi.mock('../lib/db.js', () => ({
   listRutinas: vi.fn().mockResolvedValue([]),
   saveRutinaEntry: vi.fn(),
   activateRutina: vi.fn(),
+  // full-data-backup — RestoreSheet (mounted by the new "Restaurar copia…"
+  // entry) reads these; a resolved empty snapshot keeps the confirm beat calm.
+  readAllForBackup: vi.fn().mockResolvedValue({ rutinas: [], activeRutinaId: null, sessions: [], lastWeights: [] }),
+  restoreFromBackup: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../lib/onboardingStorage.js', () => ({
@@ -234,5 +238,55 @@ describe('ImportScreen — library dual path (multi-rutina-library AC22/AC23/AC2
     expect(await screen.findByRole('alert')).toBeInTheDocument(); // the existing errors block
     expect(db.listRutinas).not.toHaveBeenCalled();
     expect(db.saveRutinaEntry).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * full-data-backup S3 (ux-design.md §4, mockup frame F) — the empty-state
+ * "Restaurar copia…" ghost entry. Same visibility rule as "Cargar ejemplo"
+ * ({!text && …}); opens the restore flow directly (RestoreSheet), bypassing
+ * the import textarea. Copy must never say "importar" (AC16 wording
+ * separation). Red until Cmok wires the button + RestoreSheet into
+ * ImportScreen.jsx.
+ */
+describe('ImportScreen — restore-copy entry (full-data-backup S3, OQ-4/AC16)', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('shows "Restaurar copia…" while the textarea is empty, next to "Cargar ejemplo"', () => {
+    render(<ImportScreen />);
+    expect(screen.getByRole('button', { name: /restaurar copia/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ejemplo/i })).toBeInTheDocument();
+  });
+
+  it('hides both ghost controls once the textarea has content (same visibility rule)', () => {
+    render(<ImportScreen />);
+    fireEvent.change(screen.getByLabelText(/rutina\.json/i), { target: { value: '{"schemaVersion":1}' } });
+    expect(screen.queryByRole('button', { name: /restaurar copia/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ejemplo/i })).not.toBeInTheDocument();
+  });
+
+  it('its label never contains "importar" (AC16)', () => {
+    render(<ImportScreen />);
+    expect(screen.getByRole('button', { name: /restaurar copia/i }).textContent.toLowerCase()).not.toContain('importar');
+  });
+
+  it('clicking it mounts the RestoreSheet dialog (GAP-2 fix — real "opens flow" assertion)', async () => {
+    const user = userEvent.setup();
+    render(<ImportScreen />);
+    // ImportScreen shows no dialog at rest (the guide/onboarding overlays are role="dialog"
+    // too but are closed here) — assert the transition on click.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /restaurar copia/i }));
+
+    // RestoreSheet's "pick" state is a role="dialog" sheet with its OWN file-choose
+    // control. Scope the button query INSIDE the dialog: ImportScreen.jsx:194 has a
+    // pre-existing "Elegir archivo .json" button (the import picker) that also matches
+    // /elegir archivo/i — asserting it unscoped would (a) pass even if the wrong overlay
+    // opened and (b) throw "multiple elements" once RestoreSheet renders its own.
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: /elegir archivo/i })).toBeInTheDocument();
+    // opening the flow writes nothing
+    expect(db.restoreFromBackup).not.toHaveBeenCalled();
   });
 });

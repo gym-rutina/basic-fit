@@ -61,6 +61,32 @@ export default {
   'access.errorUnsafeScheme': 'Nur https:-Links werden akzeptiert — „{scheme}“ ist nicht sicher.',
   'access.errorInvalidUrl': 'Das sieht nicht nach einem gültigen Link aus. Kopiere ihn erneut aus der Originalnachricht.',
 
+  // ── backup (BackupSection.jsx / RestoreSheet.jsx — full-data-backup) ─────
+  'backup.sectionTitle': 'Sicherung',
+  'backup.exportAction': 'Vollständige Sicherung herunterladen',
+  'backup.exportingLabel': 'Wird vorbereitet…',
+  'backup.restoreAction': 'Sicherung wiederherstellen…',
+  'backup.chooseFileAction': 'Sicherungsdatei wählen',
+  'backup.disclosureBody':
+    'Die Sicherung enthält alles: Routinen, Sitzungen und Einstellungen. Das Wiederherstellen ERSETZT, was auf diesem Gerät ist. Funktioniert offline.',
+  'backup.bearerWarning':
+    'Die Datei enthält deinen Club-Zugangslink — wer sie hat, kommt ins Studio. Behandle sie wie einen Schlüssel.',
+  'backup.confirmTitle': 'Sicherung wiederherstellen',
+  'backup.confirmContents':
+    'Diese Datei enthält: {rutinas} Routinen ({activa} aktiv), {sesiones} Sitzungen, exportiert am {fecha}.',
+  'backup.confirmLoss':
+    'Was auf diesem Gerät ist, WIRD GELÖSCHT: {sesiones} Sitzungen und {rutinas} Routinen. Das kann nicht rückgängig gemacht werden.',
+  'backup.confirmEmpty': 'Es werden {rutinas} Routinen und {sesiones} Sitzungen wiederhergestellt.',
+  'backup.confirmPrimary': 'Wiederherstellen und ersetzen',
+  'backup.retryAction': 'Wiederherstellung erneut versuchen',
+  'backup.applyingLabel': 'Wird wiederhergestellt…',
+  'backup.doneAnnouncement': 'Sicherung wiederhergestellt.',
+  'backup.errNewerVersion': 'Diese Sicherung stammt aus einer neueren Version. Aktualisiere die App und versuche es erneut.',
+  'backup.errInvalidFile': 'Die Datei ist ungültig oder beschädigt. Prüfe, ob es die Datei „rutina-backup-….json“ ist.',
+  'backup.errInvalidRutina': 'Eine Routine in der Datei ist ungültig: {error}. Die gesamte Wiederherstellung wird abgebrochen.',
+  'backup.errApplyFailed': 'Wiederherstellung fehlgeschlagen. Deine aktuellen Daten sind unversehrt.',
+  'backup.errExportFailed': 'Sicherung konnte nicht erstellt werden.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Überspringen',
   'onboarding.next': 'Weiter',
@@ -360,6 +386,7 @@ export default {
   'import.validating': 'Wird validiert...',
   'import.importAction': 'Importieren',
   'import.loadExample': 'Beispiel laden',
+  'import.restoreAction': 'Sicherung wiederherstellen…',
   'import.successTitle': 'Routine validiert',
   'import.successSavedToLibrary': 'Sie wird in Meine Routinen gespeichert.',
   'import.successNoChange': 'Dein aktives Programm ändert sich nicht, solange du es nicht aktivierst.',

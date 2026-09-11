@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
+import { BackupSection } from '../components/BackupSection.jsx';
 import { ClubAccessSection } from '../components/ClubAccessSection.jsx';
 import { SelectField } from '../../../design-system/components/primitives/SelectField.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
@@ -64,6 +65,11 @@ export function SettingsScreen() {
         />
 
         <hr aria-hidden="true" style={{ border: 'none', borderTop: '1px solid var(--border-default)', margin: 'var(--space-8) 0 0' }} />
+
+        {/* full-data-backup S1 (tech-plan.md §1): Idioma → Copia de seguridad
+            → Acceso al club. Each section is self-contained and owns its own
+            trailing separator. */}
+        <BackupSection />
 
         {/* club-invite-link (D-H): the section owns everything below the
             language block, including its own trailing separator. */}

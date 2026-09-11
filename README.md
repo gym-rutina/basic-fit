@@ -8,7 +8,7 @@ A six-language (EN/ES/BE/FR/NL/DE) equipment catalog and training-routine PWA fo
 
 A bundled club directory covers 1,727 BasicFit locations across 6 countries (Netherlands, Belgium, France, Luxembourg, Spain, Germany). The PWA's **Club Picker** lets you search it by country → city → club and remembers your choice; the Catálogo tab uses it to offer a "just my club's equipment" filter. See "Selecting your club" below.
 
-The **Rutina PWA** (`app/`) lets you build a library of imported `rutina.json` training programs — several kept side by side, exactly one active at a time, switchable without losing session history or your logged weights — log workout sessions with per-exercise weight and difficulty, review history across all of them, and export progress. All offline, no backend.
+The **Rutina PWA** (`app/`) lets you build a library of imported `rutina.json` training programs — several kept side by side, exactly one active at a time, switchable without losing session history or your logged weights — log workout sessions with per-exercise weight and difficulty, review history across all of them, export progress, and back up / restore everything the app knows. All offline, no backend.
 
 ## Quick Start
 
@@ -46,12 +46,14 @@ basicfit-rutina/
 │       │   ├── ProgressCharts.jsx  # Hand-rolled SVG weight/volume/frequency charts
 │       │   ├── ConfirmSheet.jsx    # Reusable confirmation sheet
 │       │   ├── ClubAccessSection.jsx  # Settings "Acceso al club" section (save/open a Basic-Fit invite link)
+│       │   ├── BackupSection.jsx  # Settings "Copia de seguridad" section (download a full backup, opens RestoreSheet)
+│       │   ├── RestoreSheet.jsx   # Pick file → parse+validate → count-bearing confirm → atomic restore
 │       │   ├── LibraryScreen.jsx  # /library — "Mis rutinas": activate/delete imported rutinas (exactly one active)
 │       │   └── InstallBanner.jsx   # "Add to Home Screen" banner (beforeinstallprompt)
 │       ├── hooks/
 │       │   └── useInstallPrompt.js # Captures beforeinstallprompt; drives InstallBanner
 │       ├── screens/
-│       │   ├── ImportScreen.jsx    # Import a rutina.json
+│       │   ├── ImportScreen.jsx    # Import a rutina.json; empty state also offers "Restaurar copia…" (RestoreSheet)
 │       │   ├── HomeScreen.jsx      # Next-workout proposal + day picker + recent sessions + club access button
 │       │   ├── ProgramScreen.jsx   # Full routine view (all days)
 │       │   ├── ActiveSessionScreen.jsx  # Live workout logging
@@ -59,9 +61,9 @@ basicfit-rutina/
 │       │   ├── ProgressScreen.jsx  # Weight/volume/frequency progress charts
 │       │   ├── ExportScreen.jsx    # JSON + Markdown export
 │       │   ├── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE/FR/NL/DE)
-│       │   └── SettingsScreen.jsx  # Settings screen (UI language switcher + club access link)
+│       │   └── SettingsScreen.jsx  # Settings screen (UI language switcher, backup/restore, club access link)
 │       ├── lib/
-│       │   ├── db.js               # IndexedDB wrapper (idb): rutinas library + activeRutina pointer, sessions, lastWeights, clubEquipment
+│       │   ├── db.js               # IndexedDB wrapper (idb): rutinas library + activeRutina pointer, sessions, lastWeights, clubEquipment; readAllForBackup + atomic restoreFromBackup
 │       │   ├── sessionMachine.js   # Pure session-state reducer
 │       │   ├── progress.js         # Session aggregators for Progress charts (no new store)
 │       │   ├── exportFormat.js     # sessions[] → { json, markdown }
@@ -73,7 +75,10 @@ basicfit-rutina/
 │       │   ├── trends.js           # Per-exercise trend list for History screen
 │       │   ├── inviteUrl.js        # Invite-link validator (trim → URL ctor → https-only allowlist)
 │       │   ├── inviteStorage.js    # Invite-URL persistence ('rutina:clubInviteUrl'; degrade-don't-throw)
-│       │   └── libraryNoticeStorage.js  # One-shot "Mis rutinas" migration-notice flag ('rutina:libraryNoticeSeen')
+│       │   ├── libraryNoticeStorage.js  # One-shot "Mis rutinas" migration-notice flag ('rutina:libraryNoticeSeen')
+│       │   ├── backupFormat.js     # buildBackup/parseBackup/reconcileLastWeights — the backup envelope, pure + isomorphic
+│       │   ├── settingsRegistry.js # The 6-key localStorage allowlist backed up/restored (readAllSettings/writeAllSettings)
+│       │   └── appVersion.js       # package.json `version`, stamped into the backup envelope's `appVersion` field
 │       └── data/
 │           └── equipment.js        # Imports data/equipment.json at build time
 ├── data/
@@ -87,7 +92,8 @@ basicfit-rutina/
 │   │   └── phase1-monday.json      # Example rutina.json for first-run import (incl. a gear + a bodyweight exercise)
 │   └── schema/
 │       ├── equipment.schema.json
-│       └── rutina.schema.json      # Schema for training programs
+│       ├── rutina.schema.json      # Schema for training programs
+│       └── backup.schema.json      # Full-data backup envelope schema (draft-07, additionalProperties: true)
 ├── design-system/                  # Component library (tokens, primitives, composites)
 ├── scripts/                        # Node.js build and scraping scripts
 │   ├── lib/
@@ -101,6 +107,7 @@ basicfit-rutina/
 │   └── viewport-check.js           # Puppeteer: no horizontal scroll + tab-bar row-wrap at 280/360/390/412/768px
 ├── docs/
 │   ├── export-format.md            # Export Markdown + JSON format reference (LLM paste contract)
+│   ├── backup-format.md            # Full-data backup envelope reference (distinct from the export above)
 │   ├── llm-rutina-prompt-template.txt  # Copy-paste LLM prompt (shared)
 │   ├── llm-rutina-prompt.en.md         # English guide
 │   ├── llm-rutina-prompt.es.md         # Spanish / Español
@@ -162,7 +169,7 @@ npm run test:viewport    # verify no horizontal overflow and tab-bar stays singl
 ### Running tests
 
 ```bash
-npm test                 # Vitest suites: sessionMachine, exportFormat, nextDay, db, rutinaLibrary, validateImport, ProgramScreen, LibraryScreen, ConfirmSheet, useInstallPrompt, inviteUrl, inviteStorage, ClubAccessSection, scraper/normalize/validator scripts
+npm test                 # Vitest suites: sessionMachine, exportFormat, nextDay, db, rutinaLibrary, validateImport, ProgramScreen, LibraryScreen, ConfirmSheet, useInstallPrompt, inviteUrl, inviteStorage, ClubAccessSection, backupFormat, settingsRegistry, db.backup, BackupSection, RestoreSheet, ExportScreen.regression, scraper/normalize/validator scripts
 npm run validate-data    # data integrity gate (48 equipment items; also validates data/gyms/ when present)
 ```
 
@@ -231,7 +238,20 @@ Two safety behaviors worth knowing before running it:
 
 The app holds any number of imported rutinas side by side; exactly one is **active** — it's the one Programa renders, Home proposes from, and new sessions attribute themselves to. Open the library from the **Programa** tab's **Mis rutinas** action. Every entry lists its name, phase, and day count, with the active one tagged **Activa**; **Activar** swaps the active rutina instantly across every screen, no reload needed. Deleting a rutina never touches its history — its sessions stay in Historial under that rutina's name (see History above) — and deleting the *active* rutina asks which of the remaining ones should take over (**Eliminar y activar…**); removing your very last rutina returns the app to the import screen. If a workout is in progress when you switch, the app warns you first that the running session will stay linked to its original rutina. Importing while the library already has entries adds to it without changing what's active: the success panel offers **Activar ahora** or **Guardar sin activar** — an empty library still activates silently, so a first run behaves exactly as it always has. If you used an earlier single-program version of the app, a one-time notice on **Programa** («Tu programa ahora vive en Mis rutinas.») simply points here — nothing moved, nothing lost.
 
-All data is stored locally in your browser — IndexedDB for routines and sessions, browser settings storage (`localStorage`) for configuration like your club pick, UI language, and saved club-access link — no account, no server.
+All data is stored locally in your browser — IndexedDB for routines and sessions, browser settings storage (`localStorage`) for configuration like your club pick, UI language, and saved club-access link — no account, no server. Nothing leaves the device unless you explicitly export or share a file: a backup (below) is one such file, a plain-text JSON you download and keep wherever you put it, and if you've saved a club invite link it travels inside that file too — disclosed in-app as a bearer capability before every download, because whoever opens the file can use it to enter your gym.
+
+### Copia de seguridad y restauración
+
+PWA storage is **not permanent** — a browser "clear site data", switching browsers, moving to a new phone, or an iOS PWA left untouched for about a week can all wipe IndexedDB and `localStorage` with no warning. A backup is the only way to get your data out of one device and back into another.
+
+Open **Settings** (the sliders icon in the header) → **Copia de seguridad**:
+
+- **Descargar copia completa** — downloads `rutina-backup-YYYY-MM-DD.json`: every rutina in your library, the active pointer, every session (including abandoned ones), your per-exercise working weights, and the handful of app settings above. The section states plainly first: *"La copia contiene todo: rutinas, sesiones y ajustes. Restaurar REEMPLAZA lo que hay en este dispositivo. Funciona sin conexión."* If a club invite link is saved, an extra line warns it's included: *"El archivo incluye el enlace de acceso al club — quien lo tenga puede entrar al gimnasio. Trátalo como una llave."*
+- **Restaurar copia…** — pick a previously downloaded backup file. The same control also appears as a ghost button on the empty **Import** screen, for the moment you actually need it most: a new phone with nothing imported yet.
+
+Restoring shows exactly what the file contains (rutina/session counts, export date) and, when the device already has local data, **exactly what will be lost** — e.g. *"Se BORRARÁ lo actual de este dispositivo: 34 sesiones y 2 rutinas. Esta acción no se puede deshacer."* — before asking you to confirm. **Restore replaces, it does not merge**: confirming wholesale-overwrites the current library, sessions and working weights with the file's contents; there is no partial or selective restore. Restoring onto an empty install (nothing to lose) skips the loss warning. A file from a newer app version is rejected with a message asking you to update first, never partially applied; a mid-restore failure leaves your existing data untouched.
+
+This is a different file from the **Exportar progreso** JSON/Markdown export (step 7 above) — see [Backup Format Reference](docs/backup-format.md#the-two-exports) for the full comparison. Short version: the progress export is a lossy, human-readable digest meant for pasting into an LLM chat and cannot be re-imported; the backup is a complete, lossless, restorable copy of everything the app knows, meant for moving between devices or surviving storage loss.
 
 ### Selecting your club
 
@@ -384,7 +404,7 @@ Three things changed on the rutina side:
 - **`exercises[].equipmentId` is optional and nullable.** Omitted or `null` means a bodyweight exercise (like the plank above) — the UI shows just the exercise name, and it is not a validation failure or a broken lookup.
 - **A new root-level `extraEquipment[]`** array lets a rutina declare gear the catalog doesn't carry (a resistance band, a foam roller — no manufacturer identity). Each entry needs a kebab-case `id` that doesn't collide with a catalog id, a `kind` that's always the literal string `"gear"` (equipment.schema.json deliberately rejects `"gear"` as a `kind` value — the two schemas disagree on that one string on purpose), and trilingual `names`. An exercise's `equipmentId` can point at either the catalog or `extraEquipment[]` — they share one id namespace for lookup purposes.
 
-Full schemas: `data/schema/equipment.schema.json` and `data/schema/rutina.schema.json`.
+Full schemas: `data/schema/equipment.schema.json` and `data/schema/rutina.schema.json`. The full-data backup has its own envelope schema, `data/schema/backup.schema.json` — see [Backup Format Reference](docs/backup-format.md).
 
 ## Equipment Catalog
 

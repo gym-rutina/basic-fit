@@ -61,6 +61,32 @@ export default {
   'access.errorUnsafeScheme': 'Alleen https:-links worden geaccepteerd — ‘{scheme}’ is niet veilig.',
   'access.errorInvalidUrl': 'Dit lijkt geen geldige link. Kopieer hem opnieuw uit het originele bericht.',
 
+  // ── backup (BackupSection.jsx / RestoreSheet.jsx — full-data-backup) ─────
+  'backup.sectionTitle': 'Back-up',
+  'backup.exportAction': 'Volledige back-up downloaden',
+  'backup.exportingLabel': 'Voorbereiden…',
+  'backup.restoreAction': 'Back-up herstellen…',
+  'backup.chooseFileAction': 'Back-upbestand kiezen',
+  'backup.disclosureBody':
+    'De back-up bevat alles: routines, sessies en instellingen. Herstellen VERVANGT wat op dit apparaat staat. Werkt offline.',
+  'backup.bearerWarning':
+    'Het bestand bevat je clubtoegangslink — wie het bestand heeft, kan de sportschool in. Behandel het als een sleutel.',
+  'backup.confirmTitle': 'Back-up herstellen',
+  'backup.confirmContents':
+    'Dit bestand bevat: {rutinas} routines ({activa} actief), {sesiones} sessies, geëxporteerd op {fecha}.',
+  'backup.confirmLoss':
+    'Wat op dit apparaat staat WORDT VERWIJDERD: {sesiones} sessies en {rutinas} routines. Dit kan niet ongedaan worden gemaakt.',
+  'backup.confirmEmpty': 'Er worden {rutinas} routines en {sesiones} sessies hersteld.',
+  'backup.confirmPrimary': 'Herstellen en vervangen',
+  'backup.retryAction': 'Herstellen opnieuw proberen',
+  'backup.applyingLabel': 'Herstellen…',
+  'backup.doneAnnouncement': 'Back-up hersteld.',
+  'backup.errNewerVersion': 'Deze back-up is van een nieuwere versie. Werk de app bij en probeer het opnieuw.',
+  'backup.errInvalidFile': 'Het bestand is niet geldig of is beschadigd. Controleer of het het bestand «rutina-backup-….json» is.',
+  'backup.errInvalidRutina': 'Een routine in het bestand is niet geldig: {error}. De hele herstelbewerking wordt geannuleerd.',
+  'backup.errApplyFailed': 'Herstellen mislukt. Je huidige gegevens zijn intact.',
+  'backup.errExportFailed': 'Kan de back-up niet genereren.',
+
   // ── onboarding ───────────────────────────────────────────────────────────
   'onboarding.skip': 'Overslaan',
   'onboarding.next': 'Volgende',
@@ -360,6 +386,7 @@ export default {
   'import.validating': 'Valideren...',
   'import.importAction': 'Importeren',
   'import.loadExample': 'Voorbeeld laden',
+  'import.restoreAction': 'Back-up herstellen…',
   'import.successTitle': 'Routine gevalideerd',
   'import.successSavedToLibrary': 'Hij wordt bewaard in Mijn routines.',
   'import.successNoChange': 'Je actieve programma verandert niet, tenzij je het activeert.',
