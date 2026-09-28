@@ -13,5 +13,5 @@ Key facts:
 - Type: Archivo / Archivo Expanded (Google Fonts substitute — official brand font not available). H1/H2 uppercase 800.
 - Buttons are lowercase pills. Cards: 12px radius, 1px #EBEBEB border, whisper shadow.
 - No logo file exists: render "Basic-Fit" in plain display type; never draw the logo.
-- Components live in `components/{core,data,routine,catalog,navigation}/`; full-screen examples in `ui_kits/rutina/`.
+- Components live in `components/{primitives,composite,sections}/`; full-screen examples in `ui_kits/rutina/`.
 - Primarily mobile: design at ~390px width first; grids use auto-fit minmax.
