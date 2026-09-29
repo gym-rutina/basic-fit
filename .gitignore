@@ -45,7 +45,7 @@ CLAUDE.md
 # --- Artefacts: all per-developer pipeline state (memory, features, PIPELINE.md, PROJECT.md, …) ---
 .tlk/
 #
-# --- Kit-installed agent + skill copies (personal; Veles ratchets these in place) ---
+# --- Kit-installed agent, skill and goal-loop copies (personal; Veles ratchets these) ---
 .claude/agents/bagnik.md
 .claude/agents/cmok.md
 .claude/agents/mokash.md
@@ -58,11 +58,16 @@ CLAUDE.md
 .claude/skills/cli-designing/
 .claude/skills/codebase-mapping/
 .claude/skills/consistency-auditing/
+.claude/skills/data-mocking/
+.claude/skills/design-generating/
 .claude/skills/knowledge-curating/
 .claude/skills/mockups-creating/
 .claude/skills/patterns-adapting/
 .claude/skills/prompts-building/
 .claude/skills/requirements-eliciting/
+.claude/skills/screenshots-testing/
+.claude/skills/storybook-generating/
 .claude/skills/tasks-researching/
 .claude/skills/ux-designing/
+.claude/loop.md
 # <<< talaka (managed) <<<
