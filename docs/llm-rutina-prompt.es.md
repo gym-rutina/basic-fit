@@ -57,11 +57,19 @@ se muestra junto al botón, por si tu chat tiende a truncar pegados largos.
 
 > **Campo 6 — gimnasio objetivo**
 > Usa el **Selector de club** de la app Rutina — pulsa la fila de club en el paso de
-> onboarding "Tu gimnasio", en la pestaña **Catálogo**, o la fila de club encima del
+> onboarding "Tu gimnasio", en **Ajustes → Mi club**, o la fila de club encima del
 > prompt en esta pantalla de guía. Una vez seleccionado el club, la app rellena el
 > campo 6 (nombre, ciudad, dirección) y añade automáticamente el listado de
 > equipamiento del club. Si tu club no está en el directorio, escribe directamente el
 > nombre y la dirección del gimnasio en el campo 6 del textarea.
+>
+> **¿A tu club le falta una máquina?** Márcala como ausente y el listado de equipamiento
+> del prompt se reduce en consecuencia, de modo que al LLM solo se le ofrece lo que tu
+> club tiene. Pulsa el chip bajo la tarjeta de ese equipo en la pestaña **Catálogo**
+> (**En mi club** ↔ **Fuera de mi club**), o desmárcala en **Ajustes → Mi club → Equipo
+> del club**. Ambos editan la misma lista guardada. Con el filtro **Solo mi club**
+> activado, la tarjeta que excluyes desaparece del catálogo; desactiva el filtro para
+> volver a verla y añadirla de nuevo.
 
 | # | Campo | Rellenado por | Ejemplo |
 |---|-------|----------------|---------|
@@ -70,7 +78,7 @@ se muestra junto al botón, por si tu chat tiende a truncar pegados largos.
 | 3 | Días por semana | Onboarding (paso "Tu horario") · editable en esta guía (selector 1–7) | 4 |
 | 4 | Presupuesto de duración de sesión | Onboarding (mismo paso) · editable en esta guía | "45-60 min entre semana, hasta 80 min los sábados" |
 | 5 | Lesiones / movimientos a evitar | Onboarding (paso "Antes de terminar") · editable en esta guía | "Tendinitis rotuliana en rodilla derecha..." — escribe "ninguna" si no hay |
-| 6 | Gimnasio objetivo | Selector de club (onboarding, pestaña Catálogo o esta guía) | Nombre, ciudad y dirección del club elegido, más el listado de equipamiento |
+| 6 | Gimnasio objetivo | Selector de club (onboarding, Ajustes → Mi club o esta guía) | Nombre, ciudad y dirección del club elegido, más el listado de equipamiento |
 | 7 | Idioma para el texto de salida | Idioma activo de la interfaz (Ajustes) — nunca se pregunta | "Español" (autónimo del idioma activo) |
 | 8 | Exportación de progreso previo | Historial de sesiones de la app, si tienes alguna registrada | Markdown de tus sesiones, con casilla "Incluir mi progreso" activada por defecto |
 
@@ -155,7 +163,7 @@ nada por su cuenta.
   pídele que relea el listado de equipamiento.
 - **El campo 6 o el listado de equipamiento falta en el prompt.** Tienes que seleccionar
   un club primero. Abre el **Selector de club** en el paso de onboarding "Tu gimnasio",
-  en la pestaña Catálogo o en esta pantalla de guía; una vez seleccionado el club, la
+  en **Ajustes → Mi club** o en esta pantalla de guía; una vez seleccionado el club, la
   app rellena el campo 6 y añade el listado automáticamente.
 
 ---

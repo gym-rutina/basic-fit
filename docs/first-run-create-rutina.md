@@ -52,4 +52,4 @@ Choose **Restaurar copia…** on the fork, pick your `rutina-backup-YYYY-MM-DD.j
 ## Notes
 
 - The prompt text itself is unchanged; see [`llm-rutina-prompt.en.md`](llm-rutina-prompt.en.md) for the field-by-field guide.
-- The club and equipment exclusions come from the same picker as the Catálogo tab.
+- The club and equipment exclusions are the same ones you manage in **Settings → Mi club** (and toggle per item from the Catálogo tab's cards).

@@ -54,10 +54,17 @@ to the button, in case your chat tends to truncate long pastes.
 
 > **Field 6 — target gym**
 > Use the **Club Picker** in the Rutina app — tap the club row in the "Your gym"
-> onboarding step, on the **Catálogo** tab, or the club row above the prompt in this
+> onboarding step, **Settings → My club**, or the club row above the prompt in this
 > guide screen. Once you pick a club, the app fills in field 6 (name, city, address) and
 > appends the club-scoped equipment list automatically. If your club is not in the
 > directory, type the gym name and address directly into field 6 in the textarea.
+>
+> **Does your club lack a machine?** Mark it absent and the equipment list in the prompt
+> shrinks to match, so the LLM is only offered equipment your club has. Either tap the chip
+> under that item's card on the **Catálogo** tab (**In my club** ↔ **Not in my club**), or
+> untick it in **Settings → My club → Club equipment**. Both edit the same saved list.
+> With the **Only my club** filter on, a card you exclude disappears from the catalog;
+> turn the filter off to see it again and add it back.
 
 | # | Field | Filled by | Example |
 |---|-------|-----------|---------|
@@ -66,7 +73,7 @@ to the button, in case your chat tends to truncate long pastes.
 | 3 | Days per week | Onboarding ("Your schedule" step) · editable on this guide (1–7 selector) | 4 |
 | 4 | Session length budget | Onboarding (same step) · editable on this guide | "45-60 min on weekdays, up to 80 min on Saturdays" |
 | 5 | Injuries / movements to avoid | Onboarding ("Before you start" step) · editable on this guide | "Patellar tendinitis in right knee..." — write "none" if none |
-| 6 | Target gym | Club Picker (onboarding, Catálogo tab, or this guide) | Chosen club's name, city and address, plus its equipment list |
+| 6 | Target gym | Club Picker (onboarding, Settings → My club, or this guide) | Chosen club's name, city and address, plus its equipment list |
 | 7 | Language for the output text | Active UI language (Settings) — never asked | "English" (autonym of the active language) |
 | 8 | Prior progress export | The app's own session history, if you have any logged | Markdown of your sessions, with an "Include my progress" checkbox on by default |
 
@@ -148,9 +155,9 @@ this in the copied prompt — the LLM doesn't need to go fetch anything on its o
   section appended to the prompt — not invented ids. Paste the validator error back and
   ask it to re-read the equipment list.
 - **Field 6 or the equipment list is missing from the prompt.** You need to pick a club
-  first. Open the **Club Picker** on the "Your gym" onboarding step, the Catálogo tab, or
-  this guide screen; once a club is selected the app fills in field 6 and appends the
-  equipment list automatically.
+  first. Open the **Club Picker** on the "Your gym" onboarding step, in **Settings → My
+  club**, or on this guide screen; once a club is selected the app fills in field 6 and
+  appends the equipment list automatically.
 
 ---
 

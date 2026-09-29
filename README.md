@@ -6,7 +6,7 @@ A six-language (EN/ES/BE/FR/NL/DE) equipment catalog and training-routine PWA fo
 
 48 equipment items (29 machines, 14 free weights, 5 accessories — spanning the Matrix Aura line plus ZIVA free weights and accessories) across BasicFit locations. Each entry includes multilingual names and instructions (English, Spanish, Belarusian, French, Dutch, German), product images, video links, PDF manuals, and muscle-group targeting.
 
-A bundled club directory covers 1,727 BasicFit locations across 6 countries (Netherlands, Belgium, France, Luxembourg, Spain, Germany). The PWA's **Club Picker** lets you search it by country → city → club and remembers your choice; the Catálogo tab uses it to offer a "just my club's equipment" filter. See "Selecting your club" below.
+A bundled club directory covers 1,727 BasicFit locations across 6 countries (Netherlands, Belgium, France, Luxembourg, Spain, Germany). The PWA's **Club Picker** lets you search it by country → city → club and remembers your choice (you manage it in **Settings → Mi club**); the Catálogo tab uses it to offer a "just my club's equipment" filter. See "Selecting your club" below.
 
 The **Rutina PWA** (`app/`) lets you build a library of imported `rutina.json` training programs — several kept side by side, exactly one active at a time, switchable without losing session history or your logged weights — log workout sessions with per-exercise weight and difficulty, review history across all of them, export progress, and back up / restore everything the app knows. All offline, no backend.
 
@@ -46,6 +46,8 @@ basicfit-rutina/
 │       │   ├── ProgressCharts.jsx  # Hand-rolled SVG weight/volume/frequency charts
 │       │   ├── ConfirmSheet.jsx    # Reusable confirmation sheet
 │       │   ├── ClubAccessSection.jsx  # Settings "Acceso al club" section (save/open a Basic-Fit invite link)
+│       │   ├── MiClubSection.jsx  # Settings "Mi club" section (club name + address, change club, equipment-list entry with count hint)
+│       │   ├── ClubMembershipChip.jsx  # Catalog per-card "En mi club" / "Fuera de mi club" toggle (presentational; the screen owns the one write path)
 │       │   ├── BackupSection.jsx  # Settings "Copia de seguridad" section (download a full backup, opens RestoreSheet)
 │       │   ├── RestoreSheet.jsx   # Pick file → parse+validate → count-bearing confirm → atomic restore
 │       │   ├── LibraryScreen.jsx  # /library — "Mis rutinas": activate/delete imported rutinas (exactly one active)
@@ -60,8 +62,8 @@ basicfit-rutina/
 │       │   ├── HistoryScreen.jsx   # Past sessions + per-exercise trend
 │       │   ├── ProgressScreen.jsx  # Weight/volume/frequency progress charts
 │       │   ├── ExportScreen.jsx    # JSON + Markdown export
-│       │   ├── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE/FR/NL/DE)
-│       │   └── SettingsScreen.jsx  # Settings screen (UI language switcher, backup/restore, club access link)
+│       │   ├── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE/FR/NL/DE) + "Solo mi club" filter + per-card club chip
+│       │   └── SettingsScreen.jsx  # Settings screen (UI language switcher, backup/restore, club access link, my club + club equipment)
 │       ├── lib/
 │       │   ├── db.js               # IndexedDB wrapper (idb): rutinas library + activeRutina pointer, sessions, lastWeights, clubEquipment; readAllForBackup + atomic restoreFromBackup
 │       │   ├── sessionMachine.js   # Pure session-state reducer
@@ -232,7 +234,7 @@ Two safety behaviors worth knowing before running it:
 5. **History** — past sessions with per-exercise last-3-sessions weight trend, drawn from **all** your rutinas newest-first. Once your history spans more than one program, every card gains a muted attribution line naming the program (and phase) the session came from — including programs you've since deleted from the library — and a **Filtrar por programa** pill row appears so you can view just one program's sessions; it's a view filter only (the stats stay global) and resets when you leave the screen. Each card has its own delete (trash) icon; a **Seleccionar** button in the header switches to selection mode, with **Seleccionar todo** to select everything and a **Borrar (n)** bar to delete the checked sessions in one go. Both single and bulk delete ask for confirmation first and cannot be undone. Deleting a session also rolls back any weight prefills it seeded: the next time you log that exercise, the suggested starting weight falls back to your most recent remaining session instead.
 6. **Progress** — fifth bottom tab after History: per-exercise weight chart (full history), per-session volume bars (each session's planned sets×reps, snapshotted at log time × logged weight — sessions old enough to predate those snapshots are computed against the active rutina while it's active and excluded from the chart entirely once it isn't, rather than drawn as zero bars), and a trailing 12-week training-frequency heatmap — all derived from existing session history across all your rutinas (no new store). Volume for older sessions can shift if you later edit the sets/reps of the rutina they belong to.
 7. **Export** — download a JSON archive or copy Markdown to clipboard. Optional Web Share on mobile. See [`docs/export-format.md`](docs/export-format.md) for the exact format.
-8. **Catalog** — all 48 equipment items (29 machines, 14 free weights, 5 accessories) with images and instructions (EN/ES/BE/FR/NL/DE). A club row at the top lets you pick your club. Once one is picked: the **"Solo mi club"** pill filters the grid to your club's equipment (using your saved exclusions), and the **"Equipamiento de tu club"** button opens the equipment sheet where you untick items your specific club does not have.
+8. **Catalog** — all 48 equipment items (29 machines, 14 free weights, 5 accessories) with images and instructions (EN/ES/BE/FR/NL/DE). Once you've chosen a club (in **Settings → Mi club**, see "Selecting your club" below) the Catálogo tab gets two club aids: a **"Solo mi club"** filter pill, and a chip under each equipment card — **En mi club** / **Fuera de mi club** — that includes or excludes that item from your club with one tap. Picking the club and editing the whole equipment list at once live in Settings, not here; with no club chosen the Catálogo tab shows neither the pill nor the chips.
 
 ### Mis rutinas — your rutina library
 
@@ -255,17 +257,23 @@ This is a different file from the **Exportar progreso** JSON/Markdown export (st
 
 ### Selecting your club
 
-Two places pick up the same club selection, stored locally (`localStorage`, key `rutina:club`) so it survives a reload without asking again:
+One club selection, stored locally (`localStorage`, key `rutina:club`) so it survives a reload without asking again. Three places can set it; **Settings → Mi club** is the one home for managing it:
 
-- **Catálogo tab** — the club row above the filter pills. Tap it to open the picker.
+- **Settings → Mi club** — the last section on the Settings screen (sliders icon in the header). It shows your club's name and address the moment the screen opens; with no club chosen it says «Aún no has elegido tu club.» and offers **Elegir club**, otherwise **Cambiar club**. Both open the picker below.
+- **Onboarding** — the "your gym" step of the first-launch carousel.
 - **Prompt wizard, step 2** (Import → Preparar prompt) — the club row above the prompt preview, with **Cambiar** / **Elige tu club**.
+
+The Catálogo tab no longer has a club row or a picker; it only reads the club you chose elsewhere. (Upgrading needs no action: your stored club and equipment exclusions are untouched, only where you edit them moved.)
 
 The picker is three dependent fields — **country → city → club** — each filterable as you type, keyboard- and screen-reader-navigable. Picking a country enables the city field; picking a city enables the club field, listing every club in that city by name and street address (address is shown because a meaningful share of club names *are* their street, so the address is what actually disambiguates them). If your club isn't listed, the empty-results state links straight to the guide's free-text field so you're never blocked.
 
 Once a club is selected:
 
-- The Catálogo tab's **"Solo mi club"** pill filters the grid to that club's equipment (using your saved exclusions).
-- An **"Equipamiento de tu club"** button — in the Catálogo tab — opens the equipment sheet. Untick items your specific club does not have; the list is saved per club in IndexedDB (`clubEquipment` store) and survives a reload.
+- **Settings → Mi club → Equipo del club** — an entry row under the club name, with a count hint such as «48 equipos · 3 marcados como ausentes» (just «48 equipos» for the instant before your saved list has loaded). It opens the **Equipamiento de tu club** sheet: untick items your specific club does not have. The list is saved per club in IndexedDB (`clubEquipment` store) and survives a reload. The row is absent until a club is chosen — there is nothing to edit without one.
+- The Catálogo tab's **"Solo mi club"** pill filters the grid to that club's equipment (using your saved exclusions). It appears only once a club is chosen, is on by default, and does nothing until you have excluded at least one item.
+- Every card in the Catálogo tab gets a chip beneath it — **En mi club** or **Fuera de mi club** — that flips that one item in the same saved list the Settings sheet edits (one list, two editors; a change made in one shows in the other the next time you open it). With the pill on, every visible card is in your club, so tapping a chip excludes the item and its card leaves the view. With the pill off you see the whole catalog: excluded items are dimmed, read **Fuera de mi club**, and one tap adds them back.
+- If the pill leaves nothing to show — typically because you excluded the last item — the grid is replaced by a message: «Has marcado todo el equipo como ausente de tu club. Desactiva «Solo mi club» para ver el catálogo completo, o edita las exclusiones en Ajustes.» When a chip tap empties the grid, keyboard focus moves to the pill so the way back is one keypress.
+- If saving fails, the toggle still applies immediately and a single note, «No se pudo guardar — los cambios se mantienen en esta sesión», appears above the grid (or inside the equipment sheet). The change is kept for the current session only.
 - The wizard's copied prompt embeds a club-scoped equipment table (all 48 items minus your exclusions, grouped by kind: machines / free weights / accessories) and pre-fills field 6 with your club's name, city, and address automatically. No manual gym-id lookup needed.
 
 ### Club access link
