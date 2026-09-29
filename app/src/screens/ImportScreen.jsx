@@ -1,10 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
-import { GuideOverlay } from '../components/GuideOverlay.jsx';
-import { OnboardingOverlay } from '../components/OnboardingOverlay.jsx';
-import { RestoreSheet } from '../components/RestoreSheet.jsx';
 import { validateImportedRutina } from '../lib/validateImport.js';
+import { formatErrorsForClipboard } from '../lib/importErrors.js';
+import { copyText } from '../lib/copyText.js';
+import { useHeadingFocus } from '../lib/useHeadingFocus.js';
 import { activateRutina, listRutinas, saveRutinaEntry } from '../lib/db.js';
 import exampleRutina from '../../../data/examples/phase1-monday.json';
 import { useI18n } from '../i18n/index.js';
@@ -26,30 +26,37 @@ import { useI18n } from '../i18n/index.js';
  * Validation block untouched (AC24): validateImportedRutina stays the single
  * gate and an invalid payload creates no entry.
  *
- * pwa-ui-language AC8: the guide link follows the ACTIVE UI LOCALE via
- * `useI18n()`.
+ * import-flow-guided-first (spec D2-D4, AC5/AC6/AC8/AC10/AC15): this is now the
+ * JSON screen (J) only. The guide link, onboarding link and restore button
+ * moved out (fork / wizard). Optional `onBack` renders an "Atrás" control and
+ * `onPreparePrompt` the one "Preparar prompt" entry (only while the textarea is
+ * empty). The error block gains "Copiar errores".
+ *
+ * Props: { onImported(target), onBack?, onPreparePrompt? }
  */
-export function ImportScreen({ onImported }) {
+export function ImportScreen({ onImported, onBack, onPreparePrompt }) {
   const { t, locale } = useI18n();
   const [text, setText] = useState('');
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
-  // Onboarding on-demand revisit (spec AC7) — mirrors showGuide exactly:
-  // same OnboardingOverlay component, reopened here without touching the
-  // persisted seen-flag (that's the overlay's own internal concern).
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  // full-data-backup S3 (ux-design.md §4) — the empty-state "Restaurar copia…"
-  // ghost entry opens the restore flow directly, bypassing the textarea.
-  const [showRestore, setShowRestore] = useState(false);
+  const headingRef = useHeadingFocus();
+  const [errorsCopied, setErrorsCopied] = useState(false);
+  const copiedTimer = useRef(null);
+  useEffect(() => () => window.clearTimeout(copiedTimer.current), []);
   // Validated payload awaiting the user's activate/save-only choice (the
   // non-empty-library branch of D-G). null = panel hidden.
   const [validatedRutina, setValidatedRutina] = useState(null);
   const [saveError, setSaveError] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef(null);
-  const guideLinkRef = useRef(null);
-  const onboardingLinkRef = useRef(null);
+
+  async function handleCopyErrors() {
+    const outcome = await copyText(formatErrorsForClipboard(errors));
+    if (outcome !== 'copied') return; // denied: never a false confirmation
+    setErrorsCopied(true);
+    window.clearTimeout(copiedTimer.current);
+    copiedTimer.current = window.setTimeout(() => setErrorsCopied(false), 2000);
+  }
 
   function handleFilePick(e) {
     const file = e.target.files && e.target.files[0];
@@ -142,17 +149,34 @@ export function ImportScreen({ onImported }) {
   }
 
   return (
-    <div style={{ background: 'var(--bf-white)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: 'var(--space-10) 100px', paddingInline: 'var(--page-pad-x)' }}>
+    <div style={{ background: 'var(--bf-white)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: onBack ? 'var(--space-4) 100px' : 'var(--space-10) 100px', paddingInline: 'var(--page-pad-x)' }}>
+      {onBack && (
+        <div style={{ width: '100%', maxWidth: 420, marginBottom: 'var(--space-4)' }}>
+          <button
+            type="button"
+            onClick={onBack}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, minHeight: 44, padding: '0 8px 0 0', font: '600 15px/1 var(--font-sans)', color: 'var(--bf-purple)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            <span aria-hidden="true">‹</span>
+            {t('promptWizard.back')}
+          </button>
+        </div>
+      )}
       <div style={{ font: '800 15px/1 var(--font-display)', color: 'var(--bf-orange)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 'var(--space-6)' }}>Basic-Fit</div>
       <div style={{ color: 'var(--bf-purple)', marginBottom: 12 }}>
         <Icon name="dumbbell" size={40} strokeWidth={1.6} />
       </div>
-      <h1 style={{ font: 'var(--text-h2)', textTransform: 'uppercase', color: 'var(--bf-ink)', textAlign: 'center', margin: '0 0 6px' }}>{t('import.title')}</h1>
+      <h1 ref={headingRef} tabIndex={-1} style={{ font: 'var(--text-h2)', textTransform: 'uppercase', color: 'var(--bf-ink)', textAlign: 'center', margin: '0 0 6px', outline: 'none' }}>{t('import.title')}</h1>
       <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', textAlign: 'center', margin: '0 0 var(--space-6)', maxWidth: 340 }}>
         {t('import.subtitle')}
       </p>
 
       <div style={{ width: '100%', maxWidth: 420 }}>
+        {onPreparePrompt && !text && (
+          <Button variant="outline" style={{ width: '100%', minHeight: 44, marginBottom: 'var(--space-4)' }} onClick={onPreparePrompt}>
+            <Icon name="pencil" size={16} /> {t('import.prepareAction')}
+          </Button>
+        )}
         <label htmlFor="rutina-json" style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
           rutina.json
         </label>
@@ -190,6 +214,15 @@ export function ImportScreen({ onImported }) {
             <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '8px 0 0' }}>
               {t('import.errorHint')}
             </p>
+            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Button variant="outline" style={{ minHeight: 44 }} onClick={handleCopyErrors}>
+                <Icon name="copy" size={16} />
+                {t('import.copyErrors')}
+              </Button>
+              <span role="status" style={{ font: '700 13px/1.3 var(--font-sans)', color: 'var(--bf-ink-2)' }}>
+                {errorsCopied ? t('promptWizard.copied') : ''}
+              </span>
+            </div>
           </div>
         )}
 
@@ -202,14 +235,9 @@ export function ImportScreen({ onImported }) {
             {loading ? t('import.validating') : t('import.importAction')}
           </Button>
           {!text && (
-            <>
-              <Button variant="ghost" style={{ width: '100%' }} onClick={loadExample}>
-                {t('import.loadExample')}
-              </Button>
-              <Button variant="ghost" style={{ width: '100%' }} onClick={() => setShowRestore(true)}>
-                {t('import.restoreAction')}
-              </Button>
-            </>
+            <Button variant="ghost" style={{ width: '100%' }} onClick={loadExample}>
+              {t('import.loadExample')}
+            </Button>
           )}
         </div>
 
@@ -265,63 +293,7 @@ export function ImportScreen({ onImported }) {
           </div>
         )}
 
-        <p style={{ textAlign: 'center', font: 'var(--text-body-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-6)' }}>
-          {t('onboarding.firstTime')}
-          <br />
-          <a
-            ref={onboardingLinkRef}
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowOnboarding(true);
-            }}
-            style={{ color: 'var(--text-link)', fontWeight: 600 }}
-          >
-            {t('onboarding.howItWorksLink')}
-          </a>
-        </p>
-
-        <p style={{ textAlign: 'center', font: 'var(--text-body-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-6)' }}>
-          {t('guide.noRutina')}
-          <br />
-          <a
-            ref={guideLinkRef}
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowGuide(true);
-            }}
-            style={{ color: 'var(--text-link)', fontWeight: 600 }}
-          >
-            {t('guide.linkText')}
-          </a>
-        </p>
       </div>
-
-      {showGuide && (
-        <GuideOverlay
-          onClose={() => {
-            setShowGuide(false);
-            guideLinkRef.current?.focus();
-          }}
-        />
-      )}
-
-      {showOnboarding && (
-        <OnboardingOverlay
-          onClose={() => {
-            setShowOnboarding(false);
-            onboardingLinkRef.current?.focus();
-          }}
-        />
-      )}
-
-      {showRestore && (
-        <RestoreSheet
-          onClose={() => setShowRestore(false)}
-          onRestored={() => window.location.reload()}
-        />
-      )}
     </div>
   );
 }

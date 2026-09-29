@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"BasicFitDesignSystem_1cb8a2","components":[{"name":"Accordion","sourcePath":"components/composite/Accordion.jsx"},{"name":"ArticleCard","sourcePath":"components/composite/ArticleCard.jsx"},{"name":"BackToTop","sourcePath":"components/primitives/BackToTop.jsx"},{"name":"Badge","sourcePath":"components/primitives/Badge.jsx"},{"name":"Button","sourcePath":"components/primitives/Button.jsx"},{"name":"CheckList","sourcePath":"components/primitives/CheckList.jsx"},{"name":"ClubFinder","sourcePath":"components/sections/ClubFinder.jsx"},{"name":"DetailItem","sourcePath":"components/primitives/DetailItem.jsx"},{"name":"EquipmentCard","sourcePath":"components/composite/EquipmentCard.jsx"},{"name":"ExerciseCard","sourcePath":"components/composite/ExerciseCard.jsx"},{"name":"FeatureSplit","sourcePath":"components/sections/FeatureSplit.jsx"},{"name":"FilterPill","sourcePath":"components/primitives/FilterPill.jsx"},{"name":"Hero","sourcePath":"components/sections/Hero.jsx"},{"name":"Icon","sourcePath":"components/primitives/Icon.jsx"},{"name":"MobileMenu","sourcePath":"components/sections/MobileMenu.jsx"},{"name":"NavMenu","sourcePath":"components/composite/NavMenu.jsx"},{"name":"NoteItem","sourcePath":"components/primitives/NoteItem.jsx"},{"name":"PageFooter","sourcePath":"components/sections/PageFooter.jsx"},{"name":"PageHeader","sourcePath":"components/sections/PageHeader.jsx"},{"name":"PriceCard","sourcePath":"components/composite/PriceCard.jsx"},{"name":"RuleItem","sourcePath":"components/primitives/RuleItem.jsx"},{"name":"SectionBanner","sourcePath":"components/composite/SectionBanner.jsx"},{"name":"SiteHeader","sourcePath":"components/sections/SiteHeader.jsx"},{"name":"StatCard","sourcePath":"components/primitives/StatCard.jsx"},{"name":"SummaryTable","sourcePath":"components/composite/SummaryTable.jsx"},{"name":"Tag","sourcePath":"components/primitives/Tag.jsx"}],"sourceHashes":{"components/composite/Accordion.jsx":"2afd165a655e","components/composite/Accordion.d.ts":"19b5f2bbb0a9","components/composite/Accordion.prompt.md":"d8b86151b1fd","components/composite/ArticleCard.jsx":"53036766b3dc","components/composite/ArticleCard.d.ts":"7a86f23ff8b5","components/composite/ArticleCard.prompt.md":"7016f5f19d6c","components/primitives/BackToTop.jsx":"46e99d7b1493","components/primitives/BackToTop.d.ts":"02e6c2cec0b7","components/primitives/BackToTop.prompt.md":"016c0bda9ce1","components/primitives/Badge.jsx":"5a469ba16bd6","components/primitives/Badge.d.ts":"9085190f0ca7","components/primitives/Badge.prompt.md":"f182009d2abe","components/primitives/Button.jsx":"280e81903434","components/primitives/Button.d.ts":"95f37b934432","components/primitives/Button.prompt.md":"4afcb56f786f","components/primitives/CheckList.jsx":"6088e0edcf40","components/primitives/CheckList.d.ts":"a24440a77c34","components/primitives/CheckList.prompt.md":"5233cc7fb675","components/sections/ClubFinder.jsx":"32c90e16d6de","components/sections/ClubFinder.d.ts":"7f10b5ce738d","components/sections/ClubFinder.prompt.md":"059cc52008b9","components/primitives/DetailItem.jsx":"55cc82c96fe2","components/primitives/DetailItem.d.ts":"72e98824cb29","components/primitives/DetailItem.prompt.md":"c9b9aa850ca2","components/composite/EquipmentCard.jsx":"1406c19aee0b","components/composite/EquipmentCard.d.ts":"cbd251856209","components/composite/EquipmentCard.prompt.md":"6980fabe3ede","components/composite/ExerciseCard.jsx":"6e8beffe21ab","components/composite/ExerciseCard.d.ts":"8bb941045025","components/composite/ExerciseCard.prompt.md":"691cba57e309","components/sections/FeatureSplit.jsx":"396a49bdbf20","components/sections/FeatureSplit.d.ts":"e6c1aa718f78","components/sections/FeatureSplit.prompt.md":"afeeb1d1d7c6","components/primitives/FilterPill.jsx":"2bc36346de14","components/primitives/FilterPill.d.ts":"f5e4990d54f4","components/primitives/FilterPill.prompt.md":"cb5c72848191","components/sections/Hero.jsx":"30b6c5b9e4c2","components/sections/Hero.d.ts":"09ddb6569acf","components/sections/Hero.prompt.md":"bee47198c5b4","components/primitives/Icon.jsx":"1f8cd62068b4","components/primitives/Icon.d.ts":"3f16c32e81e3","components/primitives/Icon.prompt.md":"42c434a02f69","components/sections/MobileMenu.jsx":"c260d9f2509b","components/sections/MobileMenu.d.ts":"e6cb17a67131","components/sections/MobileMenu.prompt.md":"2e404b44d1e0","components/composite/NavMenu.jsx":"f71e36361de5","components/composite/NavMenu.d.ts":"b8e0590a35ce","components/composite/NavMenu.prompt.md":"56bf34380c08","components/primitives/NoteItem.jsx":"7fed25ea6534","components/primitives/NoteItem.d.ts":"54e0b2c60a17","components/primitives/NoteItem.prompt.md":"7cf1c2e81038","components/sections/PageFooter.jsx":"7604f68efa72","components/sections/PageFooter.d.ts":"70fe923356d8","components/sections/PageFooter.prompt.md":"7237014a9f4a","components/sections/PageHeader.jsx":"1fe35ed8055f","components/sections/PageHeader.d.ts":"1cc926434d36","components/sections/PageHeader.prompt.md":"2cef04ecce73","components/composite/PriceCard.jsx":"1e165e5cfd97","components/composite/PriceCard.d.ts":"ecbf4164476b","components/composite/PriceCard.prompt.md":"371c4344abf0","components/primitives/RuleItem.jsx":"a2b05ff5967d","components/primitives/RuleItem.d.ts":"f128a445b5ef","components/primitives/RuleItem.prompt.md":"b275f68572d5","components/composite/SectionBanner.jsx":"d24c0c66d597","components/composite/SectionBanner.d.ts":"9b90cbe8e265","components/composite/SectionBanner.prompt.md":"f522fa4c6c54","components/sections/SiteHeader.jsx":"7d47c1043583","components/sections/SiteHeader.d.ts":"ac131020d876","components/sections/SiteHeader.prompt.md":"e91de1ba2a11","components/primitives/StatCard.jsx":"5f1b72881948","components/primitives/StatCard.d.ts":"a63a90812b17","components/primitives/StatCard.prompt.md":"52894316cc16","components/composite/SummaryTable.jsx":"ed90559de3e8","components/composite/SummaryTable.d.ts":"29e045d73e29","components/composite/SummaryTable.prompt.md":"6f901cb14986","components/primitives/Tag.jsx":"52c84b1111bc","components/primitives/Tag.d.ts":"5d1badcbbc73","components/primitives/Tag.prompt.md":"7889838302f0"},"inlinedExternals":[],"builtBy":"cc-design-sync"} */
+/* @ds-bundle: {"format":4,"namespace":"BasicFitDesignSystem_1cb8a2","components":[{"name":"Accordion","sourcePath":"components/composite/Accordion.jsx"},{"name":"ArticleCard","sourcePath":"components/composite/ArticleCard.jsx"},{"name":"BackToTop","sourcePath":"components/primitives/BackToTop.jsx"},{"name":"Badge","sourcePath":"components/primitives/Badge.jsx"},{"name":"Button","sourcePath":"components/primitives/Button.jsx"},{"name":"CheckList","sourcePath":"components/primitives/CheckList.jsx"},{"name":"ChoiceCard","sourcePath":"components/primitives/ChoiceCard.jsx"},{"name":"ClubFinder","sourcePath":"components/sections/ClubFinder.jsx"},{"name":"DetailItem","sourcePath":"components/primitives/DetailItem.jsx"},{"name":"EquipmentCard","sourcePath":"components/composite/EquipmentCard.jsx"},{"name":"ExerciseCard","sourcePath":"components/composite/ExerciseCard.jsx"},{"name":"FeatureSplit","sourcePath":"components/sections/FeatureSplit.jsx"},{"name":"FilterPill","sourcePath":"components/primitives/FilterPill.jsx"},{"name":"Hero","sourcePath":"components/sections/Hero.jsx"},{"name":"Icon","sourcePath":"components/primitives/Icon.jsx"},{"name":"MobileMenu","sourcePath":"components/sections/MobileMenu.jsx"},{"name":"NavMenu","sourcePath":"components/composite/NavMenu.jsx"},{"name":"NoteItem","sourcePath":"components/primitives/NoteItem.jsx"},{"name":"PageFooter","sourcePath":"components/sections/PageFooter.jsx"},{"name":"PageHeader","sourcePath":"components/sections/PageHeader.jsx"},{"name":"PriceCard","sourcePath":"components/composite/PriceCard.jsx"},{"name":"RuleItem","sourcePath":"components/primitives/RuleItem.jsx"},{"name":"SectionBanner","sourcePath":"components/composite/SectionBanner.jsx"},{"name":"SelectField","sourcePath":"components/primitives/SelectField.jsx"},{"name":"SiteHeader","sourcePath":"components/sections/SiteHeader.jsx"},{"name":"StatCard","sourcePath":"components/primitives/StatCard.jsx"},{"name":"StepHeader","sourcePath":"components/primitives/StepHeader.jsx"},{"name":"SummaryTable","sourcePath":"components/composite/SummaryTable.jsx"},{"name":"Tag","sourcePath":"components/primitives/Tag.jsx"}],"sourceHashes":{"components/composite/Accordion.jsx":"2afd165a655e","components/composite/Accordion.d.ts":"dcf61bc2733a","components/composite/Accordion.prompt.md":"ad79ce155539","components/composite/ArticleCard.jsx":"53036766b3dc","components/composite/ArticleCard.d.ts":"e24c07556186","components/composite/ArticleCard.prompt.md":"be4ab67800c7","components/primitives/BackToTop.jsx":"46e99d7b1493","components/primitives/BackToTop.d.ts":"24772e33d8f7","components/primitives/BackToTop.prompt.md":"9fc46cc54a2f","components/primitives/Badge.jsx":"5a469ba16bd6","components/primitives/Badge.d.ts":"7ede3c87dbbb","components/primitives/Badge.prompt.md":"9422e2da6d2b","components/primitives/Button.jsx":"280e81903434","components/primitives/Button.d.ts":"7d26cf5b1f96","components/primitives/Button.prompt.md":"1a57fe040262","components/primitives/CheckList.jsx":"6088e0edcf40","components/primitives/CheckList.d.ts":"fa81b2a3a1d1","components/primitives/CheckList.prompt.md":"f2c2afe7c224","components/primitives/ChoiceCard.jsx":"3c3d44c69604","components/primitives/ChoiceCard.d.ts":"15ea33575f35","components/primitives/ChoiceCard.prompt.md":"47d515edd1a4","components/sections/ClubFinder.jsx":"32c90e16d6de","components/sections/ClubFinder.d.ts":"1b31bb34e595","components/sections/ClubFinder.prompt.md":"774bb98996ef","components/primitives/DetailItem.jsx":"55cc82c96fe2","components/primitives/DetailItem.d.ts":"cfd69a486866","components/primitives/DetailItem.prompt.md":"1e0d061a5024","components/composite/EquipmentCard.jsx":"1406c19aee0b","components/composite/EquipmentCard.d.ts":"bad2375841e9","components/composite/EquipmentCard.prompt.md":"0301ee6d0123","components/composite/ExerciseCard.jsx":"6e8beffe21ab","components/composite/ExerciseCard.d.ts":"f068aa74b772","components/composite/ExerciseCard.prompt.md":"6e4fce28e562","components/sections/FeatureSplit.jsx":"396a49bdbf20","components/sections/FeatureSplit.d.ts":"397559112992","components/sections/FeatureSplit.prompt.md":"98e762b71804","components/primitives/FilterPill.jsx":"2bc36346de14","components/primitives/FilterPill.d.ts":"4326d95ede59","components/primitives/FilterPill.prompt.md":"5165b6e7aed8","components/sections/Hero.jsx":"30b6c5b9e4c2","components/sections/Hero.d.ts":"6434637248fd","components/sections/Hero.prompt.md":"94a341661285","components/primitives/Icon.jsx":"1f8cd62068b4","components/primitives/Icon.d.ts":"f2558efb06ac","components/primitives/Icon.prompt.md":"c1598ccf3094","components/sections/MobileMenu.jsx":"c260d9f2509b","components/sections/MobileMenu.d.ts":"8fd256fb5c02","components/sections/MobileMenu.prompt.md":"adaca6b5dd6e","components/composite/NavMenu.jsx":"f71e36361de5","components/composite/NavMenu.d.ts":"6328b6813e32","components/composite/NavMenu.prompt.md":"2652b0d8f74a","components/primitives/NoteItem.jsx":"7fed25ea6534","components/primitives/NoteItem.d.ts":"bd806fa04029","components/primitives/NoteItem.prompt.md":"4d2d8b7fbae7","components/sections/PageFooter.jsx":"7604f68efa72","components/sections/PageFooter.d.ts":"d23a337c1bc1","components/sections/PageFooter.prompt.md":"4e105f5b81c0","components/sections/PageHeader.jsx":"1fe35ed8055f","components/sections/PageHeader.d.ts":"251a9ce1971d","components/sections/PageHeader.prompt.md":"8e559a5f78f6","components/composite/PriceCard.jsx":"1e165e5cfd97","components/composite/PriceCard.d.ts":"58e67160fab2","components/composite/PriceCard.prompt.md":"8dfcb96b67fc","components/primitives/RuleItem.jsx":"a2b05ff5967d","components/primitives/RuleItem.d.ts":"88b360ddde5a","components/primitives/RuleItem.prompt.md":"7bee1653228a","components/composite/SectionBanner.jsx":"d24c0c66d597","components/composite/SectionBanner.d.ts":"18c3f6e8185f","components/composite/SectionBanner.prompt.md":"179998ec3c75","components/primitives/SelectField.jsx":"b1780f1ce542","components/primitives/SelectField.d.ts":"c277393f7a1b","components/primitives/SelectField.prompt.md":"de4979c62617","components/sections/SiteHeader.jsx":"7d47c1043583","components/sections/SiteHeader.d.ts":"cd6db43a7503","components/sections/SiteHeader.prompt.md":"4eda15b9d4f1","components/primitives/StatCard.jsx":"5f1b72881948","components/primitives/StatCard.d.ts":"f9dca8164590","components/primitives/StatCard.prompt.md":"1aa8f1981b9c","components/primitives/StepHeader.jsx":"0fe48f9829d0","components/primitives/StepHeader.d.ts":"28ebb6efb9f4","components/primitives/StepHeader.prompt.md":"8712c2971d87","components/composite/SummaryTable.jsx":"ed90559de3e8","components/composite/SummaryTable.d.ts":"6ab4ab135472","components/composite/SummaryTable.prompt.md":"08da644ba121","components/primitives/Tag.jsx":"52c84b1111bc","components/primitives/Tag.d.ts":"78dfbb4ae53a","components/primitives/Tag.prompt.md":"bfcc722eb972"},"inlinedExternals":[],"builtBy":"cc-design-sync"} */
 /* Registration integrity: this file is generated art ("builtBy" above) — do
    NOT hand-edit the module body; historical exports were assembled in
    execution order, so a mis-ordered regeneration could silently drop
@@ -93,6 +93,7 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
     Badge: () => Badge,
     Button: () => Button,
     CheckList: () => CheckList,
+    ChoiceCard: () => ChoiceCard,
     ClubFinder: () => ClubFinder,
     DetailItem: () => DetailItem,
     EquipmentCard: () => EquipmentCard,
@@ -109,8 +110,10 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
     PriceCard: () => PriceCard,
     RuleItem: () => RuleItem,
     SectionBanner: () => SectionBanner,
+    SelectField: () => SelectField,
     SiteHeader: () => SiteHeader,
     StatCard: () => StatCard,
+    StepHeader: () => StepHeader,
     SummaryTable: () => SummaryTable,
     Tag: () => Tag
   });
@@ -230,7 +233,9 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
     "check-circle": /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("circle", { cx: "12", cy: "12", r: "10" }), /* @__PURE__ */ import_react3.default.createElement("polyline", { points: "8 12 11 15 16 9" })),
     "list-checks": /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("path", { d: "m3 17 2 2 4-4" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "m3 7 2 2 4-4" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M13 6h8" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M13 12h8" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M13 18h8" })),
     /* Onboarding (added for onboarding-request-fields — the injuries input step) */
-    shield: /* @__PURE__ */ import_react3.default.createElement("path", { d: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" })
+    shield: /* @__PURE__ */ import_react3.default.createElement("path", { d: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" }),
+    /* Club invite (added 2026-08-26 for club-invite-amendments — the Inicio Acceso button) */
+    "qr-code": /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("rect", { width: "5", height: "5", x: "3", y: "3", rx: "1" }), /* @__PURE__ */ import_react3.default.createElement("rect", { width: "5", height: "5", x: "16", y: "3", rx: "1" }), /* @__PURE__ */ import_react3.default.createElement("rect", { width: "5", height: "5", x: "3", y: "16", rx: "1" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M21 16h-3a2 2 0 0 0-2 2v3" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M21 21v.01" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M12 7v3a2 2 0 0 1-2 2H7" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M3 12h.01" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M12 3h.01" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M12 16v.01" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M16 12h1" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M21 12v.01" }), /* @__PURE__ */ import_react3.default.createElement("path", { d: "M12 21v-1" }))
   };
   function Icon({ name, size = 20, strokeWidth = 2, style }) {
     const glyph = PATHS[name];
@@ -374,8 +379,51 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/composite/EquipmentCard.jsx
-  function EquipmentCard({ name, modelCode, series, imageUrl, primaryMuscles = [], secondaryMuscles = [], description, weight, videoHref, manualHref, style }) {
+  var CHIP_TOKENS = {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "4px 10px",
+    font: "700 12px/1.3 var(--font-sans)",
+    letterSpacing: "0.05em",
+    textTransform: "uppercase",
+    borderRadius: "var(--radius-sm)",
+    whiteSpace: "nowrap",
+    background: "var(--bf-grey-1)",
+    color: "var(--bf-ink-2)",
+    border: "1px solid var(--bf-grey-3)",
+    cursor: "pointer"
+  };
+  function MoreMusclesChip({ count, expanded, onToggle, moreLabel, lessLabel }) {
+    const text = expanded ? lessLabel || `+${count}` : `+${count}`;
+    return /* @__PURE__ */ import_react7.default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onToggle,
+        "aria-expanded": expanded,
+        "aria-label": expanded ? lessLabel || void 0 : moreLabel || void 0,
+        style: CHIP_TOKENS
+      },
+      text
+    );
+  }
+  function EquipmentCard({
+    name,
+    modelCode,
+    series,
+    imageUrl,
+    primaryMuscles = [],
+    secondaryMuscles = [],
+    description,
+    weight,
+    videoHref,
+    manualHref,
+    secondaryMoreLabel,
+    secondaryLessLabel,
+    style
+  }) {
     const [hover, setHover] = import_react7.default.useState(false);
+    const [secondariesExpanded, setSecondariesExpanded] = import_react7.default.useState(false);
     return /* @__PURE__ */ import_react7.default.createElement("article", { onMouseEnter: () => setHover(true), onMouseLeave: () => setHover(false), style: {
       background: "var(--surface-card)",
       border: "1px solid var(--border-default)",
@@ -392,7 +440,25 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       alignItems: "center",
       justifyContent: "center",
       position: "relative"
-    } }, imageUrl ? /* @__PURE__ */ import_react7.default.createElement("img", { src: imageUrl, alt: typeof name === "string" ? name : "m\xE1quina", style: { maxWidth: "88%", maxHeight: "88%", objectFit: "contain" } }) : /* @__PURE__ */ import_react7.default.createElement("span", { style: { font: "var(--text-caption)", color: "var(--bf-grey-4)" } }, "Sin imagen"), weight != null && /* @__PURE__ */ import_react7.default.createElement(Badge, { tone: "brand", style: { position: "absolute", top: 12, right: 12 } }, weight, " kg")), /* @__PURE__ */ import_react7.default.createElement("div", { style: { padding: "var(--space-4)" } }, /* @__PURE__ */ import_react7.default.createElement("h3", { style: { font: "var(--text-h3)", margin: 0 } }, name), /* @__PURE__ */ import_react7.default.createElement("div", { style: { font: "var(--text-caption)", color: "var(--text-muted)", margin: "4px 0 10px" } }, series ? `${series} \xB7 ` : "", modelCode), (primaryMuscles.length > 0 || secondaryMuscles.length > 0) && /* @__PURE__ */ import_react7.default.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 } }, primaryMuscles.map((m, i) => /* @__PURE__ */ import_react7.default.createElement(Tag, { key: "p" + i, tone: "primary" }, m)), secondaryMuscles.map((m, i) => /* @__PURE__ */ import_react7.default.createElement(Tag, { key: "s" + i, tone: "secondary" }, m))), description && /* @__PURE__ */ import_react7.default.createElement("p", { style: { font: "var(--text-body-sm)", color: "var(--text-body)", margin: "0 0 12px" } }, description), (videoHref || manualHref) && /* @__PURE__ */ import_react7.default.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, videoHref && /* @__PURE__ */ import_react7.default.createElement(Button, { variant: "primary", size: "sm", href: videoHref }, "ver tutorial"), manualHref && /* @__PURE__ */ import_react7.default.createElement(Button, { variant: "secondary", size: "sm", href: manualHref }, "manual"))));
+    } }, imageUrl ? /* @__PURE__ */ import_react7.default.createElement("img", { src: imageUrl, alt: typeof name === "string" ? name : "m\xE1quina", style: { maxWidth: "88%", maxHeight: "88%", objectFit: "contain" } }) : /* @__PURE__ */ import_react7.default.createElement("span", { style: { font: "var(--text-caption)", color: "var(--bf-grey-4)" } }, "Sin imagen"), weight != null && /* @__PURE__ */ import_react7.default.createElement(Badge, { tone: "brand", style: { position: "absolute", top: 12, right: 12 } }, weight, " kg")), /* @__PURE__ */ import_react7.default.createElement("div", { style: { padding: "var(--space-4)" } }, /* @__PURE__ */ import_react7.default.createElement("h3", { style: { font: "var(--text-h3)", margin: 0 } }, name), /* @__PURE__ */ import_react7.default.createElement("div", { style: { font: "var(--text-caption)", color: "var(--text-muted)", margin: "4px 0 10px" } }, series ? `${series} \xB7 ` : "", modelCode), (primaryMuscles.length > 0 || secondaryMuscles.length > 0) && /* @__PURE__ */ import_react7.default.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10, position: "relative" } }, primaryMuscles.map((m, i) => /* @__PURE__ */ import_react7.default.createElement(Tag, { key: "p" + i, tone: "primary" }, m)), secondaryMuscles.length > 0 && (secondariesExpanded ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, secondaryMuscles.map((m, i) => /* @__PURE__ */ import_react7.default.createElement(Tag, { key: "s" + i, tone: "secondary" }, m)), /* @__PURE__ */ import_react7.default.createElement(
+      MoreMusclesChip,
+      {
+        count: secondaryMuscles.length,
+        expanded: true,
+        onToggle: () => setSecondariesExpanded(false),
+        moreLabel: secondaryMoreLabel,
+        lessLabel: secondaryLessLabel
+      }
+    )) : /* @__PURE__ */ import_react7.default.createElement(
+      MoreMusclesChip,
+      {
+        count: secondaryMuscles.length,
+        expanded: false,
+        onToggle: () => setSecondariesExpanded(true),
+        moreLabel: secondaryMoreLabel,
+        lessLabel: secondaryLessLabel
+      }
+    ))), description && /* @__PURE__ */ import_react7.default.createElement("p", { style: { font: "var(--text-body-sm)", color: "var(--text-body)", margin: "0 0 12px" } }, description), (videoHref || manualHref) && /* @__PURE__ */ import_react7.default.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, videoHref && /* @__PURE__ */ import_react7.default.createElement(Button, { variant: "primary", size: "sm", href: videoHref }, "ver tutorial"), manualHref && /* @__PURE__ */ import_react7.default.createElement(Button, { variant: "secondary", size: "sm", href: manualHref }, "manual"))));
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/composite/ExerciseCard.jsx
@@ -663,11 +729,70 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
     );
   }
 
-  // .ds-sync/scratch-nm/basicfit-design-system/components/primitives/FilterPill.jsx
+  // .ds-sync/scratch-nm/basicfit-design-system/components/primitives/ChoiceCard.jsx
   init_define_import_meta_env();
   var import_react16 = __toESM(require_react_shim());
+  function ChoiceCard({ recommended = false, title, body, meta, ctaLabel, onSelect, badge, style }) {
+    const cta = recommended ? { background: "var(--bf-purple)", color: "var(--bf-white)", border: "2px solid var(--bf-purple)" } : { background: "var(--bf-white)", color: "var(--bf-purple)", border: "2px solid var(--bf-purple)" };
+    return /* @__PURE__ */ import_react16.default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onSelect,
+        "data-variant": recommended ? "recommended" : "default",
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "stretch",
+          gap: 8,
+          width: "100%",
+          textAlign: "left",
+          boxSizing: "border-box",
+          padding: "16px 18px",
+          cursor: "pointer",
+          color: "var(--bf-ink)",
+          font: "var(--text-body-sm)",
+          borderRadius: "var(--radius-md)",
+          border: recommended ? "2px solid var(--bf-purple)" : "1px solid var(--border-control)",
+          background: recommended ? "var(--bf-purple-tint)" : "var(--bf-white)",
+          ...style
+        }
+      },
+      recommended && badge ? /* @__PURE__ */ import_react16.default.createElement("span", { style: {
+        alignSelf: "flex-start",
+        padding: "3px 10px",
+        borderRadius: "var(--radius-sm)",
+        background: "var(--bf-purple)",
+        color: "var(--bf-white)",
+        font: "700 11px/1.2 var(--font-sans)",
+        letterSpacing: "0.06em",
+        textTransform: "uppercase"
+      } }, badge) : null,
+      /* @__PURE__ */ import_react16.default.createElement("span", { style: { font: "var(--text-h4)", color: "var(--bf-ink)" } }, title),
+      /* @__PURE__ */ import_react16.default.createElement("span", { style: { color: "var(--bf-ink-2)" } }, body),
+      meta ? /* @__PURE__ */ import_react16.default.createElement("span", { style: { font: "var(--text-caption)", color: "var(--text-muted)" } }, meta) : null,
+      /* @__PURE__ */ import_react16.default.createElement("span", { style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: 48,
+        marginTop: 4,
+        boxSizing: "border-box",
+        padding: "0 24px",
+        borderRadius: "var(--radius-btn)",
+        font: "700 15px/1 var(--font-sans)",
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        ...cta
+      } }, ctaLabel)
+    );
+  }
+
+  // .ds-sync/scratch-nm/basicfit-design-system/components/primitives/FilterPill.jsx
+  init_define_import_meta_env();
+  var import_react17 = __toESM(require_react_shim());
   function FilterPill({ active = false, onClick, children, style, ...rest }) {
-    const [hover, setHover] = import_react16.default.useState(false);
+    const [hover, setHover] = import_react17.default.useState(false);
     const s = {
       padding: "11px 22px",
       font: "600 15px/1.2 var(--font-sans)",
@@ -681,7 +806,7 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       whiteSpace: "nowrap",
       ...style
     };
-    return /* @__PURE__ */ import_react16.default.createElement(
+    return /* @__PURE__ */ import_react17.default.createElement(
       "button",
       {
         style: s,
@@ -697,7 +822,7 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/primitives/NoteItem.jsx
   init_define_import_meta_env();
-  var import_react17 = __toESM(require_react_shim());
+  var import_react18 = __toESM(require_react_shim());
   function NoteItem({ title, tone = "neutral", children, style }) {
     const tones = {
       neutral: { borderColor: "var(--border-default)", titleColor: "var(--text-heading)" },
@@ -705,21 +830,21 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       danger: { borderColor: "var(--bf-danger)", titleColor: "var(--bf-danger)" }
     };
     const t = tones[tone];
-    return /* @__PURE__ */ import_react17.default.createElement("div", { style: {
+    return /* @__PURE__ */ import_react18.default.createElement("div", { style: {
       background: "var(--bf-white)",
       border: "1px solid var(--border-default)",
       borderTop: `3px solid ${t.borderColor}`,
       borderRadius: "var(--radius-md)",
       padding: "var(--space-4)",
       ...style
-    } }, title && /* @__PURE__ */ import_react17.default.createElement("div", { style: { font: "var(--text-h4)", color: t.titleColor, marginBottom: 6 } }, title), /* @__PURE__ */ import_react17.default.createElement("div", { style: { font: "var(--text-body-sm)", color: "var(--text-body)" } }, children));
+    } }, title && /* @__PURE__ */ import_react18.default.createElement("div", { style: { font: "var(--text-h4)", color: t.titleColor, marginBottom: 6 } }, title), /* @__PURE__ */ import_react18.default.createElement("div", { style: { font: "var(--text-body-sm)", color: "var(--text-body)" } }, children));
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/primitives/RuleItem.jsx
   init_define_import_meta_env();
-  var import_react18 = __toESM(require_react_shim());
+  var import_react19 = __toESM(require_react_shim());
   function RuleItem({ icon, children, style }) {
-    return /* @__PURE__ */ import_react18.default.createElement("div", { style: {
+    return /* @__PURE__ */ import_react19.default.createElement("div", { style: {
       display: "flex",
       gap: 12,
       alignItems: "flex-start",
@@ -728,29 +853,139 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       borderRadius: "var(--radius-md)",
       padding: "var(--space-4)",
       ...style
-    } }, icon && /* @__PURE__ */ import_react18.default.createElement("span", { style: { color: "var(--bf-purple)", marginTop: 1 } }, typeof icon === "string" ? /* @__PURE__ */ import_react18.default.createElement(Icon, { name: icon, size: 20 }) : icon), /* @__PURE__ */ import_react18.default.createElement("span", { style: { font: "var(--text-body-sm)", color: "var(--text-body)" } }, children));
+    } }, icon && /* @__PURE__ */ import_react19.default.createElement("span", { style: { color: "var(--bf-purple)", marginTop: 1 } }, typeof icon === "string" ? /* @__PURE__ */ import_react19.default.createElement(Icon, { name: icon, size: 20 }) : icon), /* @__PURE__ */ import_react19.default.createElement("span", { style: { font: "var(--text-body-sm)", color: "var(--text-body)" } }, children));
+  }
+
+  // .ds-sync/scratch-nm/basicfit-design-system/components/primitives/SelectField.jsx
+  init_define_import_meta_env();
+  var import_react20 = __toESM(require_react_shim());
+  function SelectField({ id, label, value, options = [], onChange, hint }) {
+    const [focus, setFocus] = import_react20.default.useState(false);
+    const wrapStyle = {
+      position: "relative",
+      display: "flex",
+      alignItems: "center",
+      maxWidth: "100%",
+      marginTop: 10
+    };
+    const selectStyle = {
+      appearance: "none",
+      WebkitAppearance: "none",
+      MozAppearance: "none",
+      width: "100%",
+      minHeight: 44,
+      padding: "10px 40px 10px 14px",
+      font: "400 15px/1.3 var(--font-sans)",
+      color: "var(--bf-ink)",
+      background: "var(--bf-white)",
+      border: "1px solid " + (focus ? "var(--bf-purple)" : "var(--border-control)"),
+      borderRadius: "var(--radius-control)",
+      cursor: "pointer",
+      outline: focus ? "2px solid var(--bf-purple-tint)" : "none",
+      outlineOffset: focus ? 1 : 0
+    };
+    return /* @__PURE__ */ import_react20.default.createElement(import_react20.default.Fragment, null, /* @__PURE__ */ import_react20.default.createElement(
+      "label",
+      {
+        htmlFor: id,
+        style: {
+          display: "block",
+          font: "var(--text-label)",
+          letterSpacing: "var(--tracking-label)",
+          textTransform: "uppercase",
+          color: "var(--text-muted)"
+        }
+      },
+      label
+    ), /* @__PURE__ */ import_react20.default.createElement("div", { style: wrapStyle }, /* @__PURE__ */ import_react20.default.createElement(
+      "select",
+      {
+        id,
+        value,
+        onChange: (e) => onChange && onChange(e.target.value),
+        onFocus: () => setFocus(true),
+        onBlur: () => setFocus(false),
+        "aria-describedby": hint ? `${id}-hint` : void 0,
+        style: selectStyle
+      },
+      options.map((o) => /* @__PURE__ */ import_react20.default.createElement("option", { key: o.value, value: o.value }, o.label))
+    ), /* @__PURE__ */ import_react20.default.createElement(
+      Icon,
+      {
+        name: "chevron-down",
+        size: 18,
+        style: { position: "absolute", right: 12, pointerEvents: "none", color: "var(--text-muted)" }
+      }
+    )), hint && /* @__PURE__ */ import_react20.default.createElement(
+      "p",
+      {
+        id: `${id}-hint`,
+        style: { font: "var(--text-caption)", color: "var(--text-muted)", margin: "6px 0 0" }
+      },
+      hint
+    ));
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/primitives/StatCard.jsx
   init_define_import_meta_env();
-  var import_react19 = __toESM(require_react_shim());
+  var import_react21 = __toESM(require_react_shim());
   function StatCard({ value, label, inverse = false, style }) {
-    return /* @__PURE__ */ import_react19.default.createElement("div", { style: {
+    return /* @__PURE__ */ import_react21.default.createElement("div", { style: {
       background: inverse ? "var(--bf-ink)" : "var(--bf-white)",
       border: inverse ? "none" : "1px solid var(--border-default)",
       borderRadius: "var(--radius-lg)",
       padding: "var(--space-5)",
       textAlign: "center",
       ...style
-    } }, /* @__PURE__ */ import_react19.default.createElement("div", { style: { font: "var(--text-stat)", color: inverse ? "var(--bf-orange)" : "var(--bf-orange-deep)" } }, value), /* @__PURE__ */ import_react19.default.createElement("div", { style: { font: "var(--text-body-sm)", color: inverse ? "rgba(255,255,255,.85)" : "var(--text-muted)", marginTop: 6 } }, label));
+    } }, /* @__PURE__ */ import_react21.default.createElement("div", { style: { font: "var(--text-stat)", color: inverse ? "var(--bf-orange)" : "var(--bf-orange-deep)" } }, value), /* @__PURE__ */ import_react21.default.createElement("div", { style: { font: "var(--text-body-sm)", color: inverse ? "rgba(255,255,255,.85)" : "var(--text-muted)", marginTop: 6 } }, label));
+  }
+
+  // .ds-sync/scratch-nm/basicfit-design-system/components/primitives/StepHeader.jsx
+  init_define_import_meta_env();
+  var import_react22 = __toESM(require_react_shim());
+  function StepHeader({ step, total, onBack, backLabel = "Atr\xE1s", stepLabel, style }) {
+    const segments = Array.from({ length: total }, (_, i) => i < step);
+    return /* @__PURE__ */ import_react22.default.createElement("div", { style: { width: "100%", ...style } }, /* @__PURE__ */ import_react22.default.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 } }, /* @__PURE__ */ import_react22.default.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onBack,
+        style: {
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          minHeight: 44,
+          padding: "0 8px 0 0",
+          font: "600 15px/1 var(--font-sans)",
+          color: "var(--bf-purple)",
+          background: "none",
+          border: "none",
+          cursor: "pointer"
+        }
+      },
+      /* @__PURE__ */ import_react22.default.createElement("span", { "aria-hidden": "true" }, "\u2039"),
+      backLabel
+    ), /* @__PURE__ */ import_react22.default.createElement("span", { "aria-live": "polite", style: { font: "var(--text-caption)", color: "var(--text-muted)" } }, stepLabel || `Paso ${step} de ${total}`)), /* @__PURE__ */ import_react22.default.createElement("div", { "data-testid": "step-bar", "aria-hidden": "true", style: { display: "flex", gap: 6, marginTop: 4 } }, segments.map((filled, i) => /* @__PURE__ */ import_react22.default.createElement(
+      "span",
+      {
+        key: i,
+        "data-filled": filled ? "true" : "false",
+        style: {
+          flex: 1,
+          height: 4,
+          borderRadius: 2,
+          background: filled ? "var(--bf-purple)" : "var(--bf-grey-2)"
+        }
+      }
+    ))));
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/sections/ClubFinder.jsx
   init_define_import_meta_env();
-  var import_react20 = __toESM(require_react_shim());
+  var import_react23 = __toESM(require_react_shim());
   function ClubFinder({ title = "Encuentra tu", highlight = "club", subtitle, placeholder = "Busca por ciudad, calle, c\xF3digo postal o nombre del club", cities = [], onSearch, style }) {
-    const [q, setQ] = import_react20.default.useState("");
-    return /* @__PURE__ */ import_react20.default.createElement("div", { style: {
+    const [q, setQ] = import_react23.default.useState("");
+    return /* @__PURE__ */ import_react23.default.createElement("div", { style: {
       background: "var(--bf-white)",
       borderRadius: "var(--radius-md)",
       boxShadow: "var(--shadow-raised)",
@@ -758,13 +993,13 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       display: "grid",
       gap: "var(--space-4)",
       ...style
-    } }, /* @__PURE__ */ import_react20.default.createElement("div", null, /* @__PURE__ */ import_react20.default.createElement("h2", { style: {
+    } }, /* @__PURE__ */ import_react23.default.createElement("div", null, /* @__PURE__ */ import_react23.default.createElement("h2", { style: {
       font: "var(--text-h2)",
       textTransform: "uppercase",
       margin: 0,
       color: "var(--bf-ink)",
       letterSpacing: "var(--tracking-heading)"
-    } }, title, " ", /* @__PURE__ */ import_react20.default.createElement("span", { style: { color: "var(--bf-orange)" } }, highlight)), subtitle && /* @__PURE__ */ import_react20.default.createElement("p", { style: { font: "var(--text-body-md)", color: "var(--text-body)", margin: "6px 0 0" } }, subtitle)), /* @__PURE__ */ import_react20.default.createElement("div", { style: {
+    } }, title, " ", /* @__PURE__ */ import_react23.default.createElement("span", { style: { color: "var(--bf-orange)" } }, highlight)), subtitle && /* @__PURE__ */ import_react23.default.createElement("p", { style: { font: "var(--text-body-md)", color: "var(--text-body)", margin: "6px 0 0" } }, subtitle)), /* @__PURE__ */ import_react23.default.createElement("div", { style: {
       display: "flex",
       alignItems: "center",
       gap: 10,
@@ -772,7 +1007,7 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       borderRadius: "var(--radius-control)",
       padding: "13px 16px",
       background: "var(--bf-white)"
-    } }, /* @__PURE__ */ import_react20.default.createElement("span", { style: { color: "var(--bf-purple)" } }, /* @__PURE__ */ import_react20.default.createElement(Icon, { name: "search", size: 22 })), /* @__PURE__ */ import_react20.default.createElement(
+    } }, /* @__PURE__ */ import_react23.default.createElement("span", { style: { color: "var(--bf-purple)" } }, /* @__PURE__ */ import_react23.default.createElement(Icon, { name: "search", size: 22 })), /* @__PURE__ */ import_react23.default.createElement(
       "input",
       {
         value: q,
@@ -788,26 +1023,26 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
           color: "var(--bf-ink)"
         }
       }
-    )), cities.length > 0 && /* @__PURE__ */ import_react20.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 } }, cities.map((c, i) => /* @__PURE__ */ import_react20.default.createElement(FilterPill, { key: i, onClick: () => onSearch && onSearch(c), style: { textAlign: "center" } }, c))));
+    )), cities.length > 0 && /* @__PURE__ */ import_react23.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 } }, cities.map((c, i) => /* @__PURE__ */ import_react23.default.createElement(FilterPill, { key: i, onClick: () => onSearch && onSearch(c), style: { textAlign: "center" } }, c))));
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/sections/FeatureSplit.jsx
   init_define_import_meta_env();
-  var import_react21 = __toESM(require_react_shim());
+  var import_react24 = __toESM(require_react_shim());
   function FeatureSplit({ title, body, checks = [], imageUrl, imageAlt = "", cta, reverse = false, tone = "light", style }) {
     const dark = tone === "ink";
-    return /* @__PURE__ */ import_react21.default.createElement("section", { style: {
+    return /* @__PURE__ */ import_react24.default.createElement("section", { style: {
       background: dark ? "var(--bf-ink)" : "transparent",
       padding: dark ? "var(--space-8) var(--page-gutter)" : "var(--space-8) var(--page-gutter)",
       ...style
-    } }, /* @__PURE__ */ import_react21.default.createElement("div", { style: {
+    } }, /* @__PURE__ */ import_react24.default.createElement("div", { style: {
       maxWidth: "var(--page-max-width)",
       margin: "0 auto",
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
       gap: "var(--space-8)",
       alignItems: "center"
-    } }, imageUrl && /* @__PURE__ */ import_react21.default.createElement("img", { src: imageUrl, alt: imageAlt, style: {
+    } }, imageUrl && /* @__PURE__ */ import_react24.default.createElement("img", { src: imageUrl, alt: imageAlt, style: {
       width: "100%",
       display: "block",
       borderRadius: "var(--radius-xl)",
@@ -815,26 +1050,26 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       objectFit: "cover",
       background: "var(--bf-grey-1)",
       order: reverse ? 2 : 1
-    } }), /* @__PURE__ */ import_react21.default.createElement("div", { style: { order: reverse ? 1 : 2, display: "grid", gap: "var(--space-4)", justifyItems: "start" } }, /* @__PURE__ */ import_react21.default.createElement("h2", { style: {
+    } }), /* @__PURE__ */ import_react24.default.createElement("div", { style: { order: reverse ? 1 : 2, display: "grid", gap: "var(--space-4)", justifyItems: "start" } }, /* @__PURE__ */ import_react24.default.createElement("h2", { style: {
       font: "var(--text-h2)",
       textTransform: "uppercase",
       margin: 0,
       color: dark ? "var(--bf-white)" : "var(--bf-ink)",
       letterSpacing: "var(--tracking-heading)"
-    } }, title), body && /* @__PURE__ */ import_react21.default.createElement("p", { style: { font: "var(--text-body-md)", color: dark ? "rgba(255,255,255,.85)" : "var(--text-body)", margin: 0 } }, body), checks.length > 0 && /* @__PURE__ */ import_react21.default.createElement(CheckList, { items: checks }), cta && /* @__PURE__ */ import_react21.default.createElement(Button, { variant: dark ? "inverse" : "secondary", href: cta.href }, cta.label))));
+    } }, title), body && /* @__PURE__ */ import_react24.default.createElement("p", { style: { font: "var(--text-body-md)", color: dark ? "rgba(255,255,255,.85)" : "var(--text-body)", margin: 0 } }, body), checks.length > 0 && /* @__PURE__ */ import_react24.default.createElement(CheckList, { items: checks }), cta && /* @__PURE__ */ import_react24.default.createElement(Button, { variant: dark ? "inverse" : "secondary", href: cta.href }, cta.label))));
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/sections/Hero.jsx
   init_define_import_meta_env();
-  var import_react22 = __toESM(require_react_shim());
+  var import_react25 = __toESM(require_react_shim());
   function Hero({ title, highlight, subtitle, note, imageUrl, imageAlt = "", overlayText, primaryCta, secondaryCta, tone = "orange", style }) {
     const orange = tone === "orange";
-    return /* @__PURE__ */ import_react22.default.createElement("section", { style: {
+    return /* @__PURE__ */ import_react25.default.createElement("section", { style: {
       background: orange ? "linear-gradient(160deg, #F98A2B 0%, #F27A27 60%, #D66D23 100%)" : "var(--bf-white)",
       position: "relative",
       overflow: "hidden",
       ...style
-    } }, orange && /* @__PURE__ */ import_react22.default.createElement("div", { "aria-hidden": "true", style: {
+    } }, orange && /* @__PURE__ */ import_react25.default.createElement("div", { "aria-hidden": "true", style: {
       position: "absolute",
       left: 24,
       bottom: 24,
@@ -843,38 +1078,38 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       backgroundImage: "radial-gradient(rgba(255,255,255,.55) 2px, transparent 2.5px)",
       backgroundSize: "16px 16px",
       pointerEvents: "none"
-    } }), /* @__PURE__ */ import_react22.default.createElement("div", { style: {
+    } }), /* @__PURE__ */ import_react25.default.createElement("div", { style: {
       maxWidth: "var(--page-max-width)",
       margin: "0 auto",
       display: "grid",
       gridTemplateColumns: imageUrl ? "minmax(300px, 5fr) minmax(280px, 6fr)" : "1fr",
       alignItems: "stretch",
       position: "relative"
-    } }, /* @__PURE__ */ import_react22.default.createElement("div", { style: {
+    } }, /* @__PURE__ */ import_react25.default.createElement("div", { style: {
       padding: "var(--space-10) var(--page-gutter)",
       display: "grid",
       gap: "var(--space-4)",
       justifyItems: "start",
       alignContent: "center"
-    } }, /* @__PURE__ */ import_react22.default.createElement("h1", { style: { font: "var(--text-hero)", textTransform: "uppercase", color: "var(--bf-ink)", margin: 0, letterSpacing: "var(--tracking-heading)" } }, title, highlight && /* @__PURE__ */ import_react22.default.createElement(import_react22.default.Fragment, null, " ", /* @__PURE__ */ import_react22.default.createElement("span", { style: { color: orange ? "var(--bf-ink)" : "var(--bf-orange)" } }, highlight))), subtitle && /* @__PURE__ */ import_react22.default.createElement("p", { style: { font: "700 18px/1.3 var(--font-sans)", textTransform: "uppercase", color: "var(--bf-ink)", margin: 0 } }, subtitle), note && /* @__PURE__ */ import_react22.default.createElement("p", { style: { font: "var(--text-body-sm)", color: orange ? "var(--bf-ink-2)" : "var(--text-muted)", margin: 0, maxWidth: 460 } }, note), (primaryCta || secondaryCta) && /* @__PURE__ */ import_react22.default.createElement("div", { style: { display: "flex", gap: 14, flexWrap: "wrap", marginTop: 8 } }, primaryCta && /* @__PURE__ */ import_react22.default.createElement(Button, { variant: "primary", href: primaryCta.href }, primaryCta.label), secondaryCta && /* @__PURE__ */ import_react22.default.createElement(Button, { variant: "outline", href: secondaryCta.href }, secondaryCta.label))), imageUrl && /* @__PURE__ */ import_react22.default.createElement("div", { style: {
+    } }, /* @__PURE__ */ import_react25.default.createElement("h1", { style: { font: "var(--text-hero)", textTransform: "uppercase", color: "var(--bf-ink)", margin: 0, letterSpacing: "var(--tracking-heading)" } }, title, highlight && /* @__PURE__ */ import_react25.default.createElement(import_react25.default.Fragment, null, " ", /* @__PURE__ */ import_react25.default.createElement("span", { style: { color: orange ? "var(--bf-ink)" : "var(--bf-orange)" } }, highlight))), subtitle && /* @__PURE__ */ import_react25.default.createElement("p", { style: { font: "700 18px/1.3 var(--font-sans)", textTransform: "uppercase", color: "var(--bf-ink)", margin: 0 } }, subtitle), note && /* @__PURE__ */ import_react25.default.createElement("p", { style: { font: "var(--text-body-sm)", color: orange ? "var(--bf-ink-2)" : "var(--text-muted)", margin: 0, maxWidth: 460 } }, note), (primaryCta || secondaryCta) && /* @__PURE__ */ import_react25.default.createElement("div", { style: { display: "flex", gap: 14, flexWrap: "wrap", marginTop: 8 } }, primaryCta && /* @__PURE__ */ import_react25.default.createElement(Button, { variant: "primary", href: primaryCta.href }, primaryCta.label), secondaryCta && /* @__PURE__ */ import_react25.default.createElement(Button, { variant: "outline", href: secondaryCta.href }, secondaryCta.label))), imageUrl && /* @__PURE__ */ import_react25.default.createElement("div", { style: {
       position: "relative",
       minHeight: 380,
       clipPath: "polygon(14% 0, 100% 0, 100% 100%, 0 100%)"
-    } }, /* @__PURE__ */ import_react22.default.createElement("img", { src: imageUrl, alt: imageAlt, style: {
+    } }, /* @__PURE__ */ import_react25.default.createElement("img", { src: imageUrl, alt: imageAlt, style: {
       position: "absolute",
       inset: 0,
       width: "100%",
       height: "100%",
       objectFit: "cover",
       display: "block"
-    } }), overlayText && /* @__PURE__ */ import_react22.default.createElement("div", { style: {
+    } }), overlayText && /* @__PURE__ */ import_react25.default.createElement("div", { style: {
       position: "absolute",
       inset: 0,
       display: "grid",
       alignContent: "center",
       padding: "0 8%",
       pointerEvents: "none"
-    } }, /* @__PURE__ */ import_react22.default.createElement("div", { style: {
+    } }, /* @__PURE__ */ import_react25.default.createElement("div", { style: {
       font: "800 clamp(36px, 5vw, 64px)/1.02 var(--font-display)",
       fontStyle: "italic",
       textTransform: "uppercase",
@@ -886,20 +1121,20 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/sections/MobileMenu.jsx
   init_define_import_meta_env();
-  var import_react23 = __toESM(require_react_shim());
+  var import_react26 = __toESM(require_react_shim());
   var BF_LOGO = "https://www.basic-fit.com/on/demandware.static/Sites-BFE-Site/-/default/dw312ce583/img/svg/logo-bf-orange.svg";
   function MobileMenu({ items = [], activeId, utilities = [], language = "espa\xF1ol", ctaLabel = "empezar", logoSrc = BF_LOGO, onClose, style }) {
     const dotted = { borderBottom: "1px dotted var(--bf-grey-4)" };
-    return /* @__PURE__ */ import_react23.default.createElement("div", { style: {
+    return /* @__PURE__ */ import_react26.default.createElement("div", { style: {
       background: "var(--bf-cream)",
       minHeight: "100%",
       display: "flex",
       flexDirection: "column",
       maxWidth: 420,
       ...style
-    } }, /* @__PURE__ */ import_react23.default.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px" } }, /* @__PURE__ */ import_react23.default.createElement("img", { src: logoSrc, alt: "Basic-Fit", style: { height: 22 } }), /* @__PURE__ */ import_react23.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 16 } }, /* @__PURE__ */ import_react23.default.createElement(Button, { variant: "primary", size: "sm" }, ctaLabel), /* @__PURE__ */ import_react23.default.createElement("button", { onClick: onClose, "aria-label": "Cerrar", style: { background: "none", border: "none", cursor: "pointer", color: "var(--bf-ink)", padding: 4 } }, /* @__PURE__ */ import_react23.default.createElement(Icon, { name: "x", size: 22 })))), /* @__PURE__ */ import_react23.default.createElement("nav", { style: { display: "grid" } }, items.map((it, i) => {
+    } }, /* @__PURE__ */ import_react26.default.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px" } }, /* @__PURE__ */ import_react26.default.createElement("img", { src: logoSrc, alt: "Basic-Fit", style: { height: 22 } }), /* @__PURE__ */ import_react26.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 16 } }, /* @__PURE__ */ import_react26.default.createElement(Button, { variant: "primary", size: "sm" }, ctaLabel), /* @__PURE__ */ import_react26.default.createElement("button", { onClick: onClose, "aria-label": "Cerrar", style: { background: "none", border: "none", cursor: "pointer", color: "var(--bf-ink)", padding: 4 } }, /* @__PURE__ */ import_react26.default.createElement(Icon, { name: "x", size: 22 })))), /* @__PURE__ */ import_react26.default.createElement("nav", { style: { display: "grid" } }, items.map((it, i) => {
       const active = it.id === activeId;
-      return /* @__PURE__ */ import_react23.default.createElement("a", { key: i, href: it.href || "#", style: {
+      return /* @__PURE__ */ import_react26.default.createElement("a", { key: i, href: it.href || "#", style: {
         ...dotted,
         display: "flex",
         alignItems: "center",
@@ -909,8 +1144,8 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
         color: "var(--bf-ink)",
         textDecoration: "none",
         borderLeft: active ? "3px solid var(--bf-purple)" : "3px solid transparent"
-      } }, it.label, it.hasMenu && /* @__PURE__ */ import_react23.default.createElement("span", { style: { color: "var(--bf-ink)" } }, /* @__PURE__ */ import_react23.default.createElement(Icon, { name: "arrow-right", size: 20 })));
-    })), /* @__PURE__ */ import_react23.default.createElement("div", { style: { flex: 1 } }), /* @__PURE__ */ import_react23.default.createElement("div", { style: { display: "grid", padding: "12px 0" } }, utilities.map((u, i) => /* @__PURE__ */ import_react23.default.createElement("a", { key: i, href: u.href || "#", style: {
+      } }, it.label, it.hasMenu && /* @__PURE__ */ import_react26.default.createElement("span", { style: { color: "var(--bf-ink)" } }, /* @__PURE__ */ import_react26.default.createElement(Icon, { name: "arrow-right", size: 20 })));
+    })), /* @__PURE__ */ import_react26.default.createElement("div", { style: { flex: 1 } }), /* @__PURE__ */ import_react26.default.createElement("div", { style: { display: "grid", padding: "12px 0" } }, utilities.map((u, i) => /* @__PURE__ */ import_react26.default.createElement("a", { key: i, href: u.href || "#", style: {
       display: "flex",
       alignItems: "center",
       gap: 10,
@@ -918,7 +1153,7 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       font: "500 15px/1.3 var(--font-sans)",
       color: "var(--bf-ink)",
       textDecoration: "none"
-    } }, u.icon && /* @__PURE__ */ import_react23.default.createElement(Icon, { name: u.icon, size: 18 }), u.label)), /* @__PURE__ */ import_react23.default.createElement("div", { style: {
+    } }, u.icon && /* @__PURE__ */ import_react26.default.createElement(Icon, { name: u.icon, size: 18 }), u.label)), /* @__PURE__ */ import_react26.default.createElement("div", { style: {
       ...{ borderTop: "1px dotted var(--bf-grey-4)" },
       display: "flex",
       alignItems: "center",
@@ -926,46 +1161,46 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       padding: "16px 18px",
       font: "500 15px/1.3 var(--font-sans)",
       color: "var(--bf-ink)"
-    } }, language, /* @__PURE__ */ import_react23.default.createElement(Icon, { name: "chevron-down", size: 18 }))));
+    } }, language, /* @__PURE__ */ import_react26.default.createElement(Icon, { name: "chevron-down", size: 18 }))));
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/sections/PageFooter.jsx
   init_define_import_meta_env();
-  var import_react24 = __toESM(require_react_shim());
+  var import_react27 = __toESM(require_react_shim());
   function PageFooter({ logoSrc, columns = [], lines = [], children, style }) {
-    return /* @__PURE__ */ import_react24.default.createElement("footer", { style: {
+    return /* @__PURE__ */ import_react27.default.createElement("footer", { style: {
       background: "var(--bf-ink)",
       color: "rgba(255,255,255,.75)",
       padding: "var(--space-10) var(--page-gutter) var(--space-8)",
       ...style
-    } }, /* @__PURE__ */ import_react24.default.createElement("div", { style: { maxWidth: "var(--page-max-width)", margin: "0 auto", display: "grid", gap: "var(--space-8)" } }, /* @__PURE__ */ import_react24.default.createElement("div", null, logoSrc ? /* @__PURE__ */ import_react24.default.createElement("img", { src: logoSrc, alt: "Basic-Fit", style: { height: 26, display: "block" } }) : /* @__PURE__ */ import_react24.default.createElement("div", { style: {
+    } }, /* @__PURE__ */ import_react27.default.createElement("div", { style: { maxWidth: "var(--page-max-width)", margin: "0 auto", display: "grid", gap: "var(--space-8)" } }, /* @__PURE__ */ import_react27.default.createElement("div", null, logoSrc ? /* @__PURE__ */ import_react27.default.createElement("img", { src: logoSrc, alt: "Basic-Fit", style: { height: 26, display: "block" } }) : /* @__PURE__ */ import_react27.default.createElement("div", { style: {
       font: "800 14px/1 var(--font-display)",
       color: "var(--bf-orange)",
       textTransform: "uppercase",
       letterSpacing: "0.06em"
-    } }, "Basic-Fit")), columns.length > 0 && /* @__PURE__ */ import_react24.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "var(--space-6)" } }, columns.map((col, i) => /* @__PURE__ */ import_react24.default.createElement("div", { key: i }, /* @__PURE__ */ import_react24.default.createElement("div", { style: {
+    } }, "Basic-Fit")), columns.length > 0 && /* @__PURE__ */ import_react27.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "var(--space-6)" } }, columns.map((col, i) => /* @__PURE__ */ import_react27.default.createElement("div", { key: i }, /* @__PURE__ */ import_react27.default.createElement("div", { style: {
       font: "700 15px/1.3 var(--font-sans)",
       color: "var(--bf-white)",
       marginBottom: "var(--space-3)"
-    } }, col.title), /* @__PURE__ */ import_react24.default.createElement("ul", { style: { listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 } }, col.links.map((l, j) => /* @__PURE__ */ import_react24.default.createElement("li", { key: j }, /* @__PURE__ */ import_react24.default.createElement("a", { href: l.href || "#", style: {
+    } }, col.title), /* @__PURE__ */ import_react27.default.createElement("ul", { style: { listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 } }, col.links.map((l, j) => /* @__PURE__ */ import_react27.default.createElement("li", { key: j }, /* @__PURE__ */ import_react27.default.createElement("a", { href: l.href || "#", style: {
       font: "var(--text-body-sm)",
       color: "rgba(255,255,255,.75)",
       fontWeight: 400
-    } }, l.label))))))), lines.length > 0 && /* @__PURE__ */ import_react24.default.createElement("div", { style: {
+    } }, l.label))))))), lines.length > 0 && /* @__PURE__ */ import_react27.default.createElement("div", { style: {
       display: "grid",
       gap: 6,
       font: "var(--text-caption)",
       borderTop: "1px solid rgba(255,255,255,.15)",
       paddingTop: "var(--space-5)"
-    } }, lines.map((l, i) => /* @__PURE__ */ import_react24.default.createElement("p", { key: i, style: { margin: 0 } }, l))), children));
+    } }, lines.map((l, i) => /* @__PURE__ */ import_react27.default.createElement("p", { key: i, style: { margin: 0 } }, l))), children));
   }
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/sections/PageHeader.jsx
   init_define_import_meta_env();
-  var import_react25 = __toESM(require_react_shim());
+  var import_react28 = __toESM(require_react_shim());
   function PageHeader({ tone = "light", breadcrumb, title, subtitle, badge, badgeTone = "brand", meta, logoSrc, style }) {
     const light = tone === "light";
-    const Badge2 = ({ children }) => /* @__PURE__ */ import_react25.default.createElement("span", { style: {
+    const Badge2 = ({ children }) => /* @__PURE__ */ import_react28.default.createElement("span", { style: {
       display: "inline-flex",
       alignItems: "center",
       padding: "8px 20px",
@@ -976,27 +1211,27 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       background: badgeTone === "success" ? "var(--bf-success)" : badgeTone === "ink" ? "var(--bf-ink)" : "var(--bf-orange)",
       color: "var(--bf-white)"
     } }, children);
-    return /* @__PURE__ */ import_react25.default.createElement("header", { style: {
+    return /* @__PURE__ */ import_react28.default.createElement("header", { style: {
       background: light ? "var(--bf-white)" : "var(--bf-ink)",
       color: light ? "var(--bf-ink)" : "var(--bf-white)",
       paddingBlock: "var(--space-6) var(--space-8)",
       paddingInline: "var(--page-pad-x)",
       borderBottom: light ? "1px solid var(--border-default)" : "none",
       ...style
-    } }, /* @__PURE__ */ import_react25.default.createElement("div", { style: { maxWidth: "var(--page-max-width)", margin: "0 auto" } }, logoSrc ? /* @__PURE__ */ import_react25.default.createElement("img", { src: logoSrc, alt: "Basic-Fit", style: { height: 28, display: "block", marginBottom: "var(--space-5)" } }) : /* @__PURE__ */ import_react25.default.createElement("div", { style: {
+    } }, /* @__PURE__ */ import_react28.default.createElement("div", { style: { maxWidth: "var(--page-max-width)", margin: "0 auto" } }, logoSrc ? /* @__PURE__ */ import_react28.default.createElement("img", { src: logoSrc, alt: "Basic-Fit", style: { height: 28, display: "block", marginBottom: "var(--space-5)" } }) : /* @__PURE__ */ import_react28.default.createElement("div", { style: {
       font: "800 15px/1 var(--font-display)",
       color: "var(--bf-orange)",
       textTransform: "uppercase",
       letterSpacing: "0.06em",
       marginBottom: "var(--space-5)"
-    } }, "Basic-Fit"), breadcrumb && /* @__PURE__ */ import_react25.default.createElement("nav", { style: { font: "var(--text-body-sm)", color: light ? "var(--text-muted)" : "rgba(255,255,255,.7)", marginBottom: "var(--space-3)", display: "flex", gap: 8 } }, breadcrumb.map((b, i) => /* @__PURE__ */ import_react25.default.createElement("span", { key: i, style: { display: "inline-flex", gap: 8 } }, i > 0 && /* @__PURE__ */ import_react25.default.createElement("span", null, "/"), b.href ? /* @__PURE__ */ import_react25.default.createElement("a", { href: b.href, style: { color: "inherit", fontWeight: 500 } }, b.label) : /* @__PURE__ */ import_react25.default.createElement("span", { style: { fontWeight: 600, color: light ? "var(--bf-ink)" : "#fff" } }, b.label)))), /* @__PURE__ */ import_react25.default.createElement("h1", { style: {
+    } }, "Basic-Fit"), breadcrumb && /* @__PURE__ */ import_react28.default.createElement("nav", { style: { font: "var(--text-body-sm)", color: light ? "var(--text-muted)" : "rgba(255,255,255,.7)", marginBottom: "var(--space-3)", display: "flex", gap: 8 } }, breadcrumb.map((b, i) => /* @__PURE__ */ import_react28.default.createElement("span", { key: i, style: { display: "inline-flex", gap: 8 } }, i > 0 && /* @__PURE__ */ import_react28.default.createElement("span", null, "/"), b.href ? /* @__PURE__ */ import_react28.default.createElement("a", { href: b.href, style: { color: "inherit", fontWeight: 500 } }, b.label) : /* @__PURE__ */ import_react28.default.createElement("span", { style: { fontWeight: 600, color: light ? "var(--bf-ink)" : "#fff" } }, b.label)))), /* @__PURE__ */ import_react28.default.createElement("h1", { style: {
       font: "var(--text-h1)",
       color: "inherit",
       textTransform: "uppercase",
       letterSpacing: "var(--tracking-heading)",
       margin: 0,
       overflowWrap: "anywhere"
-    } }, title), subtitle && /* @__PURE__ */ import_react25.default.createElement("p", { style: { font: "var(--text-body-lg)", color: light ? "var(--text-body)" : "rgba(255,255,255,.8)", margin: "10px 0 0", maxWidth: 640 } }, subtitle), badge && /* @__PURE__ */ import_react25.default.createElement("div", { style: { marginTop: "var(--space-4)" } }, /* @__PURE__ */ import_react25.default.createElement(Badge2, null, badge)), meta && /* @__PURE__ */ import_react25.default.createElement("div", { style: {
+    } }, title), subtitle && /* @__PURE__ */ import_react28.default.createElement("p", { style: { font: "var(--text-body-lg)", color: light ? "var(--text-body)" : "rgba(255,255,255,.8)", margin: "10px 0 0", maxWidth: 640 } }, subtitle), badge && /* @__PURE__ */ import_react28.default.createElement("div", { style: { marginTop: "var(--space-4)" } }, /* @__PURE__ */ import_react28.default.createElement(Badge2, null, badge)), meta && /* @__PURE__ */ import_react28.default.createElement("div", { style: {
       display: "inline-block",
       marginTop: "var(--space-4)",
       background: light ? "var(--bf-grey-1)" : "rgba(255,255,255,0.08)",
@@ -1009,10 +1244,10 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
 
   // .ds-sync/scratch-nm/basicfit-design-system/components/sections/SiteHeader.jsx
   init_define_import_meta_env();
-  var import_react26 = __toESM(require_react_shim());
+  var import_react29 = __toESM(require_react_shim());
   var BF_LOGO2 = "https://www.basic-fit.com/on/demandware.static/Sites-BFE-Site/-/default/dw312ce583/img/svg/logo-bf-orange.svg";
   function SiteHeader({ usps = [], utilities = [], navItems = [], ctaLabel = "empezar", ctaHref = "#", logoSrc = BF_LOGO2, style }) {
-    return /* @__PURE__ */ import_react26.default.createElement("div", { style: { ...style } }, (usps.length > 0 || utilities.length > 0) && /* @__PURE__ */ import_react26.default.createElement("div", { style: { background: "var(--bf-cream)", padding: "10px var(--page-gutter)" } }, /* @__PURE__ */ import_react26.default.createElement("div", { style: {
+    return /* @__PURE__ */ import_react29.default.createElement("div", { style: { ...style } }, (usps.length > 0 || utilities.length > 0) && /* @__PURE__ */ import_react29.default.createElement("div", { style: { background: "var(--bf-cream)", padding: "10px var(--page-gutter)" } }, /* @__PURE__ */ import_react29.default.createElement("div", { style: {
       maxWidth: "var(--page-max-width)",
       margin: "0 auto",
       display: "flex",
@@ -1020,14 +1255,14 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       alignItems: "center",
       overflowX: "auto",
       scrollbarWidth: "none"
-    } }, usps.map((u, i) => /* @__PURE__ */ import_react26.default.createElement("span", { key: i, style: {
+    } }, usps.map((u, i) => /* @__PURE__ */ import_react29.default.createElement("span", { key: i, style: {
       font: "500 14px/1.2 var(--font-sans)",
       color: "var(--bf-ink)",
       whiteSpace: "nowrap",
       display: "inline-flex",
       alignItems: "center",
       gap: 8
-    } }, u.icon && (typeof u.icon === "string" && !u.icon.includes(".") && !u.icon.includes("/") ? /* @__PURE__ */ import_react26.default.createElement(Icon, { name: u.icon, size: 16 }) : /* @__PURE__ */ import_react26.default.createElement("img", { src: u.icon, alt: "", style: { height: 16 } })), u.label !== void 0 ? u.label : u)), /* @__PURE__ */ import_react26.default.createElement("span", { style: { flex: 1 } }), utilities.map((u, i) => /* @__PURE__ */ import_react26.default.createElement("a", { key: i, href: u.href || "#", style: {
+    } }, u.icon && (typeof u.icon === "string" && !u.icon.includes(".") && !u.icon.includes("/") ? /* @__PURE__ */ import_react29.default.createElement(Icon, { name: u.icon, size: 16 }) : /* @__PURE__ */ import_react29.default.createElement("img", { src: u.icon, alt: "", style: { height: 16 } })), u.label !== void 0 ? u.label : u)), /* @__PURE__ */ import_react29.default.createElement("span", { style: { flex: 1 } }), utilities.map((u, i) => /* @__PURE__ */ import_react29.default.createElement("a", { key: i, href: u.href || "#", style: {
       font: "500 14px/1.2 var(--font-sans)",
       color: "var(--bf-ink)",
       whiteSpace: "nowrap",
@@ -1035,13 +1270,13 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       display: "inline-flex",
       alignItems: "center",
       gap: 6
-    } }, u.icon && /* @__PURE__ */ import_react26.default.createElement(Icon, { name: u.icon, size: 15 }), u.label)))), /* @__PURE__ */ import_react26.default.createElement("div", { style: { background: "var(--bf-white)", borderBottom: "1px solid var(--border-default)", padding: "14px var(--page-gutter)" } }, /* @__PURE__ */ import_react26.default.createElement("div", { style: {
+    } }, u.icon && /* @__PURE__ */ import_react29.default.createElement(Icon, { name: u.icon, size: 15 }), u.label)))), /* @__PURE__ */ import_react29.default.createElement("div", { style: { background: "var(--bf-white)", borderBottom: "1px solid var(--border-default)", padding: "14px var(--page-gutter)" } }, /* @__PURE__ */ import_react29.default.createElement("div", { style: {
       maxWidth: "var(--page-max-width)",
       margin: "0 auto",
       display: "flex",
       alignItems: "center",
       gap: "var(--space-5)"
-    } }, /* @__PURE__ */ import_react26.default.createElement("img", { src: logoSrc, alt: "Basic-Fit", style: { height: 24, flexShrink: 0 } }), /* @__PURE__ */ import_react26.default.createElement("nav", { style: { display: "flex", gap: 2, flex: 1, overflowX: "auto", scrollbarWidth: "none" } }, navItems.map((it, i) => /* @__PURE__ */ import_react26.default.createElement("a", { key: i, href: it.href || "#", style: {
+    } }, /* @__PURE__ */ import_react29.default.createElement("img", { src: logoSrc, alt: "Basic-Fit", style: { height: 24, flexShrink: 0 } }), /* @__PURE__ */ import_react29.default.createElement("nav", { style: { display: "flex", gap: 2, flex: 1, overflowX: "auto", scrollbarWidth: "none" } }, navItems.map((it, i) => /* @__PURE__ */ import_react29.default.createElement("a", { key: i, href: it.href || "#", style: {
       padding: "10px 14px",
       font: "500 15px/1.2 var(--font-sans)",
       color: "var(--bf-ink)",
@@ -1049,7 +1284,7 @@ var BasicFitDesignSystem_1cb8a2 = (() => {
       display: "inline-flex",
       alignItems: "center",
       gap: 6
-    } }, it.label, it.hasMenu && /* @__PURE__ */ import_react26.default.createElement("span", { style: { color: "var(--bf-ink-3)" } }, /* @__PURE__ */ import_react26.default.createElement(Icon, { name: "chevron-down", size: 14 }))))), /* @__PURE__ */ import_react26.default.createElement("span", { style: { color: "var(--bf-ink)", padding: "0 4px", cursor: "pointer" } }, /* @__PURE__ */ import_react26.default.createElement(Icon, { name: "search", size: 20 })), /* @__PURE__ */ import_react26.default.createElement(Button, { variant: "primary", size: "sm", href: ctaHref, style: { flexShrink: 0 } }, ctaLabel))));
+    } }, it.label, it.hasMenu && /* @__PURE__ */ import_react29.default.createElement("span", { style: { color: "var(--bf-ink-3)" } }, /* @__PURE__ */ import_react29.default.createElement(Icon, { name: "chevron-down", size: 14 }))))), /* @__PURE__ */ import_react29.default.createElement("span", { style: { color: "var(--bf-ink)", padding: "0 4px", cursor: "pointer" } }, /* @__PURE__ */ import_react29.default.createElement(Icon, { name: "search", size: 20 })), /* @__PURE__ */ import_react29.default.createElement(Button, { variant: "primary", size: "sm", href: ctaHref, style: { flexShrink: 0 } }, ctaLabel))));
   }
   return __toCommonJS(pkg_entry_exports);
 })();

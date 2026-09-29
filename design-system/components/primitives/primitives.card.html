@@ -12,7 +12,7 @@
 <body style="margin:0;padding:16px;background:var(--bf-white);">
 <div id="root"></div>
 <script type="text/babel">
-const { Button, Badge, Tag, FilterPill, Icon, StatCard, DetailItem, NoteItem, RuleItem, BackToTop, CheckList } = window.BasicFitDesignSystem_1cb8a2;
+const { Button, Badge, Tag, FilterPill, Icon, StatCard, DetailItem, NoteItem, RuleItem, BackToTop, CheckList, StepHeader, ChoiceCard } = window.BasicFitDesignSystem_1cb8a2;
 const row = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" };
 const label = { font: "600 12px/1 var(--font-sans)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted, #777)", margin: "0 0 6px" };
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -74,6 +74,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       </div>
       <div style={{ marginTop: 10 }}>
         <CheckList items={["Siempre cerca de ti", "Mejor calidad-precio", "App Basic-Fit incluida"]} />
+      </div>
+    </div>
+    <div>
+      <p style={label}>Wizard step header &amp; choice cards</p>
+      <div style={{ display: "grid", gap: 10, maxWidth: 380 }}>
+        <StepHeader step={1} total={2} onBack={() => {}} />
+        <ChoiceCard recommended badge="Recomendado" title="Prepara un prompt para tu IA" body="Responde unas preguntas y te damos un prompt listo." meta="~3 min · usas tu propio asistente" ctaLabel="Preparar prompt" onSelect={() => {}} />
+        <ChoiceCard title="Ya tengo un rutina.json" body="Pega el JSON o elige un archivo." ctaLabel="Importar" onSelect={() => {}} />
       </div>
     </div>
     <div>

@@ -55,7 +55,7 @@ Basic-Fit's proprietary web typeface was not provided. **Archivo / Archivo Expan
 - `tokens/` — `colors.css`, `typography.css`, `spacing.css`, `effects.css`, `fonts.css`, `base.css`.
 - `guidelines/` — foundation specimen cards (Design System tab).
 - `components/` — organized by composition tier, not by page domain:
-  - `primitives/` — single-purpose atoms, used everywhere: Button, Badge, Tag, FilterPill, Icon, StatCard, DetailItem, NoteItem, RuleItem, BackToTop, CheckList
+  - `primitives/` — single-purpose atoms, used everywhere: Button, Badge, Tag, FilterPill, Icon, StatCard, DetailItem, NoteItem, RuleItem, BackToTop, CheckList, StepHeader, ChoiceCard
   - `composite/` — assembled from primitives into reusable units: EquipmentCard, ExerciseCard, SectionBanner, SummaryTable, Accordion, ArticleCard, PriceCard, NavMenu
   - `sections/` — large, page-level blocks (site chrome, hero, full-bleed content bands): SiteHeader, Hero, ClubFinder, FeatureSplit, MobileMenu, PageHeader, PageFooter
 - `ui_kits/rutina/` — interactive recreation: routine page + equipment catalog, rebranded.

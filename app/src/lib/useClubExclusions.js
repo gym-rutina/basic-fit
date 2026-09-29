@@ -30,7 +30,10 @@ export function useClubExclusions(clubId) {
 
     if (!clubId) return undefined;
 
-    getClubExclusions(clubId)
+    // Promise.resolve().then(...) so a synchronous throw from the db layer
+    // degrades to "nothing excluded" like a rejection does.
+    Promise.resolve()
+      .then(() => getClubExclusions(clubId))
       .then((ids) => {
         if (!cancelled) setExcludedIds(new Set(ids));
       })

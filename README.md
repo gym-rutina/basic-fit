@@ -223,7 +223,7 @@ Two safety behaviors worth knowing before running it:
 
 ## Using the PWA
 
-**First launch:** if there's no active rutina yet, a short onboarding carousel introduces what Rutina does and the LLM generate-then-import workflow, then asks for your gym (via the Club Picker), your program's name and goal, your weekly schedule, and any injuries or movements to avoid — one guided step per field, each explaining what the field is for and showing an example. **Every step is skippable**, including all the input ones, and answering none of them still finishes onboarding normally. There is no separate Settings entry for these answers afterward: the one place to review or change them is the LLM guide screen itself, where they show as an editable form right above the prompt (see "Authoring a Rutina with an LLM" below) — editing there recomputes the prompt instantly. A small on-demand control keeps onboarding reachable if you want to revisit it later; subsequent app opens skip straight past it.
+**First launch:** if there's no active rutina yet, a short onboarding carousel introduces what Rutina does and the LLM generate-then-import workflow, then asks for your gym (via the Club Picker), your program's name and goal, your weekly schedule, and any injuries or movements to avoid — one guided step per field, each explaining what the field is for and showing an example. **Every step is skippable**, including all the input ones, and answering none of them still finishes onboarding normally. There is no separate Settings entry for these answers afterward: the one place to review or change them is step 1 of the prompt wizard (Import → **Preparar prompt**), which opens pre-filled as **Revisa tus respuestas** (see "Authoring a Rutina with an LLM" below). A small on-demand control keeps onboarding reachable if you want to revisit it later; subsequent app opens skip straight past it.
 
 1. **Import a rutina** — paste a `rutina.json` or upload a file; an import **adds** a rutina to your library rather than replacing what's there (see "Mis rutinas" below). Use `data/examples/phase1-monday.json` to try the flow immediately. Generate your own with the LLM workflow below.
 2. **Home** — proposes your **next** workout: the day after the one you most recently *completed*, wrapping back around to the first day after the last — and falling back to the very first day until you complete something (abandoned attempts don't advance the proposal). The proposal ignores the calendar and the day labels' language entirely; it reads only your **active rutina's** completed-session history, so switching to a different rutina switches the proposal with it. The proposed day sits on a card labeled **Próximo** with an **Empezar entrenamiento** button. If the active program has more than one day, an **Elegir** toggle under that button expands every day of the routine in program order, each row with its exercise count; the auto-proposed one is tinted purple and tagged **Próximo**, and tapping any row starts that day immediately (your pick isn't remembered — once you complete a session, the rotation simply continues from there). With a club-access link saved (**Club access link** below), an outline **Acceso** button (with a QR-code icon) is pinned to the bottom of the screen just above the tab bar — on both the idle screen and the EN CURSO screen — and opens the saved link in a new browser tab while the app itself stays put: same route, same scroll position, any in-progress session still running when you come back. No link saved means no button rendered at all — its absence means you haven't configured one, not that something broke. Below that, an **Últimas sesiones** section lists your two most recent sessions (newest first; abandoned ones keep their "sin terminar" marking). While a session is in progress, Home shows an "EN CURSO" card describing *that* session instead — its own day and `X / Y completados` — with a **Reanudar entrenamiento** button rather than "Empezar entrenamiento"; this holds from the first paint (a skeleton, not a start button, while the check is in flight), so you can't accidentally start a second session on top of one already running. If the check itself fails, Home shows an error with a **Reintentar** button instead of silently offering to start. A purple **"Entrenamiento en curso"** banner — showing the day and progress — sits at the top of every other tab (Programa, Catálogo, Historial, Progreso, Exportar) and jumps back into the session when tapped; it's hidden on Home itself, on the session screen, and during import, and it disappears the moment the session is finished, stopped, or discarded.
@@ -258,15 +258,15 @@ This is a different file from the **Exportar progreso** JSON/Markdown export (st
 Two places pick up the same club selection, stored locally (`localStorage`, key `rutina:club`) so it survives a reload without asking again:
 
 - **Catálogo tab** — the club row above the filter pills. Tap it to open the picker.
-- **LLM guide** (Import screen → guide link) — the purple "Tu club" box above the copyable prompt.
+- **Prompt wizard, step 2** (Import → Preparar prompt) — the club row above the prompt preview, with **Cambiar** / **Elige tu club**.
 
 The picker is three dependent fields — **country → city → club** — each filterable as you type, keyboard- and screen-reader-navigable. Picking a country enables the city field; picking a city enables the club field, listing every club in that city by name and street address (address is shown because a meaningful share of club names *are* their street, so the address is what actually disambiguates them). If your club isn't listed, the empty-results state links straight to the guide's free-text field so you're never blocked.
 
 Once a club is selected:
 
 - The Catálogo tab's **"Solo mi club"** pill filters the grid to that club's equipment (using your saved exclusions).
-- An **"Equipamiento de tu club"** button — in both the Catálogo tab and the Guide overlay — opens the equipment sheet. Untick items your specific club does not have; the list is saved per club in IndexedDB (`clubEquipment` store) and survives a reload.
-- The Guide overlay's copied prompt embeds a club-scoped equipment table (all 48 items minus your exclusions, grouped by kind: machines / free weights / accessories) and pre-fills field 6 with your club's name, city, and address automatically. No manual gym-id lookup needed.
+- An **"Equipamiento de tu club"** button — in the Catálogo tab — opens the equipment sheet. Untick items your specific club does not have; the list is saved per club in IndexedDB (`clubEquipment` store) and survives a reload.
+- The wizard's copied prompt embeds a club-scoped equipment table (all 48 items minus your exclusions, grouped by kind: machines / free weights / accessories) and pre-fills field 6 with your club's name, city, and address automatically. No manual gym-id lookup needed.
 
 ### Club access link
 
@@ -292,7 +292,7 @@ because conflating them is exactly what caused the two bugs described below.
 
 | # | Axis | Controlled by | Lives in | Behavior |
 |---|------|----------------|----------|----------|
-| 1 | **UI chrome** — labels, buttons, headings, aria-labels, empty states, errors, onboarding, the LLM guide overlay | The app | `app/src/i18n/{es,en,be,fr,nl,de}.js` | `es` / `en` / `be` / `fr` / `nl` / `de`, switchable from **Settings** (the sliders icon + language code in the header) or from the onboarding language picker on first run. Persisted in `localStorage`. First run defaults from the browser: `es`/`be`/`fr`/`nl`/`de` → that locale, anything else → `en`. |
+| 1 | **UI chrome** — labels, buttons, headings, aria-labels, empty states, errors, onboarding, the LLM guide sheet and prompt wizard | The app | `app/src/i18n/{es,en,be,fr,nl,de}.js` | `es` / `en` / `be` / `fr` / `nl` / `de`, switchable from **Settings** (the sliders icon + language code in the header) or from the onboarding language picker on first run. Persisted in `localStorage`. First run defaults from the browser: `es`/`be`/`fr`/`nl`/`de` → that locale, anything else → `en`. |
 | 2 | **Bundled reference data** — equipment names, descriptions, instructions, video links | The app | `data/equipment.json` (`{en, es, be, fr, nl, de}` per field) | Follows the UI language everywhere in the app, with a local, non-persisted override on the **Catálogo** tab's `Idioma del contenido` select. |
 | 3 | **User-authored routine content** — exercise names, day labels, technique cues, rules, notes, phase objectives | The user, via whatever LLM they used | Imported `rutina.json` | Rendered **exactly as authored, in whatever language it was written in.** Never translated, never validated for language, never assumed to be Spanish. |
 
@@ -327,15 +327,18 @@ of language; that's a units question, not a translation one.
 
 Training programs are authored by pasting a ready-made prompt into any LLM chat — no coding required, and no 8-field checklist to fill in by hand anymore.
 
-1. Onboarding (or the guide screen's editable form, any time after) collects the 8-field checklist for you — program name/goal, days/week, session length, injuries, gym, output language — and every field is optional.
-2. The app composes the full prompt from those answers, including your club's equipment list and the rutina JSON Schema **inlined as literal text** — there's nothing to fetch or assemble by hand, and no zip archive to attach. (A single `rutina.schema.json` download remains as a fallback, for when a chat truncates a long paste — see the in-app guide's Troubleshooting section.)
-3. Copy the composed prompt from the guide screen and send it to any LLM.
-4. Import the JSON reply into the PWA (or validate locally: `npm run validate-rutina -- path/to/rutina.json`)
-5. If validation fails, paste the error text back to the LLM and re-import
+On a fresh install (empty library) the Import screen opens on a fork: **Preparar prompt** (recommended), **Ya tengo un rutina.json**, or **Restaurar copia…**. Step-by-step: [`docs/first-run-create-rutina.md`](docs/first-run-create-rutina.md).
 
-When repeating this for a second phase, the guide screen fills field 8 for you automatically from your logged session history (a checkbox, on by default, lets you leave it out) — the LLM uses it to understand what actually happened (weight progression, difficulty, abandoned sessions). You can also plan further ahead: ask the LLM for a multi-phase program and import each phase as its own `rutina.json` — the phases stack up in **Mis rutinas**, ready to activate one after another. See [`docs/export-format.md`](docs/export-format.md) for the exact format.
+1. **Preparar prompt** opens a two-step wizard. Step 1 collects goal, days/week (1-7), session length and injuries (program name is under **Más opciones**; pre-filled as a review if onboarding already answered) — every field optional.
+2. Step 2 composes the full prompt — your club's equipment list plus the rutina JSON Schema **inlined as literal text**, nothing to fetch or attach — with a preview, **Copiar prompt**, three on-screen instructions, and a **Guía completa** sheet. (A single `rutina.schema.json` download remains as a fallback for chats that truncate a long paste — see the guide's Troubleshooting section.)
+3. Paste the prompt into any LLM, then **Ya tengo el JSON →** to reach the JSON screen (paste or choose a file; **Cargar ejemplo** for a sample). Or validate locally: `npm run validate-rutina -- path/to/rutina.json`
+4. If validation fails, press **Copiar errores**, paste the text back to the LLM and re-import.
 
-Full walkthrough (shown in-app via **Import → guide link**) — pick your language:
+With a non-empty library the fork is skipped and Import opens on the JSON screen. The guide screen's former editable form and prompt textarea are gone: the wizard replaces them.
+
+When repeating this for a second phase, the wizard's copy step fills field 8 for you automatically from your logged session history (a checkbox, on by default, lets you leave it out) — the LLM uses it to understand what actually happened (weight progression, difficulty, abandoned sessions). You can also plan further ahead: ask the LLM for a multi-phase program and import each phase as its own `rutina.json` — the phases stack up in **Mis rutinas**, ready to activate one after another. See [`docs/export-format.md`](docs/export-format.md) for the exact format.
+
+Full walkthrough (shown in-app via **Guía completa** in the wizard) — pick your language:
 
 | Language | Guide | Prompt template |
 |----------|-------|-----------------|
@@ -343,7 +346,7 @@ Full walkthrough (shown in-app via **Import → guide link**) — pick your lang
 | Español | [`docs/llm-rutina-prompt.es.md`](docs/llm-rutina-prompt.es.md) | (same template) |
 | Беларуская | [`docs/llm-rutina-prompt.be.md`](docs/llm-rutina-prompt.be.md) | (same template) |
 
-The guide ships in these three languages only. A UI set to Français, Nederlands or Deutsch gets the English article — the overlay falls back to English when no translated guide exists — while every other part of the app renders natively in all six locales.
+The guide ships in these three languages only. A UI set to Français, Nederlands or Deutsch gets the English article — the guide falls back to English when no translated guide exists — while every other part of the app renders natively in all six locales.
 
 ## Data Format
 
@@ -480,7 +483,7 @@ UI copy lives in `app/src/i18n/{es,en,be,fr,nl,de}.js` — flat, dotted-key obje
    `localStorage` key, a filename) goes in that file's `ALLOWLIST` array
    with a one-line reason — never a silent dumping ground.
 4. If you edit `docs/llm-rutina-prompt.{es,en,be}.md`, run
-   `npm run build-guide` afterward — the in-app guide overlay reads a
+   `npm run build-guide` afterward — the in-app guide sheet reads a
    generated `app/src/data/guideContent.js`, not the Markdown files
    directly, and it will silently go stale if you skip this.
 

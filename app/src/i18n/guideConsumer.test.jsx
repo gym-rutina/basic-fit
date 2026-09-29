@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { detectGuideLocale } from '../lib/guideLocale.js';
 import { resolveUiLocale, UI_LOCALES, CATALOGS, tFor, I18nProvider } from './index.js';
-import { GuideOverlay } from '../components/GuideOverlay.jsx';
+import { GuideSheet } from '../components/GuideSheet.jsx';
 
 /**
  * pwa-ui-language AC8 (tech-plan.md D17).
@@ -61,22 +61,24 @@ describe('guide copy moved into the catalogs (AC8, AC6)', () => {
   });
 });
 
-describe('GuideOverlay follows the active UI locale (AC8)', () => {
+// import-flow-guided-first: GuideOverlay was replaced by GuideSheet, which keeps
+// the same locale contract (migrated here from the GuideOverlay assertions).
+describe('GuideSheet follows the active UI locale (AC8)', () => {
   beforeEach(() => setNavigatorLanguage('es-ES'));
 
   it('keeps honouring an explicit locale prop, with no provider at all (AC22)', () => {
-    // GuideOverlay.test.jsx renders <GuideOverlay locale="en" …/> bare and
+    // GuideSheet.test.jsx renders <GuideSheet locale="en" …/> bare and
     // asserts English chrome. So the component must build its OWN translator
     // from the locale it is rendering — tFor(locale ?? uiLocale) — rather
     // than reading `t` off the context, which would be Spanish here.
-    render(<GuideOverlay locale="en" onClose={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /^copy$/i })).toBeInTheDocument();
+    render(<GuideSheet locale="en" onClose={vi.fn()} />);
+    expect(screen.getByRole('button', { name: tFor('en')('guide.close') })).toBeInTheDocument();
   });
 
   it('renders English chrome when the UI is English, whatever the browser says', () => {
     render(
       <I18nProvider initialLocale="en">
-        <GuideOverlay onClose={vi.fn()} />
+        <GuideSheet onClose={vi.fn()} />
       </I18nProvider>
     );
     expect(screen.getByRole('button', { name: tFor('en')('guide.close') })).toBeInTheDocument();
@@ -85,7 +87,7 @@ describe('GuideOverlay follows the active UI locale (AC8)', () => {
   it('renders Belarusian chrome when the UI is Belarusian', () => {
     render(
       <I18nProvider initialLocale="be">
-        <GuideOverlay onClose={vi.fn()} />
+        <GuideSheet onClose={vi.fn()} />
       </I18nProvider>
     );
     expect(screen.getByRole('button', { name: tFor('be')('guide.close') })).toBeInTheDocument();

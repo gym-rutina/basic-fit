@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { ImportScreen } from './ImportScreen.jsx';
 import * as db from '../lib/db.js';
 import { I18nProvider } from '../i18n/index.js';
+import { mockClipboard } from '../test-utils/clipboard.js';
 
 vi.mock('../lib/db.js', () => ({
   // multi-rutina-library §3 surgery — the mock factory gained the library API
@@ -28,85 +29,122 @@ vi.mock('../lib/onboardingStorage.js', () => ({
 }));
 
 /**
- * pwa-ui-language AC8 (tech-plan.md D17) updated this block's mechanism, not
- * its intent: `detectGuideLocale` stopped being a second, independently
- * mockable source of truth — the guide now follows the ACTIVE UI LOCALE via
- * `useI18n()`, exactly like every other piece of chrome. Forcing English
- * here is now done the same way any other screen would be put into English
- * (`I18nProvider initialLocale="en"`) rather than by mocking a function
- * ImportScreen no longer calls. See guideConsumer.test.jsx and
- * GuideOverlay.test.jsx for the AC8 contract itself.
+ * import-flow-guided-first (spec D2/D3/D4, AC5/AC6/AC8/AC10/AC15): ImportScreen
+ * is now the JSON screen (J) only. The guide link, onboarding link and restore
+ * button moved out — see ImportFork.test.jsx / PromptCopyScreen.test.jsx.
+ * Tests here are RED until Cmok edits ImportScreen.jsx (tech-plan §2).
  */
-describe('ImportScreen — LLM guide link (AC1, AC2)', () => {
+describe('ImportScreen (J) — guided-path entry and removed entry points (AC6, AC8, AC10)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  function renderEnglish() {
-    return render(
+  it('no longer renders the small "LLM creation guide" text link or opens a guide overlay (AC10)', () => {
+    render(
       <I18nProvider initialLocale="en">
         <ImportScreen />
       </I18nProvider>
     );
-  }
-
-  it('does not show the guide overlay on mount', () => {
-    renderEnglish();
+    expect(screen.queryByRole('link', { name: /llm creation guide/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('opens the guide overlay when the link is clicked', async () => {
-    const user = userEvent.setup();
-    renderEnglish();
-
-    await user.click(screen.getByRole('link', { name: /view the llm creation guide/i }));
-
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('LLM creation guide')).toBeInTheDocument();
+  it('no longer hosts the onboarding revisit link or the restore button (moved to the fork)', () => {
+    render(<ImportScreen />);
+    expect(screen.queryByRole('link', { name: /c[oó]mo funciona la app/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /restaurar copia/i })).not.toBeInTheDocument();
   });
 
-  it('dismisses the guide overlay when the close button is clicked', async () => {
+  it('shows a "Preparar prompt" button above the textarea while it is empty and calls onPreparePrompt (AC6, AC8)', async () => {
+    const onPreparePrompt = vi.fn();
     const user = userEvent.setup();
-    renderEnglish();
+    render(<ImportScreen onPreparePrompt={onPreparePrompt} />);
+    await user.click(screen.getByRole('button', { name: /preparar prompt/i }));
+    expect(onPreparePrompt).toHaveBeenCalledTimes(1);
+  });
 
-    await user.click(screen.getByRole('link', { name: /view the llm creation guide/i }));
-    await user.click(screen.getByRole('button', { name: /close/i }));
+  it('hides that button once the textarea has content', () => {
+    render(<ImportScreen onPreparePrompt={() => {}} />);
+    fireEvent.change(screen.getByLabelText(/rutina\.json/i), { target: { value: '{"a":1}' } });
+    expect(screen.queryByRole('button', { name: /preparar prompt/i })).not.toBeInTheDocument();
+  });
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  it('renders an "Atrás" control that calls onBack', async () => {
+    const onBack = vi.fn();
+    const user = userEvent.setup();
+    render(<ImportScreen onBack={onBack} />);
+    await user.click(screen.getByRole('button', { name: /atr[aá]s/i }));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('moves focus to the page heading on mount (AC13 route-change a11y)', () => {
+    render(<ImportScreen />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+  });
+
+  it('has exactly ONE "Preparar prompt" entry — the bottom text line was dropped (tech-plan AD-7)', () => {
+    render(<ImportScreen onPreparePrompt={() => {}} />);
+    expect(screen.getAllByText(/preparar prompt/i)).toHaveLength(1);
+    expect(screen.queryByText(/a[uú]n no tienes el json/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps "Cargar ejemplo" while empty and hides it with content (AC9, D4)', () => {
+    render(<ImportScreen />);
+    expect(screen.getByRole('button', { name: /ejemplo/i })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/rutina\.json/i), { target: { value: '{"a":1}' } });
+    expect(screen.queryByRole('button', { name: /ejemplo/i })).not.toBeInTheDocument();
   });
 });
 
-// onboarding-screens (AC7): pending Cmok implementation — see tech-plan.md.
-// Failures here are expected until Cmok adds the revisit link to
-// ImportScreen.jsx.
-describe('ImportScreen — onboarding revisit link (AC7)', () => {
+describe('ImportScreen (J) — "Copiar errores" (AC15, UX J3/J4)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('does not show the onboarding overlay on mount', () => {
+  async function renderWithErrors(clipboard = 'ok') {
+    const user = userEvent.setup();
+    const writeText = mockClipboard(clipboard); // after setup(): user-event overwrites navigator.clipboard
     render(<ImportScreen />);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/rutina\.json/i), { target: { value: '{"schemaVersion":1}' } });
+    await user.click(screen.getByRole('button', { name: /^importar$/i }));
+    await screen.findByRole('alert');
+    return { user, writeText };
+  }
+
+  it('shows no "Copiar errores" button before any error', () => {
+    render(<ImportScreen />);
+    expect(screen.queryByRole('button', { name: /copiar errores/i })).not.toBeInTheDocument();
   });
 
-  it('opens the onboarding overlay when the revisit link is clicked', async () => {
-    const user = userEvent.setup();
-    render(<ImportScreen />);
-
-    await user.click(screen.getByRole('link', { name: /c[oó]mo funciona la app/i }));
-
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  it('shows a "Copiar errores" button inside the error block once validation fails', async () => {
+    await renderWithErrors();
+    const alert = screen.getAllByRole('alert')[0];
+    expect(within(alert).getByRole('button', { name: /copiar errores/i })).toBeInTheDocument();
   });
 
-  it('dismissing the revisited onboarding overlay (Saltar) leaves ImportScreen interactive underneath (AC6)', async () => {
-    const user = userEvent.setup();
-    render(<ImportScreen />);
+  it('copies the formatted "- " bullet list of the errors and confirms "Copiado"', async () => {
+    const { user, writeText } = await renderWithErrors('ok');
+    await user.click(screen.getByRole('button', { name: /copiar errores/i }));
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(writeText.mock.calls[0][0]).toMatch(/^- /);
+    expect(await screen.findByText(/copiado/i)).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole('link', { name: /c[oó]mo funciona la app/i }));
-    await user.click(screen.getByRole('button', { name: /saltar/i }));
+  it('keeps the button outside the live region; only the "Copiado" text is announced', async () => {
+    const { user } = await renderWithErrors('ok');
+    const button = screen.getByRole('button', { name: /copiar errores/i });
+    await user.click(button);
+    const copied = await screen.findByText(/copiado/i);
+    const status = copied.closest('[role="status"]');
+    expect(status).not.toBeNull();
+    expect(status.contains(button)).toBe(false);
+    expect(screen.getByRole('button', { name: /copiar errores/i }).closest('[role="status"]')).toBeNull();
+  });
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/rutina\.json/i)).toBeInTheDocument();
+  it('does not confirm "Copiado" when the clipboard is denied', async () => {
+    const { user } = await renderWithErrors('denied');
+    await user.click(screen.getByRole('button', { name: /copiar errores/i }));
+    expect(screen.queryByText(/copiado/i)).not.toBeInTheDocument();
   });
 });
 
@@ -238,55 +276,5 @@ describe('ImportScreen — library dual path (multi-rutina-library AC22/AC23/AC2
     expect(await screen.findByRole('alert')).toBeInTheDocument(); // the existing errors block
     expect(db.listRutinas).not.toHaveBeenCalled();
     expect(db.saveRutinaEntry).not.toHaveBeenCalled();
-  });
-});
-
-/**
- * full-data-backup S3 (ux-design.md §4, mockup frame F) — the empty-state
- * "Restaurar copia…" ghost entry. Same visibility rule as "Cargar ejemplo"
- * ({!text && …}); opens the restore flow directly (RestoreSheet), bypassing
- * the import textarea. Copy must never say "importar" (AC16 wording
- * separation). Red until Cmok wires the button + RestoreSheet into
- * ImportScreen.jsx.
- */
-describe('ImportScreen — restore-copy entry (full-data-backup S3, OQ-4/AC16)', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
-
-  it('shows "Restaurar copia…" while the textarea is empty, next to "Cargar ejemplo"', () => {
-    render(<ImportScreen />);
-    expect(screen.getByRole('button', { name: /restaurar copia/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /ejemplo/i })).toBeInTheDocument();
-  });
-
-  it('hides both ghost controls once the textarea has content (same visibility rule)', () => {
-    render(<ImportScreen />);
-    fireEvent.change(screen.getByLabelText(/rutina\.json/i), { target: { value: '{"schemaVersion":1}' } });
-    expect(screen.queryByRole('button', { name: /restaurar copia/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /ejemplo/i })).not.toBeInTheDocument();
-  });
-
-  it('its label never contains "importar" (AC16)', () => {
-    render(<ImportScreen />);
-    expect(screen.getByRole('button', { name: /restaurar copia/i }).textContent.toLowerCase()).not.toContain('importar');
-  });
-
-  it('clicking it mounts the RestoreSheet dialog (GAP-2 fix — real "opens flow" assertion)', async () => {
-    const user = userEvent.setup();
-    render(<ImportScreen />);
-    // ImportScreen shows no dialog at rest (the guide/onboarding overlays are role="dialog"
-    // too but are closed here) — assert the transition on click.
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: /restaurar copia/i }));
-
-    // RestoreSheet's "pick" state is a role="dialog" sheet with its OWN file-choose
-    // control. Scope the button query INSIDE the dialog: ImportScreen.jsx:194 has a
-    // pre-existing "Elegir archivo .json" button (the import picker) that also matches
-    // /elegir archivo/i — asserting it unscoped would (a) pass even if the wrong overlay
-    // opened and (b) throw "multiple elements" once RestoreSheet renders its own.
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByRole('button', { name: /elegir archivo/i })).toBeInTheDocument();
-    // opening the flow writes nothing
-    expect(db.restoreFromBackup).not.toHaveBeenCalled();
   });
 });

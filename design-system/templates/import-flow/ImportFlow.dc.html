@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Flujo de importación de rutina" description="Post-onboarding: elegir entre preparar un prompt para tu IA o importar un rutina.json; incluye los pasos del prompt y la pantalla de importación." -->
+<helmet><script src="./ds-base.js"></script><style>body{margin:0;background:#ececec}a{color:var(--text-link);font-weight:600}a:hover{color:var(--bf-purple-deep)}</style></helmet>
+<div style="display:flex;flex-wrap:wrap;gap:32px;padding:40px;font-family:var(--font-sans);color:var(--bf-ink);align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font:600 12px/1 var(--font-sans);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">01 · Inicio</span>
+<div data-screen-label="01 Inicio" style="width:412px;height:892px;background:var(--bf-white);border-radius:28px;box-shadow:0 2px 24px rgba(0,0,0,.12);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;padding:40px 24px 24px">
+<div style="font:800 15px/1 var(--font-display);color:var(--bf-orange);text-transform:uppercase;letter-spacing:.06em;text-align:center;margin-bottom:28px">Basic-Fit</div>
+<h1 style="font:var(--text-h2);text-transform:uppercase;text-align:center;margin:0 0 6px">Crea tu rutina</h1>
+<p style="font:var(--text-body-sm);color:var(--text-muted);text-align:center;margin:0 auto 24px;max-width:320px;text-wrap:pretty">Elige cómo empezar. Puedes cambiar de rutina cuando quieras.</p>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="border:2px solid var(--bf-purple);background:var(--bf-purple-tint);border-radius:var(--radius-md);padding:20px;display:flex;flex-direction:column;gap:10px">
+<span style="align-self:flex-start;font:700 11px/1 var(--font-sans);text-transform:uppercase;letter-spacing:.06em;color:#fff;background:var(--bf-purple);padding:5px 8px;border-radius:3px">Recomendado</span>
+<h3 style="font:var(--text-h4);margin:0">Prepara un prompt para tu IA</h3>
+<p style="font:var(--text-body-sm);color:var(--text-muted);margin:0">Responde 4 preguntas y te damos un prompt listo. Pégalo en el asistente de IA que prefieras (p. ej. ChatGPT, Claude, Gemini u otro) y él generará la rutina.</p>
+<span style="font:var(--text-caption);color:var(--text-muted)">~3 min · usas tu propio asistente · no necesitas saber JSON</span>
+<div style="display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:var(--radius-btn);font:700 14px/1 var(--font-sans);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--bf-orange);background:var(--bf-orange);color:#fff;margin-top:6px">Preparar prompt</div>
+</div>
+<div style="border:1px solid var(--border-control);border-radius:var(--radius-md);padding:20px;display:flex;flex-direction:column;gap:10px">
+<h3 style="font:var(--text-h4);margin:0">Ya tengo un rutina.json</h3>
+<p style="font:var(--text-body-sm);color:var(--text-muted);margin:0">Pega el JSON o elige el archivo.</p>
+<div style="display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:var(--radius-btn);font:700 14px/1 var(--font-sans);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--bf-orange);background:#fff;color:var(--bf-orange);margin-top:6px">Importar</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font:600 12px/1 var(--font-sans);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">02 · Prompt — preferencias</span>
+<div data-screen-label="02 Preferencias" style="width:412px;height:892px;background:var(--bf-white);border-radius:28px;box-shadow:0 2px 24px rgba(0,0,0,.12);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;padding:40px 24px 24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font:var(--text-body-sm)">
+<span style="display:flex;align-items:center;gap:4px;color:var(--bf-ink)"><x-import component-from-global-scope="BasicFitDesignSystem_1cb8a2.Icon" name="chevron-left" size="{{ 20 }}" hint-size="20px,20px"></x-import>Atrás</span>
+<span style="font:var(--text-caption);color:var(--text-muted)">Paso 1 de 2</span>
+</div>
+<div style="display:flex;gap:6px"><i style="flex:1;height:4px;border-radius:2px;background:var(--bf-purple)"></i><i style="flex:1;height:4px;border-radius:2px;background:var(--bf-grey-1)"></i></div>
+<h1 style="font:var(--text-h2);text-transform:uppercase;margin:20px 0 6px">Tu objetivo</h1>
+<p style="font:var(--text-body-sm);color:var(--text-muted);margin:0 0 4px">Con tus respuestas escribimos el prompt por ti.</p>
+<div style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-muted);margin:16px 0 8px">Objetivo</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<span style="font:600 13px/1 var(--font-sans);padding:0 14px;border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center">Fuerza</span>
+<span style="font:600 13px/1 var(--font-sans);padding:0 14px;border:1px solid var(--bf-purple);background:var(--bf-purple);color:#fff;border-radius:999px;min-height:44px;display:flex;align-items:center">Hipertrofia</span>
+<span style="font:600 13px/1 var(--font-sans);padding:0 14px;border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center">Resistencia</span>
+<span style="font:600 13px/1 var(--font-sans);padding:0 14px;border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center">Pérdida de grasa</span>
+</div>
+<div style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-muted);margin:16px 0 8px">Nivel</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<span style="font:600 13px/1 var(--font-sans);padding:0 14px;border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center">Principiante</span>
+<span style="font:600 13px/1 var(--font-sans);padding:0 14px;border:1px solid var(--bf-purple);background:var(--bf-purple);color:#fff;border-radius:999px;min-height:44px;display:flex;align-items:center">Intermedio</span>
+<span style="font:600 13px/1 var(--font-sans);padding:0 14px;border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center">Avanzado</span>
+</div>
+<div style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-muted);margin:16px 0 8px">Días por semana</div>
+<div style="display:flex;gap:6px">
+<span style="flex:1;font:600 13px/1 var(--font-sans);border:1px solid var(--bf-purple);background:var(--bf-purple);color:#fff;border-radius:999px;min-height:44px;display:flex;align-items:center;justify-content:center">L</span>
+<span style="flex:1;font:600 13px/1 var(--font-sans);border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center;justify-content:center">M</span>
+<span style="flex:1;font:600 13px/1 var(--font-sans);border:1px solid var(--bf-purple);background:var(--bf-purple);color:#fff;border-radius:999px;min-height:44px;display:flex;align-items:center;justify-content:center">X</span>
+<span style="flex:1;font:600 13px/1 var(--font-sans);border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center;justify-content:center">J</span>
+<span style="flex:1;font:600 13px/1 var(--font-sans);border:1px solid var(--bf-purple);background:var(--bf-purple);color:#fff;border-radius:999px;min-height:44px;display:flex;align-items:center;justify-content:center">V</span>
+<span style="flex:1;font:600 13px/1 var(--font-sans);border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center;justify-content:center">S</span>
+<span style="flex:1;font:600 13px/1 var(--font-sans);border:1px solid var(--border-control);border-radius:999px;min-height:44px;display:flex;align-items:center;justify-content:center">D</span>
+</div>
+<div style="font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-muted);margin:16px 0 8px">Lesiones o limitaciones (opcional)</div>
+<div style="border:1px solid var(--border-control);border-radius:var(--radius-control);padding:12px;font:var(--text-body-sm);color:var(--text-muted);min-height:56px;box-sizing:border-box">p. ej. molestias en la rodilla derecha</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:var(--radius-btn);font:700 14px/1 var(--font-sans);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--bf-orange);background:var(--bf-orange);color:#fff">Siguiente</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font:600 12px/1 var(--font-sans);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">03 · Prompt — copiar</span>
+<div data-screen-label="03 Copiar prompt" style="width:412px;height:892px;background:var(--bf-white);border-radius:28px;box-shadow:0 2px 24px rgba(0,0,0,.12);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;padding:40px 24px 24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font:var(--text-body-sm)">
+<span style="display:flex;align-items:center;gap:4px;color:var(--bf-ink)"><x-import component-from-global-scope="BasicFitDesignSystem_1cb8a2.Icon" name="chevron-left" size="{{ 20 }}" hint-size="20px,20px"></x-import>Atrás</span>
+<span style="font:var(--text-caption);color:var(--text-muted)">Paso 2 de 2</span>
+</div>
+<div style="display:flex;gap:6px"><i style="flex:1;height:4px;border-radius:2px;background:var(--bf-purple)"></i><i style="flex:1;height:4px;border-radius:2px;background:var(--bf-purple)"></i></div>
+<h1 style="font:var(--text-h2);text-transform:uppercase;margin:20px 0 6px">Copia tu prompt</h1>
+<p style="font:var(--text-body-sm);color:var(--text-muted);margin:0 0 16px">Ya incluye las máquinas de tu club, para que la IA use solo lo que tienes disponible.</p>
+<div style="display:flex;align-items:center;gap:8px;font:var(--text-body-sm);margin-bottom:10px"><span style="color:var(--bf-purple);display:flex"><x-import component-from-global-scope="BasicFitDesignSystem_1cb8a2.Icon" name="map-pin" size="{{ 16 }}" hint-size="16px,16px"></x-import></span><span style="flex:1">Madrid Gran Vía · 27 máquinas</span><a href="#">Cambiar</a></div>
+<div style="font:12px/1.5 monospace;background:var(--bf-grey-1);border-radius:var(--radius-control);padding:12px;color:var(--bf-ink-2);white-space:pre-wrap">Eres un entrenador personal experto en máquinas Matrix Aura.
+Genera un rutina.json válido (schemaVersion 1).
+Objetivo: hipertrofia · Nivel: intermedio
+Días: lunes, miércoles, viernes
+Usa solo estos equipmentId: g3-s10, g3-s20, g3-s30, …</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:var(--radius-btn);font:700 14px/1 var(--font-sans);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--bf-orange);background:var(--bf-orange);color:#fff;margin-top:16px"><x-import component-from-global-scope="BasicFitDesignSystem_1cb8a2.Icon" name="copy" size="{{ 16 }}" hint-size="16px,16px"></x-import>Copiar prompt</div>
+<ol style="margin:20px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font:var(--text-body-sm);color:var(--bf-ink)">
+<li>Pégalo en tu asistente de IA (p. ej. ChatGPT, Claude, Gemini u otro).</li>
+<li>Copia el bloque JSON completo que te devuelva.</li>
+<li>Vuelve aquí y pégalo.</li>
+</ol>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:var(--radius-btn);font:700 14px/1 var(--font-sans);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--bf-orange);background:#fff;color:var(--bf-orange)">Ya tengo el JSON →</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font:600 12px/1 var(--font-sans);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">04 · Importar</span>
+<div data-screen-label="04 Importar" style="width:412px;height:892px;background:var(--bf-white);border-radius:28px;box-shadow:0 2px 24px rgba(0,0,0,.12);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;padding:40px 24px 24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font:var(--text-body-sm)">
+<span style="display:flex;align-items:center;gap:4px;color:var(--bf-ink)"><x-import component-from-global-scope="BasicFitDesignSystem_1cb8a2.Icon" name="chevron-left" size="{{ 20 }}" hint-size="20px,20px"></x-import>Atrás</span>
+</div>
+<h1 style="font:var(--text-h2);text-transform:uppercase;margin:0 0 6px">Importa tu rutina</h1>
+<p style="font:var(--text-body-sm);color:var(--text-muted);margin:0 0 20px">Pega el JSON que te ha dado la IA, o elige un archivo .json.</p>
+<label style="display:block;font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">rutina.json</label>
+<sc-if value="{{ showErrors }}" hint-placeholder-val="{{ false }}">
+<div style="border:1px solid var(--bf-danger);border-radius:var(--radius-control);padding:12px;font:13px/1.5 monospace;color:var(--bf-ink-2);height:150px;box-sizing:border-box;overflow:hidden">{ "schemaVersion": 1, "days": [ { "label": "Lunes", "exercises": [ { "equipmentId": "g3-xx" } ] } ] }</div>
+<div role="alert" style="margin-top:10px;background:var(--bf-danger-tint);border:1px solid var(--bf-danger);border-radius:var(--radius-md);padding:10px 14px">
+<div style="display:flex;align-items:center;gap:6px;font:700 13px/1.3 var(--font-sans);color:var(--bf-danger);margin-bottom:6px"><x-import component-from-global-scope="BasicFitDesignSystem_1cb8a2.Icon" name="alert-triangle" size="{{ 16 }}" hint-size="16px,16px"></x-import>2 errores de validación</div>
+<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font:13px/1.4 monospace;color:var(--bf-ink-2)"><li>program.phaseName: required</li><li>equipmentId "g3-xx" no existe en tu club</li></ul>
+<p style="font:var(--text-caption);color:var(--text-muted);margin:8px 0 0">Copia estos errores y pégalos en tu chat con la IA para que los corrija.</p>
+</div>
+</sc-if>
+<sc-if value="{{ noErrors }}" hint-placeholder-val="{{ true }}">
+<div style="border:1px solid var(--border-control);border-radius:var(--radius-control);padding:12px;font:13px/1.5 monospace;color:var(--text-muted);height:200px;box-sizing:border-box">Pegar JSON aquí...</div>
+</sc-if>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:var(--radius-btn);font:700 14px/1 var(--font-sans);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--bf-orange);background:#fff;color:var(--bf-orange)">Elegir archivo .json</div>
+<div style="display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:var(--radius-btn);font:700 14px/1 var(--font-sans);text-transform:uppercase;letter-spacing:.04em;border:2px solid var(--bf-orange);background:var(--bf-orange);color:#fff">Importar</div>
+</div>
+<div style="flex:1"></div>
+<p style="text-align:center;font:var(--text-body-sm);color:var(--text-muted);margin:0">¿Aún no tienes el JSON? <a href="#">Preparar prompt</a></p>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showErrors&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Pantalla 04&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const e = !!this.props.showErrors;
+    return { showErrors: e, noErrors: !e };
+  }
+}
+</script>
+</body>
+</html>

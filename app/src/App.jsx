@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { BottomTabBar } from './components/BottomTabBar.jsx';
 import { InstallBanner } from './components/InstallBanner.jsx';
 import { SessionInProgressBanner } from './components/SessionInProgressBanner.jsx';
 import { ImportScreen } from './screens/ImportScreen.jsx';
+import { ImportFork } from './screens/ImportFork.jsx';
+import { PromptPreferencesScreen } from './screens/PromptPreferencesScreen.jsx';
+import { PromptCopyScreen } from './screens/PromptCopyScreen.jsx';
 import { HomeScreen } from './screens/HomeScreen.jsx';
 import { ProgramScreen } from './screens/ProgramScreen.jsx';
 import { ActiveSessionScreen } from './screens/ActiveSessionScreen.jsx';
@@ -14,10 +17,33 @@ import { CatalogScreen } from './screens/CatalogScreen.jsx';
 import { SettingsScreen } from './screens/SettingsScreen.jsx';
 import { OnboardingOverlay } from './components/OnboardingOverlay.jsx';
 import { LibraryScreen } from './components/LibraryScreen.jsx';
-import { getActiveRutina } from './lib/db.js';
+import { getActiveRutina, listRutinas } from './lib/db.js';
 import { hasSeenOnboarding } from './lib/onboardingStorage.js';
 import { useActiveSession } from './hooks/useActiveSession.js';
 import { I18nProvider } from './i18n/index.js';
+
+/**
+ * `/import` entry (import-flow-guided-first D2, AC1/AC8, tech-plan AD-2): the
+ * fork on first run (library empty), otherwise straight to the JSON screen.
+ * Reads the library once; while loading renders nothing (like Shell's own
+ * loading gate); a read failure behaves as an empty library (same rule as
+ * ImportScreen's dual-path check).
+ */
+function ImportEntry({ onPrepare, onImport }) {
+  const [empty, setEmpty] = useState(undefined); // undefined = loading
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => listRutinas())
+      .then((entries) => { if (!cancelled) setEmpty(!Array.isArray(entries) || entries.length === 0); })
+      .catch(() => { if (!cancelled) setEmpty(true); });
+    return () => { cancelled = true; };
+  }, []);
+  if (empty === undefined) return null;
+  return empty
+    ? <ImportFork onPrepare={onPrepare} onImport={onImport} />
+    : <Navigate to="/import/json" replace />;
+}
 
 /**
  * Inner shell that has access to location (must be inside HashRouter).
@@ -26,6 +52,7 @@ import { I18nProvider } from './i18n/index.js';
  */
 function Shell() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [rutina, setRutina] = useState(undefined); // undefined = loading, null = not imported yet
   const [loadError, setLoadError] = useState(false);
   // Read synchronously at mount (tech-plan.md) — independent of the async
@@ -57,10 +84,18 @@ function Shell() {
   // still lands on the real ImportScreen instead of bouncing straight back.
   const [justImportedTarget, setJustImportedTarget] = useState(null);
   useEffect(() => {
-    if (justImportedTarget && location.pathname !== '/import') setJustImportedTarget(null);
+    if (justImportedTarget && !location.pathname.startsWith('/import')) setJustImportedTarget(null);
   }, [location.pathname, justImportedTarget]);
 
-  const hideNav = location.pathname === '/import';
+  // Every /import/* screen (fork, wizard, JSON) is full-screen: no tab bar.
+  const hideNav = location.pathname.startsWith('/import');
+
+  // "Atrás" pops one history entry; a deep link / refresh has nothing to pop
+  // (router location.key === 'default'), so it falls back to a sensible root.
+  const goBack = (fallback) => {
+    if (location.key === 'default') navigate(fallback, { replace: true });
+    else navigate(-1);
+  };
 
   if (rutina === undefined) return null; // still loading — avoids flash
 
@@ -78,10 +113,28 @@ function Shell() {
           <Routes>
             <Route
               path="/import"
+              element={<ImportEntry onPrepare={() => navigate('/import/prompt')} onImport={() => navigate('/import/json')} />}
+            />
+            <Route
+              path="/import/prompt"
+              element={<PromptPreferencesScreen onNext={() => navigate('/import/prompt/copy')} onBack={() => goBack('/import')} />}
+            />
+            <Route
+              path="/import/prompt/copy"
+              element={<PromptCopyScreen onBack={() => goBack('/import/prompt')} onHaveJson={() => navigate('/import/json')} />}
+            />
+            <Route
+              path="/import/json"
               element={
                 justImportedTarget
                   ? <Navigate to={justImportedTarget} replace />
-                  : <ImportScreen onImported={(target) => { loadRutina().then(() => setJustImportedTarget(target || '/')); }} />
+                  : (
+                    <ImportScreen
+                      onImported={(target) => { loadRutina().then(() => setJustImportedTarget(target || '/')); }}
+                      onBack={() => goBack(rutina ? '/' : '/import')}
+                      onPreparePrompt={() => navigate('/import/prompt')}
+                    />
+                  )
               }
             />
             <Route
