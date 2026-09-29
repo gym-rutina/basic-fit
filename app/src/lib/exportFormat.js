@@ -38,11 +38,16 @@ function groupByExercise(sessions) {
       if (!groups.has(key)) {
         groups.set(key, { name: ex.name, equipmentId: ex.equipmentId, entries: [] });
       }
-      groups.get(key).entries.push({
+      const entry = {
         date: ex.completedAt.slice(0, 10),
         weightUsed: ex.weightUsed,
         difficulty: ex.difficulty,
-      });
+      };
+      // club-equipment-reporting AC17/D11: the private note travels with the
+      // entry ONLY when there is one, so a note-less entry keeps today's exact
+      // three-key shape.
+      if (typeof ex.notes === 'string' && ex.notes.trim().length > 0) entry.notes = ex.notes.trim();
+      groups.get(key).entries.push(entry);
     }
   }
 
@@ -59,6 +64,11 @@ function inRange(dateStr, from, to) {
   return true;
 }
 
+/** Locale-neutral Markdown note line: four-space indent, "> ", one line. */
+function formatNoteLine(note) {
+  return `    > ${note.replace(/\s+/g, ' ').trim()}`;
+}
+
 function formatEntryLine(entry, t) {
   return `${entry.weightUsed}kg / ${difficultyLabel(entry.difficulty, t).toLowerCase()}`;
 }
@@ -67,7 +77,7 @@ function formatEntryLine(entry, t) {
  * @param {Array} sessions - full session history (any status)
  * @param {{from?: string, to?: string}} range - inclusive YYYY-MM-DD bounds, both optional
  * @param {{t?: (key: string, params?: object) => string, locale?: string}} chrome - D4/AC20: defaults keep every existing call site's Spanish output byte-identical
- * @returns {{json: {exercises: Record<string, Array<{date:string, weightUsed:number, difficulty:string}>>, exerciseNames: Record<string,string>}, markdown: string}}
+ * @returns {{json: {exercises: Record<string, Array<{date:string, weightUsed:number, difficulty:string, notes?:string}>>, exerciseNames: Record<string,string>}, markdown: string}}
  */
 export function buildExportPayload(sessions = [], { from, to } = {}, { t = defaultT, locale = DEFAULT_LOCALE } = {}) {
   const groups = groupByExercise(sessions);
@@ -79,7 +89,9 @@ export function buildExportPayload(sessions = [], { from, to } = {}, { t = defau
     const entries = group.entries.filter((e) => inRange(e.date, from, to));
     if (entries.length === 0) continue;
 
-    json.exercises[key] = entries.map(({ date, weightUsed, difficulty }) => ({ date, weightUsed, difficulty }));
+    json.exercises[key] = entries.map(({ date, weightUsed, difficulty, notes }) =>
+      notes === undefined ? { date, weightUsed, difficulty } : { date, weightUsed, difficulty, notes }
+    );
     json.exerciseNames[key] = group.name;
     included.push({ group, entries });
   }
@@ -94,7 +106,10 @@ export function buildExportPayload(sessions = [], { from, to } = {}, { t = defau
   const lines = [];
   for (const { group, entries } of sortedForMarkdown) {
     lines.push(group.equipmentId ? `${group.name} (${group.equipmentId})` : group.name);
-    entries.forEach((e) => lines.push(`  · ${formatEntryLine(e, t)}`));
+    entries.forEach((e) => {
+      lines.push(`  · ${formatEntryLine(e, t)}`);
+      if (e.notes !== undefined) lines.push(formatNoteLine(e.notes));
+    });
     lines.push('');
   }
 

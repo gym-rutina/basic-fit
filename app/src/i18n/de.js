@@ -356,6 +356,13 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} erledigt, {weight} Kilo, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} erledigt, {difficulty}',
 
+  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
+  'session.notHereAction': 'Nicht hier',
+  'session.notHereAria': '{machine} als in diesem Studio nicht verfügbar melden',
+  'session.reportedBody': 'Gemeldet. Im Katalog dieses Studios ausgeblendet. Du kannst das unter Katalog → Mein Studio rückgängig machen.',
+  'session.notesLabel': 'Notizen (optional)',
+  'session.notesPlaceholder': 'z. B. keine Rolle, langen Griff benutzt',
+
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Noch keine Sessions aufgezeichnet',
   'history.emptyBody': 'Starte ein Training über „Start“, um hier deinen Verlauf zu sehen.',

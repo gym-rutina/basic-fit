@@ -3,7 +3,7 @@ import { exerciseKey } from './exerciseKey.js';
 import { reconcileLastWeights } from './backupFormat.js';
 
 /**
- * IndexedDB wrapper (db name `basicfit-rutina`, version 4). Storage schema
+ * IndexedDB wrapper (db name `basicfit-rutina`, version 5). Storage schema
  * per tech-plan.md:
  *   rutinas       — keyPath id: { id, rutina, importedAt, seq } — the LIBRARY
  *                    (multi-rutina-library, DB_VERSION 4, tech-plan.md D-A).
@@ -32,6 +32,12 @@ import { reconcileLastWeights } from './backupFormat.js';
  *   clubEquipment — keyPath clubId: { clubId, excludedEquipmentIds[], updatedAt }
  *                    (gym-directory-and-catalog, DB_VERSION 3 — tech-plan.md D4).
  *                    The equipment overlay's per-club exclusion list (R7.4).
+ *   reportOutbox  — keyPath key (`clubId|equipmentId`): the anonymous equipment
+ *                    reports waiting to be sent (club-equipment-reporting,
+ *                    DB_VERSION 5 — tech-plan.md D5). The natural key makes a
+ *                    re-tap REPLACE the pending report, so the queue is bounded
+ *                    by clubs × catalog size. NOT in BACKUP_STORES: the outbox
+ *                    never leaves the device except through reportFlush.js.
  *
  * Each exported function opens its own short-lived connection and closes it
  * before returning, rather than caching one module-level connection. This
@@ -57,7 +63,7 @@ import { reconcileLastWeights } from './backupFormat.js';
  */
 
 const DB_NAME = 'basicfit-rutina';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 /** Mirrors sessionMachine.js's id helper — a local, non-security-sensitive record id. */
 function generateId() {
@@ -143,6 +149,8 @@ async function migrateLegacyCurrentIntoLibrary(tx) {
  *   missing it.
  * - v3→v4 (multi-rutina-library D-A): adds `rutinas`, then seeds it from the
  *   legacy current record via migrateLegacyCurrentIntoLibrary above.
+ * - v4→v5 (club-equipment-reporting D5): adds `reportOutbox`, purely
+ *   additively, behind the same `if (!contains(...))` guard.
  */
 async function upgrade(db, oldVersion, newVersion, tx) {
   if (!db.objectStoreNames.contains('activeRutina')) {
@@ -164,6 +172,9 @@ async function upgrade(db, oldVersion, newVersion, tx) {
   }
   if (!db.objectStoreNames.contains('rutinas')) {
     db.createObjectStore('rutinas', { keyPath: 'id' });
+  }
+  if (!db.objectStoreNames.contains('reportOutbox')) {
+    db.createObjectStore('reportOutbox', { keyPath: 'key' });
   }
   await migrateLegacyCurrentIntoLibrary(tx);
 }
@@ -607,5 +618,89 @@ export async function setClubExclusions(clubId, excludedEquipmentIds) {
       excludedEquipmentIds: Array.from(excludedEquipmentIds || []),
       updatedAt: new Date().toISOString(),
     });
+  });
+}
+
+/**
+ * club-equipment-reporting AC12 — did this club ever get a local exclusion
+ * record? `getClubExclusions` returns `[]` for BOTH "never written" and
+ * "written empty" (the user re-included everything); the shipped-default
+ * seeding must tell them apart, because an empty record is the user's own
+ * explicit choice and is authoritative.
+ *
+ * @param {string} clubId
+ * @returns {Promise<boolean>}
+ */
+export async function hasClubExclusionsRecord(clubId) {
+  return withDb(async (db) => {
+    const record = await db.get('clubEquipment', clubId);
+    return !!record;
+  });
+}
+
+// ── club-equipment-reporting — the anonymous report outbox (D5/D6) ────────
+//
+// One record per (club, equipment): `put` on the same `key` REPLACES, so the
+// queue can never grow per re-tap. Records are
+// `{ key, reportId, clubId, equipmentId, signal, method, reportedAt, origin }`;
+// `key` and `origin` are local-only and stripped before anything is sent
+// (equipmentReports.js `toWire`).
+
+/**
+ * @param {{key: string}} record
+ * @returns {Promise<void>}
+ */
+export async function putReport(record) {
+  return withDb(async (db) => {
+    await db.put('reportOutbox', record);
+  });
+}
+
+/**
+ * @param {string} key
+ * @returns {Promise<object|null>}
+ */
+export async function getReport(key) {
+  return withDb(async (db) => {
+    const record = await db.get('reportOutbox', key);
+    return record ?? null;
+  });
+}
+
+/**
+ * Every pending report, oldest first by `reportedAt`.
+ * @returns {Promise<object[]>}
+ */
+export async function listReports() {
+  return withDb(async (db) => {
+    const all = await db.getAll('reportOutbox');
+    all.sort((a, b) => String(a.reportedAt).localeCompare(String(b.reportedAt)));
+    return all;
+  });
+}
+
+/**
+ * Removes each given record ONLY when the stored record's `reportId` still
+ * equals the one that was sent (D6): a report the user replaced while the send
+ * was in flight survives for the next flush. A record that is already gone is
+ * a no-op. Runs in ONE readwrite transaction so the check-and-delete is atomic.
+ *
+ * @param {Array<{key: string, reportId: string}>} sent
+ * @returns {Promise<void>}
+ */
+export async function deleteReports(sent) {
+  const list = Array.isArray(sent) ? sent : [];
+  if (list.length === 0) return undefined;
+  return withDb(async (db) => {
+    const tx = db.transaction('reportOutbox', 'readwrite');
+    const store = tx.objectStore('reportOutbox');
+    for (const item of list) {
+      if (!item || item.key == null) continue;
+      const stored = await store.get(item.key);
+      if (stored && stored.reportId === item.reportId) {
+        await store.delete(item.key);
+      }
+    }
+    await tx.done;
   });
 }

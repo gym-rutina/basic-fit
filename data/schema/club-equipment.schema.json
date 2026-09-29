@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Club Equipment Defaults Schema",
+  "description": "data/club-equipment.json: the TEAM-MERGED, per-club default overlay (club-equipment-reporting AC10/D12). For each club id, the catalog equipment ids the team has confirmed absent (and optionally present) after reviewing anonymous reports. Team-authored, never auto-generated from raw reports. Ships EMPTY in v1. The app seeds a user's local overlay from a club's entry the first time that club has no local record (AC12); a local record is always authoritative afterwards. Every object is closed (additionalProperties:false) so no free text can hide in the file. Referential integrity (ids against data/equipment.json, club ids against data/gyms/) is not expressible in JSON Schema and is enforced by scripts/validate-data.js validateClubEquipment. Confirmed-PRESENT club ids are ALSO recorded in equipment.json's existing verifiedAt array (AC13).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "clubs"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Bumped only when the shape of this file changes."
+    },
+    "clubs": {
+      "type": "object",
+      "description": "Keyed by club GUID (data/gyms/<CC>.json club.id).",
+      "propertyNames": { "pattern": "^[0-9a-f]{32}$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "absent": {
+            "$ref": "#/definitions/equipmentIdList",
+            "description": "Catalog equipment ids the team confirmed this club does NOT have. Seeds the club's local exclusion list on first selection."
+          },
+          "present": {
+            "$ref": "#/definitions/equipmentIdList",
+            "description": "Catalog equipment ids the team confirmed this club DOES have. An id may not appear in both lists."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "equipmentIdList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

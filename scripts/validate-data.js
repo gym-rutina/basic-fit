@@ -281,6 +281,128 @@ function validateGymsSize(fileSizes) {
   return [];
 }
 
+// club-equipment-reporting D12 — data/club-equipment.json, the team-merged
+// per-club defaults. Kept in lockstep with data/schema/club-equipment.schema.json
+// by the drift describe in validate-club-equipment.test.js. Every object is
+// closed (no free text can hide in it) and ships empty in v1.
+const CLUB_EQUIPMENT_SCHEMA_VERSION = 1;
+const CLUB_EQUIPMENT_TOP_KEYS = ['schemaVersion', 'clubs'];
+const CLUB_EQUIPMENT_ENTRY_KEYS = ['absent', 'present'];
+
+function isPlainObject(v) {
+  return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
+
+/**
+ * Validates the team-merged per-club defaults file (AC10/AC11, D12). Pure —
+ * reads no disk — so it is unit-testable like `validateGyms`; the caller
+ * (`validate()`) supplies the real id sets. Accumulates every problem.
+ *
+ * @param {*} data - parsed data/club-equipment.json
+ * @param {{equipmentIds?: Set<string>|null, clubIds?: Set<string>|null}} [ctx]
+ *   `clubIds: null` skips ONLY the club-directory check (directory absent);
+ *   equipment ids are always checked when `equipmentIds` is supplied.
+ * @returns {string[]}
+ */
+function validateClubEquipment(data, ctx) {
+  const errors = [];
+  const equipmentIds = ctx && ctx.equipmentIds ? ctx.equipmentIds : null;
+  const clubIds = ctx && ctx.clubIds ? ctx.clubIds : null;
+
+  if (!isPlainObject(data)) {
+    return ['club-equipment.json must be an object'];
+  }
+
+  for (const key of Object.keys(data)) {
+    if (!CLUB_EQUIPMENT_TOP_KEYS.includes(key)) {
+      errors.push(`club-equipment.json: unknown top-level property "${key}"`);
+    }
+  }
+  if (data.schemaVersion !== CLUB_EQUIPMENT_SCHEMA_VERSION) {
+    errors.push(`club-equipment.json: schemaVersion must be ${CLUB_EQUIPMENT_SCHEMA_VERSION}`);
+  }
+  if (!isPlainObject(data.clubs)) {
+    errors.push('club-equipment.json: clubs must be an object keyed by club id');
+    return errors;
+  }
+
+  for (const [clubId, entry] of Object.entries(data.clubs)) {
+    const where = `clubs.${clubId}`;
+
+    if (!GUID_RE.test(clubId)) {
+      errors.push(`${where}: club id must be a 32-hex GUID`);
+    } else if (clubIds && !clubIds.has(clubId)) {
+      errors.push(`${where}: club id ${clubId} is not in the gym directory (data/gyms/)`);
+    }
+
+    if (!isPlainObject(entry)) {
+      errors.push(`${where}: entry must be an object with absent[] and/or present[]`);
+      continue;
+    }
+    for (const key of Object.keys(entry)) {
+      if (!CLUB_EQUIPMENT_ENTRY_KEYS.includes(key)) {
+        errors.push(`${where}: unknown property "${key}" (only absent / present are allowed — no free text)`);
+      }
+    }
+    if (!('absent' in entry) && !('present' in entry)) {
+      errors.push(`${where}: entry needs absent[] and/or present[]`);
+    }
+
+    const lists = {};
+    for (const listName of CLUB_EQUIPMENT_ENTRY_KEYS) {
+      if (!(listName in entry)) continue;
+      const list = entry[listName];
+      if (!Array.isArray(list)) {
+        errors.push(`${where}.${listName}: must be an array of equipment ids`);
+        continue;
+      }
+      const seen = new Set();
+      list.forEach((id, i) => {
+        if (typeof id !== 'string' || id.length === 0) {
+          errors.push(`${where}.${listName}[${i}]: must be a non-empty equipment id string`);
+          return;
+        }
+        if (seen.has(id)) {
+          errors.push(`${where}.${listName}[${i}]: duplicate equipment id "${id}"`);
+        }
+        seen.add(id);
+        if (equipmentIds && !equipmentIds.has(id)) {
+          errors.push(`${where}.${listName}[${i}]: unknown equipment id "${id}" (not in equipment.json)`);
+        }
+      });
+      lists[listName] = seen;
+    }
+
+    if (lists.absent && lists.present) {
+      for (const id of lists.absent) {
+        if (lists.present.has(id)) {
+          errors.push(`${where}: equipment id "${id}" is listed both absent and present — contradiction the team must resolve`);
+        }
+      }
+    }
+  }
+
+  return errors;
+}
+
+const MAX_CLUB_EQUIPMENT_BYTES = 256 * 1024; // raw, uncompressed — the file is bundled into the app
+
+/**
+ * Size cap for the shipped defaults file (AC11) — byte size in, errors out, so
+ * it stays a pure function like `validateGymsSize`.
+ *
+ * @param {number} bytes
+ * @returns {string[]}
+ */
+function validateClubEquipmentSize(bytes) {
+  if (bytes > MAX_CLUB_EQUIPMENT_BYTES) {
+    return [
+      `data/club-equipment.json is ${(bytes / 1024).toFixed(1)}KB, over the ${MAX_CLUB_EQUIPMENT_BYTES / 1024}KB raw cap`,
+    ];
+  }
+  return [];
+}
+
 function validate() {
   const dataPath = path.join(__dirname, '..', 'data', 'equipment.json');
   const schemaPath = path.join(__dirname, '..', 'data', 'schema', 'equipment.schema.json');
@@ -316,6 +438,7 @@ function validate() {
   // against the live storefront), so this step degrades gracefully rather
   // than failing when the directory is absent.
   const indexPath = path.join(gymsDir, 'index.json');
+  let clubIds = null; // stays null when the directory is absent — club check skipped
   if (fs.existsSync(indexPath)) {
     console.log('\nValidating gym directory...');
     const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
@@ -330,9 +453,35 @@ function validate() {
     }
     const gymErrors = validateGyms(index, files).concat(validateGymsSize(fileSizes));
     errors = errors.concat(gymErrors);
+    clubIds = new Set();
+    for (const countryFile of Object.values(files)) {
+      for (const club of countryFile.clubs || []) clubIds.add(club.id);
+    }
     console.log(`✓ Read data/gyms/ (${index.countries?.length ?? 0} countries)`);
   } else {
     console.log('\n(data/gyms/ not present — skipping directory validation)');
+  }
+
+  // club-equipment-reporting AC10/AC11 — the team-merged per-club defaults.
+  const clubEquipmentPath = path.join(__dirname, '..', 'data', 'club-equipment.json');
+  console.log('\nValidating club equipment defaults...');
+  if (fs.existsSync(clubEquipmentPath)) {
+    let clubEquipment;
+    try {
+      clubEquipment = JSON.parse(fs.readFileSync(clubEquipmentPath, 'utf8'));
+    } catch (error) {
+      errors.push(`data/club-equipment.json is not valid JSON: ${error.message}`);
+    }
+    if (clubEquipment !== undefined) {
+      const equipmentIds = new Set((data.equipment || []).map((item) => item.id));
+      errors = errors
+        .concat(validateClubEquipment(clubEquipment, { equipmentIds, clubIds }))
+        .concat(validateClubEquipmentSize(fs.statSync(clubEquipmentPath).size));
+      const clubCount = Object.keys((clubEquipment && clubEquipment.clubs) || {}).length;
+      console.log(`✓ Read data/club-equipment.json (${clubCount} clubs)`);
+    }
+  } else {
+    errors.push('data/club-equipment.json is missing — it ships with the app (an empty file is valid)');
   }
 
   if (errors.length === 0) {
@@ -371,6 +520,9 @@ module.exports = {
   validateSchema,
   validateGyms,
   validateGymsSize,
+  validateClubEquipment,
+  validateClubEquipmentSize,
+  MAX_CLUB_EQUIPMENT_BYTES,
   REQUIRED_FIELDS,
   VALID_CATEGORIES,
   VALID_KINDS,

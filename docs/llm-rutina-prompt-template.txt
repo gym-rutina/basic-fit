@@ -27,6 +27,14 @@ if your chat truncated the paste and SCHEMA above looks cut off:
 - "program.gymId" accepts either a legacy integer (1 and up) or a 32-character
   lowercase hex club GUID — never a club name or address.
 - "extraEquipment[].kind" is always the literal string "gear" when present.
+  "extraEquipment" may hold a full off-catalog machine your club has that is not
+  in EQUIPMENT (not only accessories like a band) — give it a "category" and
+  "muscleGroup" so it is tracked like a catalog item.
+- "substitutions" (optional) records a swap you chose, e.g. when the usual machine
+  is not in EQUIPMENT: entries of {"equipmentId": "<usual id>",
+  "substituteEquipmentId": "<id used instead>", "reason": "<short reason>"}. Both
+  ids must be EQUIPMENT ids or this rutina's own "extraEquipment" ids. Omit it
+  unless a swap is worth noting.
 - "equipmentId" on an exercise is optional: omit it (or leave it empty) for
   bodyweight work, and the app shows the exercise name only in that case.
 - If field 8 (prior progress export) names an exercise you are repeating this phase,

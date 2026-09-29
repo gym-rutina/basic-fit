@@ -231,9 +231,34 @@
         }
       }
     },
+    "substitutions": {
+      "type": "array",
+      "description": "Optional, LLM-authored record that this rutina swapped one machine for another — e.g. an exercise's usual equipment is not in the club's filtered equipment table, so the LLM chose a different one (club-equipment-reporting AC14). Fill it in ONLY when you decide an explicit substitution note is worth recording; no rutina needs it and there is no static per-item mapping. Both ids resolve against the same valid equipmentId union the exercises use (catalog ids + this rutina's extraEquipment ids), cross-checked by scripts/lib/rutina-validator.js (not expressible in JSON Schema alone). Metadata only in v1: no screen reads it, it just round-trips through export/import.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["equipmentId", "substituteEquipmentId"],
+        "properties": {
+          "equipmentId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The equipment that was expected or usual — a catalog id or one of this rutina's extraEquipment ids."
+          },
+          "substituteEquipmentId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The equipment used instead — a catalog id or one of this rutina's extraEquipment ids."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Optional short human-readable reason for the swap."
+          }
+        }
+      }
+    },
     "extraEquipment": {
       "type": "array",
-      "description": "Per-rutina, LLM-proposed gear with no manufacturer identity (a band, a foam roller, a towel) — R3.3. Optional, no maxItems cap (DD-001). Ids in here plus the catalog's own ids form the valid equipmentId union for this rutina's exercises (R4.1); a gear id colliding with a catalog id is a validation error (AC23, checked by scripts/lib/rutina-validator.js, not expressible in JSON Schema alone).",
+      "description": "Per-rutina, LLM-proposed equipment that is NOT in data/equipment.json — R3.3. It covers both simple accessories (a band, a foam roller, a towel) and a FULL off-catalog machine or free-weight piece a club has that the shared catalog lacks (club-equipment-reporting AC19). It stays personal to this rutina: no photo, no moderation, no shared-catalog impact. Give category and muscleGroup when known, so weight/difficulty/notes tracking works for it exactly as for a catalog item. Optional, no maxItems cap (DD-001). Ids in here plus the catalog's own ids form the valid equipmentId union for this rutina's exercises (R4.1); a gear id colliding with a catalog id is a validation error (AC23, checked by scripts/lib/rutina-validator.js, not expressible in JSON Schema alone).",
       "items": {
         "type": "object",
         "required": ["id", "kind", "names"],

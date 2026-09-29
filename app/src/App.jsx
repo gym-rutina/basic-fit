@@ -19,6 +19,7 @@ import { OnboardingOverlay } from './components/OnboardingOverlay.jsx';
 import { LibraryScreen } from './components/LibraryScreen.jsx';
 import { getActiveRutina, listRutinas } from './lib/db.js';
 import { hasSeenOnboarding } from './lib/onboardingStorage.js';
+import { startOpportunisticFlush } from './lib/reportFlush.js';
 import { useActiveSession } from './hooks/useActiveSession.js';
 import { I18nProvider } from './i18n/index.js';
 
@@ -190,6 +191,10 @@ function Shell() {
 }
 
 export default function App() {
+  // club-equipment-reporting: flush the anonymous report outbox on mount and
+  // whenever the browser comes back online. Inert (no timer, no listener, no
+  // network) while VITE_BACKEND_URL is unset.
+  useEffect(() => startOpportunisticFlush(), []);
   return (
     <I18nProvider>
       <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

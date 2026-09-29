@@ -356,6 +356,13 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} completado, {weight} kilos, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} completado, {difficulty}',
 
+  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
+  'session.notHereAction': 'No está',
+  'session.notHereAria': 'Reportar {machine} como no disponible en este club',
+  'session.reportedBody': 'Reportado. Se ha ocultado en el catálogo de este club. Puedes revertirlo desde Catálogo → Mi club.',
+  'session.notesLabel': 'Notas (opcional)',
+  'session.notesPlaceholder': 'p. ej. sin polea, usé el agarre largo',
+
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Aún no hay sesiones registradas',
   'history.emptyBody': 'Empieza un entrenamiento desde Inicio para ver tu historial aquí.',

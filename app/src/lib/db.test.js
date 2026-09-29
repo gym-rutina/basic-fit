@@ -512,11 +512,12 @@ describe('db — v1 to v2 migration (AC6)', () => {
 
     const db = await openCurrent();
     try {
-      // DB_VERSION is 4 as of multi-rutina-library D-A — this migration test
-      // predates both later bumps. `openDB(name, DB_VERSION, {upgrade})` always
-      // runs `upgrade` from the db's actual oldVersion (1, here) straight to
-      // the current DB_VERSION in one pass, so a v1 device lands on 4, not 2.
-      expect(db.version).toBe(4);
+      // DB_VERSION is 5 as of club-equipment-reporting (reportOutbox); it was 4
+      // after multi-rutina-library D-A — this migration test predates all
+      // later bumps. `openDB(name, DB_VERSION, {upgrade})` always runs
+      // `upgrade` from the db's actual oldVersion (1, here) straight to the
+      // current DB_VERSION in one pass, so a v1 device lands on 5, not 2.
+      expect(db.version).toBe(5);
       expect(db.transaction('lastWeights').store.keyPath).toBe('exerciseKey');
     } finally {
       db.close();
@@ -604,15 +605,16 @@ describe('db — v2 to v3 migration (D4)', () => {
     db.close();
   }
 
-  it('opens at the current DB_VERSION (4 as of multi-rutina-library D-A)', async () => {
+  it('opens at the current DB_VERSION (5 as of club-equipment-reporting)', async () => {
     await seedV2();
     await listSessions(); // any db.js call runs the upgrade
 
     const db = await openCurrent();
     try {
       // The v2→v3 bump landed this describe at 3; multi-rutina-library moved
-      // the pin to 4. Same one-pass upgrade semantics as documented above.
-      expect(db.version).toBe(4);
+      // the pin to 4; club-equipment-reporting (reportOutbox) moved it to 5.
+      // Same one-pass upgrade semantics as documented above.
+      expect(db.version).toBe(5);
     } finally {
       db.close();
     }
@@ -624,10 +626,11 @@ describe('db — v2 to v3 migration (D4)', () => {
 
     const db = await openCurrent();
     try {
-      // 'rutinas' joins at DB_VERSION 4 (multi-rutina-library D-A) — additive,
+      // 'rutinas' joins at DB_VERSION 4 (multi-rutina-library D-A) and
+      // 'reportOutbox' at DB_VERSION 5 (club-equipment-reporting D5) — additive,
       // like every store in this list.
       expect([...db.objectStoreNames].sort()).toEqual(
-        ['activeRutina', 'clubEquipment', 'lastWeights', 'rutinas', 'sessions'].sort()
+        ['activeRutina', 'clubEquipment', 'lastWeights', 'reportOutbox', 'rutinas', 'sessions'].sort()
       );
       expect(db.transaction('clubEquipment').store.keyPath).toBe('clubId');
     } finally {

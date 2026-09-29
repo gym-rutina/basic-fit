@@ -350,6 +350,13 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} completed, {weight} kilos, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} completed, {difficulty}',
 
+  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
+  'session.notHereAction': 'Not here',
+  'session.notHereAria': 'Report {machine} as not available at this club',
+  'session.reportedBody': 'Reported. It has been hidden in this club’s catalog. You can undo it from Catalog → My club.',
+  'session.notesLabel': 'Notes (optional)',
+  'session.notesPlaceholder': 'e.g. no pulley, used the long grip',
+
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'No sessions recorded yet',
   'history.emptyBody': 'Start a workout from Home to see your history here.',

@@ -355,6 +355,13 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} terminé, {weight} kilos, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} terminé, {difficulty}',
 
+  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
+  'session.notHereAction': 'Pas ici',
+  'session.notHereAria': 'Signaler {machine} comme indisponible dans ce club',
+  'session.reportedBody': 'Signalé. Masqué dans le catalogue de ce club. Vous pouvez l’annuler depuis Catalogue → Mon club.',
+  'session.notesLabel': 'Notes (facultatif)',
+  'session.notesPlaceholder': 'p. ex. pas de poulie, prise longue utilisée',
+
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Aucune séance enregistrée pour le moment',
   'history.emptyBody': 'Commence un entraînement depuis Accueil pour voir ton historique ici.',

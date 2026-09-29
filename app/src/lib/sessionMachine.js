@@ -76,6 +76,15 @@ export function createSession(dayLabel, dayIndex, exercises, now, attribution) {
   };
 }
 
+/** club-equipment-reporting D11 — a note is kept only when non-empty after trim. */
+export const MAX_NOTES_LENGTH = 200;
+
+function normalizeNotes(raw) {
+  if (typeof raw !== 'string') return null;
+  const trimmed = raw.trim().slice(0, MAX_NOTES_LENGTH);
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 function patchExerciseAt(session, exerciseIndex, patch, identity) {
   if (exerciseIndex < 0) return session;
   const exercises = session.exercises.slice();
@@ -104,8 +113,8 @@ export function sessionReducer(session, action) {
       // Hydrate from a persisted record — round-trips unchanged.
       return action.session;
 
-    case 'COMPLETE_EXERCISE':
-      return patchExerciseAt(
+    case 'COMPLETE_EXERCISE': {
+      const next = patchExerciseAt(
         session,
         action.exerciseIndex,
         {
@@ -115,8 +124,23 @@ export function sessionReducer(session, action) {
         },
         { equipmentId: action.equipmentId, name: action.name }
       );
+      // club-equipment-reporting AC16/D11: the textarea is authoritative on
+      // completion — a real note is stored, an empty one REMOVES any note kept
+      // from an undone earlier completion, and the key never exists otherwise
+      // (so every existing record shape stays byte-identical). patchExerciseAt
+      // hands back a fresh exercise object, so this never mutates the input.
+      const done = next !== session ? next.exercises[action.exerciseIndex] : null;
+      if (done) {
+        const notes = normalizeNotes(action.notes);
+        if (notes) done.notes = notes;
+        else delete done.notes;
+      }
+      return next;
+    }
 
     case 'UNDO_EXERCISE':
+      // `notes` is deliberately NOT cleared: reopening the card re-fills the
+      // textarea, exactly like weight and difficulty (ux-design S2 "restored").
       return patchExerciseAt(session, action.exerciseIndex, {
         weightUsed: null,
         difficulty: null,

@@ -7,6 +7,10 @@ import { ConfirmSheet } from '../components/ConfirmSheet.jsx';
 import { EquipmentReferenceSheet } from '../components/EquipmentReferenceSheet.jsx';
 import { sessionReducer } from '../lib/sessionMachine.js';
 import { getActiveRutina, getActiveSession, saveSession, getLastWeight, deleteSessions } from '../lib/db.js';
+import { readClub } from '../lib/clubStorage.js';
+import { useClubExclusions } from '../lib/useClubExclusions.js';
+import { enqueueImplicitPresent } from '../lib/reportOutbox.js';
+import { isReportable } from '../lib/equipmentReports.js';
 import { difficultyLevels, difficultyLabel } from '../lib/difficulty.js';
 import { getEquipmentById, mainImageUrl, equipmentDisplayName } from '../data/equipment.js';
 import { exerciseKey } from '../lib/exerciseKey.js';
@@ -29,6 +33,10 @@ function mergeExercises(rutinaExercises, sessionExercises) {
       weightUsed: tracking.weightUsed ?? null,
       difficulty: tracking.difficulty ?? null,
       completedAt: tracking.completedAt ?? null,
+      // `loggedNotes`, not `notes`: the spread above may already carry the
+      // rutina's own prescription fields, and the user's private note must never
+      // shadow (or be shadowed by) one (club-equipment-reporting AC16).
+      loggedNotes: tracking.notes ?? '',
     };
   });
 }
@@ -88,8 +96,16 @@ function DifficultyPicker({ value, onChange, t }) {
  * resolved apparatus now gets a composed exercise-tutorial link via
  * buildVideoQuery, so the sheet always has a video, and the old "resolved +
  * sparse → plain text" branch is unreachable and has been removed (D8).
+ *
+ * club-equipment-reporting S1 (ux-design §2, tech-plan D10): ONLY the resolved-
+ * catalog branch can carry «No está». It shows when a club is selected, the
+ * club's exclusions have loaded (never act before knowing) and the machine is
+ * not already excluded locally; once tapped it is replaced, for the rest of the
+ * visit, by the polite-live-region confirmation (one-tap finality — corrections
+ * live in Catálogo → Mi club). Gear and unresolved rows never get it (AC4).
+ * `reporting` = { clubId, excludedIds, reportedIds, onNotHere }.
  */
-function EquipmentRow({ ex, extraEquipment, locale, t }) {
+function EquipmentRow({ ex, extraEquipment, locale, t, reporting }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const triggerRef = useRef(null);
 
@@ -119,36 +135,74 @@ function EquipmentRow({ ex, extraEquipment, locale, t }) {
   const videoHref = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(buildVideoQuery(ex, eq, locale));
   const videoLabel = t('program.watchTechnique', { name: ex.name });
 
+  const reported = Boolean(reporting && reporting.reportedIds.has(eq.id));
+  const excludedLocally = Boolean(reporting && reporting.excludedIds && reporting.excludedIds.has(eq.id));
+  const canReport = Boolean(reporting && reporting.clubId && reporting.excludedIds && !excludedLocally);
+
   return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-haspopup="dialog"
-        onClick={() => setSheetOpen(true)}
-        style={{
-          all: 'unset',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          padding: '6px 0',
-          width: '100%',
-          boxSizing: 'border-box',
-        }}
-      >
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt=""
-            style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 'var(--radius-control)', flexShrink: 0 }}
-          />
+    // One grid item (the card lays its children out in a gap grid): the action
+    // and the confirmation belong to this row, not to the card.
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-haspopup="dialog"
+          onClick={() => setSheetOpen(true)}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '6px 0',
+            flex: 1,
+            minWidth: 0,
+            boxSizing: 'border-box',
+          }}
+        >
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt=""
+              style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 'var(--radius-control)', flexShrink: 0 }}
+            />
+          )}
+          <span style={{ flex: 1, minWidth: 0, font: 'var(--text-body-sm)', color: 'var(--bf-ink)' }}>
+            {displayName}
+          </span>
+          <Icon name="chevron-right" size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+        </button>
+
+        {canReport && !reported && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            aria-label={t('session.notHereAria', { machine: equipmentDisplayName(eq, locale) })}
+            onClick={() => reporting.onNotHere(eq.id)}
+            style={{ minHeight: 44, padding: '0 10px', flexShrink: 0 }}
+          >
+            {t('session.notHereAction')} <Icon name="x" size={14} />
+          </Button>
         )}
-        <span style={{ flex: 1, minWidth: 0, font: 'var(--text-body-sm)', color: 'var(--bf-ink)' }}>
-          {displayName}
-        </span>
-        <Icon name="chevron-right" size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-      </button>
+      </div>
+
+      {/* The status region is mounted while the action is offered (empty), so
+          the confirmation is ANNOUNCED when its text arrives rather than
+          appearing together with its own live region. */}
+      {(canReport || reported) && (
+        <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          {reported && (
+            <>
+              <Icon name="check-circle" size={16} style={{ color: 'var(--bf-success)', marginTop: 2 }} />
+              <span dir="auto" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}>
+                {t('session.reportedBody')}
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       {sheetOpen && (
         <EquipmentReferenceSheet
@@ -163,7 +217,7 @@ function EquipmentRow({ ex, extraEquipment, locale, t }) {
           }}
         />
       )}
-    </>
+    </div>
   );
 }
 
@@ -180,10 +234,14 @@ function prefillCaption(prefillState, isDone, t) {
   return t('session.weightNoRecords');
 }
 
-function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, onUndo, locale, t, extraEquipment }) {
+function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, onUndo, locale, t, extraEquipment, reporting }) {
   const isDone = Boolean(ex.completedAt);
   const [weight, setWeight] = useState(ex.weightUsed ?? '');
   const [difficulty, setDifficulty] = useState(ex.difficulty ?? null);
+  // club-equipment-reporting AC16: the optional private note. Seeded from the
+  // saved record so a reopened card re-fills, like weight and difficulty.
+  const [notes, setNotes] = useState(ex.loggedNotes ?? '');
+  const notesInputId = 'notes-' + ex.exerciseIndex + '-' + (ex.equipmentId ?? 'x');
   // 'loading' | 'filled' | 'empty' — "is the input empty" cannot tell apart
   // "not looked up yet" from "looked up, nothing there" (tech-plan.md D9),
   // and rendering the "Prellenado…" claim before the lookup resolves would
@@ -202,6 +260,7 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
     if (isDone) {
       setWeight(ex.weightUsed ?? '');
       setDifficulty(ex.difficulty ?? null);
+      setNotes(ex.loggedNotes ?? '');
       return undefined;
     }
     if (!isExpanded) return undefined;
@@ -296,7 +355,7 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
             {ex.intensity && <DetailItem label={t('program.intensity')} value={<span dir="auto">{ex.intensity}</span>} />}
           </div>
 
-          <EquipmentRow ex={ex} extraEquipment={extraEquipment} locale={locale} t={t} />
+          <EquipmentRow ex={ex} extraEquipment={extraEquipment} locale={locale} t={t} reporting={reporting} />
 
           <div>
             <label
@@ -333,6 +392,33 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
             <DifficultyPicker value={difficulty} onChange={setDifficulty} t={t} />
           </div>
 
+          <div>
+            <label
+              htmlFor={notesInputId}
+              style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}
+            >
+              {t('session.notesLabel')}
+            </label>
+            <textarea
+              id={notesInputId}
+              rows={2}
+              dir="auto"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t('session.notesPlaceholder')}
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                font: '400 15px/1.4 var(--font-sans)',
+                color: 'var(--bf-ink)',
+                border: '1px solid var(--border-control)',
+                borderRadius: 'var(--radius-control)',
+                padding: '10px 14px',
+                resize: 'vertical',
+              }}
+            />
+          </div>
+
           <Button
             variant="primary"
             disabled={!difficulty}
@@ -343,6 +429,7 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
                 name: ex.name,
                 weightUsed: weight === '' ? null : Number(weight),
                 difficulty,
+                notes,
               })
             }
           >
@@ -370,6 +457,20 @@ export function ActiveSessionScreen({ onSessionEnded }) {
   const [discardBusy, setDiscardBusy] = useState(false);
   const [discardError, setDiscardError] = useState(null);
   const [announcement, setAnnouncement] = useState('');
+
+  // club-equipment-reporting: read once, like CatalogScreen (nothing on this
+  // screen changes the club). The hook is called ONCE, here at the top —
+  // BEFORE the early return below (rules of hooks) — so «No está» writes the
+  // very exclusions the Settings overlay and the Catálogo chip write, and
+  // reports them with method "session".
+  const [club] = useState(() => readClub());
+  const clubId = club?.clubId ?? null;
+  const { excludedIds, exclude } = useClubExclusions(clubId, { method: 'session' });
+  // Machines reported via «No está» during this visit — drives the row's
+  // one-tap-final confirmation state (not persisted: the exclusion is).
+  const [reportedIds, setReportedIds] = useState(() => new Set());
+  // AC3: at most one implicit present-report per equipment per session.
+  const implicitSent = useRef(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -423,7 +524,37 @@ export function ActiveSessionScreen({ onSessionEnded }) {
     });
   }
 
-  function handleComplete({ exerciseIndex, equipmentId, name, weightUsed, difficulty }) {
+  /** «No está»: the hook applies + persists the exclusion and enqueues the absent report (AC2). */
+  function handleNotHere(equipmentId) {
+    exclude(equipmentId);
+    setReportedIds((prev) => new Set(prev).add(equipmentId));
+  }
+
+  /**
+   * AC3/AC4/D10 — the IMPLICIT present-report: silent, no UI. Only with a
+   * selected club, a resolved catalog machine, exclusions loaded and the
+   * machine NOT locally excluded (never contradict the user's overlay); at
+   * most once per equipment per session (ref for this visit, plus the
+   * persisted record so a remount cannot re-send for a machine already logged).
+   * Fire-and-forget: it can neither throw into nor delay the completion (AC8).
+   */
+  function noteImplicitPresent(equipmentId, exerciseIndex) {
+    if (!clubId || !excludedIds || excludedIds.has(equipmentId)) return;
+    if (!isReportable({ clubId, equipmentId })) return;
+    if (implicitSent.current.has(equipmentId)) return;
+    implicitSent.current.add(equipmentId);
+    const alreadyLogged = session.exercises.some(
+      (e, i) => i !== exerciseIndex && e && e.equipmentId === equipmentId && e.completedAt
+    );
+    if (alreadyLogged) return;
+    try {
+      Promise.resolve(enqueueImplicitPresent({ clubId, equipmentId })).catch(() => {});
+    } catch {
+      // AC8: never blocks completing the exercise.
+    }
+  }
+
+  function handleComplete({ exerciseIndex, equipmentId, name, weightUsed, difficulty, notes }) {
     const now = new Date().toISOString();
     const next = sessionReducer(session, {
       type: 'COMPLETE_EXERCISE',
@@ -432,9 +563,11 @@ export function ActiveSessionScreen({ onSessionEnded }) {
       name,
       weightUsed,
       difficulty,
+      notes,
       now,
     });
     persist(next);
+    noteImplicitPresent(equipmentId, exerciseIndex);
 
     const completedEx = next.exercises[exerciseIndex];
     const label = completedEx?.name || name || '';
@@ -528,6 +661,7 @@ export function ActiveSessionScreen({ onSessionEnded }) {
             locale={locale}
             t={t}
             extraEquipment={rutina.extraEquipment}
+            reporting={{ clubId, excludedIds, reportedIds, onNotHere: handleNotHere }}
           />
         ))}
         {isFullyComplete && (

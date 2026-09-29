@@ -224,6 +224,26 @@ juntas en **Mis rutinas** (pestaña Programa), listas para activarlas en orden.
 
 ---
 
+## Equipamiento que el catálogo no tiene (opcional — decide el LLM)
+
+Dos partes opcionales del archivo de la rutina cubren los gimnasios que no coinciden
+exactamente con el catálogo. Nunca tienes que escribirlas a mano: el LLM decide, programa
+por programa, si merece la pena usarlas.
+
+- **Una máquina fuera del catálogo.** `extraEquipment` no es solo para accesorios
+  pequeños como una banda o un rodillo de espuma: el LLM también puede añadir una pieza
+  completa que tu club tenga y que no esté en el catálogo (`kind` es siempre `"gear"`).
+  Sigue siendo personal de ese programa y se registra como cualquier equipo del catálogo:
+  dale una categoría y un grupo muscular.
+- **Un cambio registrado.** Cuando la máquina habitual de un ejercicio no está en la
+  lista de equipos de tu club y el LLM elige otra, puede añadir una entrada en
+  `substitutions`: `equipmentId` (la habitual), `substituteEquipmentId` (la que se usa en
+  su lugar) y un `reason` opcional. Ambos ids deben ser del catálogo o del
+  `extraEquipment` de ese mismo programa; el importador los comprueba como cualquier otro
+  id de equipo. La app no muestra los cambios en pantalla: se guardan con el programa.
+
+---
+
 ## Actualizar tu programa
 
 Tus programas se gestionan en **Mis rutinas**, dentro de la pestaña **Programa**:

@@ -64,6 +64,24 @@ function formatSchemaError(err) {
 }
 
 /**
+ * The valid equipmentId union for one rutina: the catalog's own ids plus this
+ * rutina's extraEquipment ids (R4.1). The single definition, shared by the
+ * exercise cross-check and the substitutions cross-check below — reuse, not a
+ * second implementation (club-equipment-reporting D13). Null-safe.
+ *
+ * @param {Array} equipmentArray
+ * @param {Array} extraEquipment
+ * @returns {Set<string>}
+ */
+function buildValidIdSet(equipmentArray, extraEquipment) {
+  const idsOf = (arr) =>
+    (Array.isArray(arr) ? arr : [])
+      .map((item) => item && item.id)
+      .filter((id) => id !== undefined);
+  return new Set([...idsOf(equipmentArray), ...idsOf(extraEquipment)]);
+}
+
+/**
  * Cross-check every days[].exercises[].equipmentId against the union of the
  * catalog and this rutina's own extraEquipment (R4.1). Null-safe on
  * purpose: this must produce useful output even when the input already
@@ -88,12 +106,7 @@ function formatSchemaError(err) {
  */
 function crossCheckEquipmentIds(data, equipmentArray, extraEquipment = data && data.extraEquipment) {
   const errors = [];
-  const idsOf = (arr) =>
-    (Array.isArray(arr) ? arr : [])
-      .map((item) => item && item.id)
-      .filter((id) => id !== undefined);
-
-  const validIds = new Set([...idsOf(equipmentArray), ...idsOf(extraEquipment)]);
+  const validIds = buildValidIdSet(equipmentArray, extraEquipment);
 
   const days = data && Array.isArray(data.days) ? data.days : [];
   days.forEach((day, dayIndex) => {
@@ -105,6 +118,40 @@ function crossCheckEquipmentIds(data, equipmentArray, extraEquipment = data && d
       if (!validIds.has(id)) {
         errors.push(
           `days[${dayIndex}].exercises[${exerciseIndex}].equipmentId "${id}" not found in data/equipment.json or extraEquipment`
+        );
+      }
+    });
+  });
+
+  return errors;
+}
+
+/**
+ * Cross-check every substitutions[].equipmentId / .substituteEquipmentId
+ * against the SAME id union the exercises use (club-equipment-reporting AC14,
+ * D13). Null-safe like its sibling: it must produce useful output even when the
+ * input already failed schema validation and `substitutions` is not an array or
+ * holds junk entries — those are the schema's to report, this only reports ids
+ * that are strings but unresolved.
+ *
+ * @param {*} data - parsed rutina.json contents (may be structurally invalid)
+ * @param {Array} equipmentArray - parsed data.equipment array from equipment.json
+ * @param {Array} [extraEquipment] - this rutina's own extraEquipment[]; defaults to data?.extraEquipment
+ * @returns {string[]} one formatted error per unresolved id
+ */
+function crossCheckSubstitutions(data, equipmentArray, extraEquipment = data && data.extraEquipment) {
+  const errors = [];
+  const validIds = buildValidIdSet(equipmentArray, extraEquipment);
+
+  const substitutions = data && Array.isArray(data.substitutions) ? data.substitutions : [];
+  substitutions.forEach((entry, index) => {
+    if (!entry || typeof entry !== 'object') return;
+    ['equipmentId', 'substituteEquipmentId'].forEach((field) => {
+      const id = entry[field];
+      if (typeof id !== 'string') return; // missing / wrong type — schema's error, not "not found"
+      if (!validIds.has(id)) {
+        errors.push(
+          `substitutions[${index}].${field} "${id}" not found in data/equipment.json or extraEquipment`
         );
       }
     });
@@ -185,6 +232,7 @@ function validateRutina(data, equipmentArray) {
 
   // Always run, even when schema validation failed above.
   errors.push(...crossCheckEquipmentIds(data, equipmentArray));
+  errors.push(...crossCheckSubstitutions(data, equipmentArray));
   errors.push(...findExtraEquipmentCollisions(data && data.extraEquipment, equipmentArray));
 
   const { dayCount, exerciseCount } = countDaysAndExercises(data);
@@ -200,6 +248,7 @@ function validateRutina(data, equipmentArray) {
 module.exports = {
   validateRutina,
   crossCheckEquipmentIds,
+  crossCheckSubstitutions,
   findExtraEquipmentCollisions,
   formatSchemaError,
 };

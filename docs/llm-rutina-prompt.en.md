@@ -216,6 +216,25 @@ each phase separately, as its own `rutina.json` — they'll be kept side by side
 
 ---
 
+## Equipment the catalog doesn't have (optional — the LLM's call)
+
+Two optional parts of the rutina file cover gyms that don't match the catalog exactly.
+You never have to write either by hand: the LLM decides, program by program, whether
+they're worth using.
+
+- **An off-catalog machine.** `extraEquipment` isn't only for small accessories such as a
+  band or a foam roller — the LLM can also add a full piece of equipment your club has
+  that isn't in the catalog (`kind` is always `"gear"`). It stays personal to that
+  program, and it's tracked like any catalog item: give it a category and a muscle group.
+- **A recorded swap.** When an exercise's usual machine isn't in your club's equipment
+  list and the LLM picks something else, it may add a `substitutions` entry:
+  `equipmentId` (the usual one), `substituteEquipmentId` (the one used instead) and an
+  optional `reason`. Both ids must be catalog ids or ids from that same program's
+  `extraEquipment`; the importer checks them like any other equipment id. The app doesn't
+  show swaps on screen — they're kept with the program.
+
+---
+
 ## Updating your program
 
 Your programs are managed in **Mis rutinas**, inside the **Programa** tab:

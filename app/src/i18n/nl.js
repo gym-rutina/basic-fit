@@ -356,6 +356,13 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} voltooid, {weight} kilo, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} voltooid, {difficulty}',
 
+  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
+  'session.notHereAction': 'Niet hier',
+  'session.notHereAria': 'Meld {machine} als niet beschikbaar in deze club',
+  'session.reportedBody': 'Gemeld. Verborgen in de catalogus van deze club. Je kunt dit ongedaan maken via Catalogus → Mijn club.',
+  'session.notesLabel': 'Notities (optioneel)',
+  'session.notesPlaceholder': 'bijv. geen katrol, lange greep gebruikt',
+
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Nog geen sessies geregistreerd',
   'history.emptyBody': 'Start een training vanaf Start om je geschiedenis hier te zien.',

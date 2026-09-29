@@ -352,6 +352,13 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} завершана, {weight} кілаграмаў, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} завершана, {difficulty}',
 
+  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
+  'session.notHereAction': 'Няма тут',
+  'session.notHereAria': 'Паведаміць, што {machine} недаступны ў гэтым клубе',
+  'session.reportedBody': 'Паведамлена. Трэнажор схаваны ў каталогу гэтага клуба. Вярнуць яго можна ў раздзеле Каталог → Мой клуб.',
+  'session.notesLabel': 'Нататкі (неабавязкова)',
+  'session.notesPlaceholder': 'напр., без блока, выкарыстаў доўгі хват',
+
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Пакуль няма запісаных сесій',
   'history.emptyBody': 'Пачніце трэнінг з Галоўнай, каб убачыць тут сваю гісторыю.',
