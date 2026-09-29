@@ -201,6 +201,28 @@ describe('SettingsScreen — the Acceso al club section (club-invite-link wiring
   });
 });
 
+describe('SettingsScreen — the Mi club section (move-club-picker-to-settings, ux-design OQ-3)', () => {
+  // Integration smoke only: the section's own states live in
+  // MiClubSection.test.jsx. This guards the one-line mount and its ORDER —
+  // Idioma → Copia de seguridad → Acceso al club → Mi club (last, adjacent to
+  // Acceso al club so DD-001's future Club grouping is a wrap, not a move).
+  it('renders the Mi club section, unset by default', () => {
+    renderSettings();
+    expect(screen.getByText('Mi club')).toBeInTheDocument();
+    expect(screen.getByText('Aún no has elegido tu club.')).toBeInTheDocument();
+  });
+
+  it('mounts it LAST — after Copia de seguridad and Acceso al club', () => {
+    renderSettings();
+    const follows = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const backup = screen.getByText('Copia de seguridad');
+    const access = screen.getByText('Acceso al club');
+    const miClub = screen.getByText('Mi club');
+    expect(follows(backup, access)).toBe(true);
+    expect(follows(access, miClub)).toBe(true);
+  });
+});
+
 /**
  * pill-overflow-ux — S3: the UI-language radiogroup becomes a SelectField
  * (native <select>, user-ratified OQ1). These describes are the REPLACEMENTS

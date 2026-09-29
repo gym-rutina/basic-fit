@@ -43,6 +43,14 @@ export default {
   'settings.languageHeading': 'Мова',
   'settings.uiLanguageLabel': "Мова інтэрфейсу",
 
+  // ── мой клуб (MiClubSection.jsx — move-club-picker-to-settings) ──────────
+  'settings.miClub.sectionTitle': 'Мой клуб',
+  'settings.miClub.emptyPrompt': 'Вы яшчэ не выбралі свой клуб.',
+  'settings.miClub.selectAction': 'Выбраць клуб',
+  'settings.miClub.equipmentEntryLabel': 'Абсталяванне клуба',
+  'settings.miClub.equipmentCountHint': 'Усяго: {total} · адсутнічае: {excluded}',
+  'settings.miClub.equipmentCountHintLoading': 'Усяго: {total}',
+
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Доступ у клуб',
   'access.audienceHint':
@@ -222,8 +230,12 @@ export default {
   'catalog.statMachines': 'трэнажоры',
   'catalog.statGyms': 'клубы',
   'catalog.statLanguages': 'мовы',
-  'catalog.clubRowEmptyHint': 'Выберыце свой клуб, каб адфільтраваць каталог па яго абсталяванні.',
-  'catalog.clubRowButton': 'Выбраць клуб',
+  'catalog.clubFilterEmpty':
+    'Вы пазначылі ўсё абсталяванне як адсутнае ў вашым клубе. Выключыце «Толькі мой клуб», каб убачыць поўны каталог, або зменіце выключэнні ў Наладах.',
+  'catalog.card.inClub': 'У маім клубе',
+  'catalog.card.notInClub': 'Не ў маім клубе',
+  'catalog.card.removeFromClub': 'Прыбраць {name} з майго клуба',
+  'catalog.card.addToClub': 'Дадаць {name} у мой клуб',
   'catalog.onlyMyClubPill': 'Толькі мой клуб',
   'catalog.categoryFilterLabel': 'Катэгорыя',
   'catalog.languageLabel': "Мова змесціва",

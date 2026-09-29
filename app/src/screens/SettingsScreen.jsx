@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
 import { BackupSection } from '../components/BackupSection.jsx';
 import { ClubAccessSection } from '../components/ClubAccessSection.jsx';
+import { MiClubSection } from '../components/MiClubSection.jsx';
 import { SelectField } from '../../../design-system/components/primitives/SelectField.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { useI18n, UI_LOCALES, LOCALE_AUTONYMS } from '../i18n/index.js';
@@ -74,6 +75,12 @@ export function SettingsScreen() {
         {/* club-invite-link (D-H): the section owns everything below the
             language block, including its own trailing separator. */}
         <ClubAccessSection />
+
+        {/* move-club-picker-to-settings (ux-design OQ-3, tech-plan §1): the
+            club identity + picker + equipment overlay live here now, LAST —
+            adjacent to Acceso al club so DD-001's future Club grouping is a
+            wrap, not a move. Self-contained; owns its trailing separator. */}
+        <MiClubSection />
       </div>
     </div>
   );

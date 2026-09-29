@@ -237,58 +237,16 @@ describe('the per-gym grid is gone (AC45, X8)', () => {
     expect(numbers).toContain(FIXTURE_TOTAL);
   });
 
-  it('offers a way into the club picker', () => {
+  it('offers no club picker entry — club management lives in Settings (move-club-picker-to-settings AC4)', () => {
     renderCatalog('es');
-    expect(screen.getByRole('button', { name: /club/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /elegir club|cambiar club/i })).not.toBeInTheDocument();
   });
 });
 
-/**
- * gym-directory-and-catalog R7.6 (tech-plan-build-b.md D22a — cycle-9
- * wiring-gap correction). `EquipmentOverlaySheet` was fully built and
- * independently tested but imported by no screen — R7.6's "Catálogo tab
- * gains club filters" had no entry point, so `useClubExclusions`' set could
- * never become non-empty in practice even though the "Solo mi club" pill
- * (AC46's sibling requirement) was correctly wired end to end.
- */
-describe('Catálogo offers a way into the equipment overlay (R7.6 — cycle-9 correction)', () => {
-  beforeEach(() => {
-    localStorage.setItem(
-      'rutina:club',
-      JSON.stringify({
-        countryCode: 'ES',
-        clubId: '85c4896006bc45d89f562c977651600c',
-        name: 'Test Club',
-        address: 'Calle 1',
-        city: 'Madrid',
-      })
-    );
-  });
-
-  it('offers an affordance to open "which equipment does your club have?" once a club is selected', () => {
-    // club.equipmentOverlayTrigger already exists in all three i18n catalogs
-    // (added alongside EquipmentOverlaySheet) but was never rendered by any
-    // screen — this is the string this button must use, shared with the
-    // guide's own R7.1 entry point.
-    renderCatalog('en');
-    expect(screen.getByRole('button', { name: /what equipment does your club have/i })).toBeInTheDocument();
-  });
-
-  it('does not offer the affordance before a club is selected', () => {
-    localStorage.clear();
-    renderCatalog('en');
-    expect(screen.queryByRole('button', { name: /what equipment does your club have/i })).not.toBeInTheDocument();
-  });
-
-  it('opens the equipment overlay dialog when clicked', async () => {
-    const user = userEvent.setup();
-    renderCatalog('en');
-
-    await user.click(screen.getByRole('button', { name: /what equipment does your club have/i }));
-
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
-  });
-});
+// R7.6 (the Catálogo-hosted equipment overlay entry) moved to Settings —
+// move-club-picker-to-settings D3/AC3/AC4. Its replacements live in
+// CatalogScreen.club.test.jsx (absence here) and MiClubSection.test.jsx
+// (presence there).
 
 describe('no extraEquipment leakage (AC28)', () => {
   it('lists only equipment.json entries, never a rutina\'s gear', () => {

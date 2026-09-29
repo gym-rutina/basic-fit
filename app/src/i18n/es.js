@@ -47,6 +47,14 @@ export default {
   'settings.languageHeading': 'Idioma',
   'settings.uiLanguageLabel': "Idioma de la interfaz",
 
+  // ── mi club (MiClubSection.jsx — move-club-picker-to-settings) ───────────
+  'settings.miClub.sectionTitle': 'Mi club',
+  'settings.miClub.emptyPrompt': 'Aún no has elegido tu club.',
+  'settings.miClub.selectAction': 'Elegir club',
+  'settings.miClub.equipmentEntryLabel': 'Equipo del club',
+  'settings.miClub.equipmentCountHint': '{total} equipos · {excluded} marcados como ausentes',
+  'settings.miClub.equipmentCountHintLoading': '{total} equipos',
+
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Acceso al club',
   'access.audienceHint':
@@ -226,9 +234,13 @@ export default {
   'catalog.statMachines': 'máquinas',
   'catalog.statGyms': 'clubes',
   'catalog.statLanguages': 'idiomas',
-  'catalog.clubRowEmptyHint': 'Elige tu club para filtrar el catálogo por su equipamiento.',
-  'catalog.clubRowButton': 'Elegir club',
   'catalog.onlyMyClubPill': 'Solo mi club',
+  'catalog.clubFilterEmpty':
+    'Has marcado todo el equipo como ausente de tu club. Desactiva «Solo mi club» para ver el catálogo completo, o edita las exclusiones en Ajustes.',
+  'catalog.card.inClub': 'En mi club',
+  'catalog.card.notInClub': 'Fuera de mi club',
+  'catalog.card.removeFromClub': 'Quitar {name} de mi club',
+  'catalog.card.addToClub': 'Añadir {name} a mi club',
   'catalog.categoryFilterLabel': 'Categoría',
   'catalog.languageLabel': "Idioma del contenido",
   'catalog.showMoreCategories': "+{n} más",

@@ -46,6 +46,14 @@ export default {
   'settings.languageHeading': 'Sprache',
   'settings.uiLanguageLabel': "Anzeigesprache",
 
+  // ── mein studio (MiClubSection.jsx — move-club-picker-to-settings) ───────
+  'settings.miClub.sectionTitle': 'Mein Studio',
+  'settings.miClub.emptyPrompt': 'Du hast noch kein Studio gewählt.',
+  'settings.miClub.selectAction': 'Studio wählen',
+  'settings.miClub.equipmentEntryLabel': 'Ausstattung des Studios',
+  'settings.miClub.equipmentCountHint': '{total} Geräte · {excluded} als nicht vorhanden markiert',
+  'settings.miClub.equipmentCountHintLoading': '{total} Geräte',
+
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Zugang zum Club',
   'access.audienceHint':
@@ -226,8 +234,12 @@ export default {
   'catalog.statMachines': 'Geräte',
   'catalog.statGyms': 'Studios',
   'catalog.statLanguages': 'Sprachen',
-  'catalog.clubRowEmptyHint': 'Wähle dein Studio, um den Katalog auf dessen Ausstattung zu filtern.',
-  'catalog.clubRowButton': 'Studio wählen',
+  'catalog.clubFilterEmpty':
+    'Du hast die gesamte Ausstattung als nicht vorhanden in deinem Studio markiert. Deaktiviere „Nur mein Studio“, um den ganzen Katalog zu sehen, oder passe die Ausschlüsse in den Einstellungen an.',
+  'catalog.card.inClub': 'In meinem Studio',
+  'catalog.card.notInClub': 'Nicht in meinem Studio',
+  'catalog.card.removeFromClub': '{name} aus meinem Studio entfernen',
+  'catalog.card.addToClub': '{name} zu meinem Studio hinzufügen',
   'catalog.onlyMyClubPill': 'Nur mein Studio',
   'catalog.categoryFilterLabel': 'Kategorie',
   'catalog.languageLabel': "Inhaltssprache",

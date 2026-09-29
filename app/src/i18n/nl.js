@@ -46,6 +46,14 @@ export default {
   'settings.languageHeading': 'Taal',
   'settings.uiLanguageLabel': "Interfacetaal",
 
+  // ── mijn club (MiClubSection.jsx — move-club-picker-to-settings) ─────────
+  'settings.miClub.sectionTitle': 'Mijn club',
+  'settings.miClub.emptyPrompt': 'Je hebt nog geen club gekozen.',
+  'settings.miClub.selectAction': 'Club kiezen',
+  'settings.miClub.equipmentEntryLabel': 'Apparatuur van de club',
+  'settings.miClub.equipmentCountHint': '{total} apparaten · {excluded} gemarkeerd als afwezig',
+  'settings.miClub.equipmentCountHintLoading': '{total} apparaten',
+
   // ── access (ClubAccessSection.jsx — club-invite-link) ────────────────────
   'access.sectionTitle': 'Toegang tot de club',
   'access.audienceHint':
@@ -226,8 +234,12 @@ export default {
   'catalog.statMachines': 'toestellen',
   'catalog.statGyms': 'clubs',
   'catalog.statLanguages': 'talen',
-  'catalog.clubRowEmptyHint': 'Kies je club om de catalogus te filteren op zijn apparatuur.',
-  'catalog.clubRowButton': 'Club kiezen',
+  'catalog.clubFilterEmpty':
+    'Je hebt alle apparatuur als afwezig in je club gemarkeerd. Zet “Alleen mijn club” uit om de volledige catalogus te zien, of pas de uitsluitingen aan in Instellingen.',
+  'catalog.card.inClub': 'In mijn club',
+  'catalog.card.notInClub': 'Niet in mijn club',
+  'catalog.card.removeFromClub': '{name} uit mijn club verwijderen',
+  'catalog.card.addToClub': '{name} aan mijn club toevoegen',
   'catalog.onlyMyClubPill': 'Alleen mijn club',
   'catalog.categoryFilterLabel': 'Categorie',
   'catalog.languageLabel': "Contenttaal",
