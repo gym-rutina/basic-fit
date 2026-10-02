@@ -63,6 +63,11 @@ export function ConfirmSheet({
       labelledBy="confirm-sheet-title"
       scrimCloses={false}
       trapFocus
+      // System Back is Cancel, never the primary action; ignored while `busy`, like Escape.
+      onBack={() => {
+        if (busyRef.current || !onCancel) return false;
+        onCancel();
+      }}
       onEscape={() => {
         if (!busyRef.current) onCancel && onCancel();
       }}

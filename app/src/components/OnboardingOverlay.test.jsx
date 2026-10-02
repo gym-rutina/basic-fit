@@ -89,6 +89,45 @@ afterEach(() => {
   localStorage.clear();
 });
 
+describe('OnboardingOverlay — guideOnly (fork "How the app works" revisit)', () => {
+  function renderGuideOnly(onClose = () => {}) {
+    return render(
+      <I18nProvider initialLocale="es">
+        <OnboardingOverlay guideOnly onClose={onClose} />
+      </I18nProvider>
+    );
+  }
+
+  it('shows only the "Así funciona" step: no step counter, no language trigger, no Siguiente/Atrás', () => {
+    renderGuideOnly();
+    expect(screen.getByRole('heading', { name: /así funciona/i })).toBeInTheDocument();
+    expect(screen.queryByText(/paso \d de \d/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /idioma|language/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /siguiente/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /atrás/i })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['the primary button', async (user) => user.click(screen.getAllByRole('button', { name: /cerrar/i })[1])],
+    ['the header button', async (user) => user.click(screen.getAllByRole('button', { name: /cerrar/i })[0])],
+  ])('closes via %s without persisting a draft or marking onboarding seen', async (_label, close) => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    renderGuideOnly(onClose);
+    await close(user);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(markOnboardingSeen).not.toHaveBeenCalled();
+    expect(localStorage.getItem(PROMPT_REQUEST_KEY)).toBeNull();
+  });
+
+  it('Escape closes it immediately', () => {
+    const onClose = vi.fn();
+    renderGuideOnly(onClose);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('OnboardingOverlay — overall shape (AC1, AC8)', () => {
   it('is a labelled dialog with 6 steps total, announced via the live region', async () => {
     const user = userEvent.setup();

@@ -432,7 +432,7 @@ export default {
   'promptWizard.nameLabel': 'Nom du programme',
   'promptWizard.moreOptions': 'Plus d’options',
   'promptWizard.copyHeading': 'Copie ton prompt',
-  'promptWizard.copyIntro': 'Il inclut déjà les machines de ton club, pour que l’IA n’utilise que ce dont tu disposes.',
+  'promptWizard.copyIntro': 'Il réunit tes réponses et la liste des machines pour que l’IA te prépare une routine que tu pourras vraiment faire.',
   'promptWizard.clubRow': '{name} · {n} machines',
   'promptWizard.clubChange': 'Changer',
   'promptWizard.clubPick': 'Choisis ton club',
@@ -446,7 +446,7 @@ export default {
   'promptWizard.sessionsCheckbox': 'Inclure mes séances précédentes',
   'promptWizard.step1': 'Colle-le dans ton assistant IA',
   'promptWizard.step2': 'Copie le bloc JSON complet qu’il te renvoie',
-  'promptWizard.step3': 'Reviens ici et colle-le',
+  'promptWizard.step3': 'Appuie sur « {button} » et colle-le à l’écran suivant',
   'promptWizard.haveJson': 'J’ai le JSON →',
   'promptWizard.fullGuide': 'Guide complet',
 

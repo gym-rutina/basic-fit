@@ -111,11 +111,29 @@ describe('ImportFork — onboarding revisit link (AC12, moved from ImportScreen 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('dismissing it (Saltar) leaves the fork interactive underneath', async () => {
+  it('lands on "Así funciona", not back at the carousel\'s welcome step, with no input steps', async () => {
     const { user } = setup();
     await user.click(screen.getByRole('link', { name: /c[oó]mo funciona la app/i }));
-    await user.click(screen.getByRole('button', { name: /saltar/i }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('heading', { name: /así funciona/i })).toBeInTheDocument();
+    expect(within(dialog).queryByText(/tu entrenador sin cuentas/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: /siguiente/i })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: /atrás/i })).not.toBeInTheDocument();
+  });
+
+  it('dismissing it (Cerrar) leaves the fork interactive underneath', async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole('link', { name: /c[oó]mo funciona la app/i }));
+    await user.click(within(screen.getByRole('dialog')).getAllByRole('button', { name: /cerrar/i })[0]);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /prepara un prompt/i })).toBeInTheDocument();
+  });
+
+  it('closing it never re-marks onboarding seen nor rewrites the prompt-request draft', async () => {
+    const { markOnboardingSeen } = await import('../lib/onboardingStorage.js');
+    const { user } = setup();
+    await user.click(screen.getByRole('link', { name: /c[oó]mo funciona la app/i }));
+    await user.click(within(screen.getByRole('dialog')).getAllByRole('button', { name: /cerrar/i })[0]);
+    expect(markOnboardingSeen).not.toHaveBeenCalled();
   });
 });

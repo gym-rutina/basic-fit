@@ -44,6 +44,14 @@ describe('GuideSheet — structure and article (AC16)', () => {
     expect(screen.getByRole('button', { name: /cerrar/i })).toHaveFocus();
   });
 
+  // back-closes-dialogs-and-wizard-polish AC29 — the guide's content shrinks, its
+  // rendering does not: tables that remain still scroll horizontally on a phone.
+  it('keeps horizontally scrollable tables in the article CSS (AC29: rendering unchanged)', () => {
+    const { container } = render(<GuideSheet locale="es" onClose={() => {}} />);
+    const css = container.querySelector('style').textContent;
+    expect(css).toMatch(/\.guide-article table\s*\{[^}]*display:\s*block[^}]*overflow-x:\s*auto/);
+  });
+
   it('keeps a 44px close target', () => {
     render(<GuideSheet locale="es" onClose={() => {}} />);
     expect(parseInt(screen.getByRole('button', { name: /cerrar/i }).style.height, 10)).toBeGreaterThanOrEqual(44);

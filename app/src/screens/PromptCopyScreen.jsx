@@ -2,9 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { StepHeader } from '../../../design-system/components/primitives/StepHeader.jsx';
-import { ClubPickerSheet } from '../components/ClubPickerSheet.jsx';
 import { GuideSheet } from '../components/GuideSheet.jsx';
-import { EQUIPMENT } from '../data/equipment.js';
 import { usePromptComposer } from '../lib/usePromptComposer.js';
 import { useHeadingFocus } from '../lib/useHeadingFocus.js';
 import { useI18n } from '../i18n/index.js';
@@ -18,28 +16,26 @@ const LINK_BUTTON = { minHeight: 44, padding: 0, font: '600 14px/1 var(--font-sa
 
 /**
  * Wizard step 2 of 2 (import-flow-guided-first W2a-W2f + G1, AC4/AC7/AC13/AC16)
- * — club row (ClubPickerSheet reused, club optional), prompt preview, copy
- * button, the three next steps, "Guía completa" sheet, and the way on to the
- * JSON screen. The prompt comes from usePromptComposer, i.e. the same
- * composePrompt() GuideOverlay used. Router-free: `onBack` / `onHaveJson`.
+ * — prompt preview, copy button, the three next steps, "Guía completa" sheet,
+ * and the way on to the JSON screen. The club is chosen on step 1
+ * (PromptPreferencesScreen); this screen shows nothing about it (back-closes-
+ * dialogs-and-wizard-polish D2) — the composer reads the stored club. The prompt
+ * comes from usePromptComposer, i.e. the same composePrompt() GuideOverlay used.
+ * Router-free: `onBack` / `onHaveJson`.
  *
  * Props: { onBack: () => void, onHaveJson: () => void }
  */
 export function PromptCopyScreen({ onBack, onHaveJson }) {
   const { t } = useI18n();
   const headingRef = useHeadingFocus();
-  const { club, setClub, excludedIds, sessionsAvailable, includeSessions, setIncludeSessions, promptText, copied, copy } =
-    usePromptComposer();
+  const { sessionsAvailable, includeSessions, setIncludeSessions, promptText, copied, copy } = usePromptComposer();
 
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [denied, setDenied] = useState(false);
-  const pickerTriggerRef = useRef(null);
   const guideTriggerRef = useRef(null);
   const previewRef = useRef(null);
 
-  const machineCount = EQUIPMENT.filter((item) => !(excludedIds && excludedIds.has(item.id))).length;
   const lines = promptText.split('\n');
   const showFull = expanded || denied || lines.length <= PREVIEW_LINES;
   const previewText = showFull ? promptText : `${lines.slice(0, PREVIEW_LINES).join('\n')}\n…`;
@@ -63,11 +59,6 @@ export function PromptCopyScreen({ onBack, onHaveJson }) {
     setDenied(outcome === 'denied');
   }
 
-  function handleClubSelected(selected) {
-    setClub(selected);
-    setPickerOpen(false);
-  }
-
   return (
     <div style={{ background: 'var(--bf-white)', minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', boxSizing: 'border-box', paddingBlock: 'var(--space-4) 0', paddingInline: 'var(--page-pad-x)' }}>
       <div style={{ width: '100%', maxWidth: 420, flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -85,22 +76,6 @@ export function PromptCopyScreen({ onBack, onHaveJson }) {
         <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 var(--space-4)' }}>
           {t('promptWizard.copyIntro')}
         </p>
-
-        {/* Club row (Q2: ClubPickerSheet reused; the club stays optional). */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, marginBottom: 'var(--space-3)' }}>
-          <Icon name="map-pin" size={18} style={{ color: 'var(--bf-purple)', flexShrink: 0 }} />
-          <span style={{ flex: 1, minWidth: 0, font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
-            {club ? t('promptWizard.clubRow', { name: club.name, n: machineCount }) : t('promptWizard.clubPick')}
-          </span>
-          <button ref={pickerTriggerRef} type="button" onClick={() => setPickerOpen(true)} style={LINK_BUTTON}>
-            {club ? t('promptWizard.clubChange') : t('club.chooseCta')}
-          </button>
-        </div>
-        {!club && (
-          <p style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '0 0 var(--space-3)' }}>
-            {t('promptWizard.clubWarning')}
-          </p>
-        )}
 
         <pre
           ref={previewRef}
@@ -153,7 +128,7 @@ export function PromptCopyScreen({ onBack, onHaveJson }) {
         <ol style={{ margin: 'var(--space-5) 0 var(--space-2)', paddingLeft: 20, display: 'grid', gap: 6, font: 'var(--text-body-sm)', color: 'var(--bf-ink-2)' }}>
           <li>{t('promptWizard.step1')}</li>
           <li>{t('promptWizard.step2')}</li>
-          <li>{t('promptWizard.step3')}</li>
+          <li>{t('promptWizard.step3', { button: t('promptWizard.haveJson').replace(/\s*→\s*$/, '') })}</li>
         </ol>
 
         <button
@@ -172,13 +147,6 @@ export function PromptCopyScreen({ onBack, onHaveJson }) {
         </div>
       </div>
 
-      {pickerOpen && (
-        <ClubPickerSheet
-          onSelect={handleClubSelected}
-          onClose={() => setPickerOpen(false)}
-          returnFocusTo={pickerTriggerRef}
-        />
-      )}
       {guideOpen && <GuideSheet onClose={() => setGuideOpen(false)} returnFocusTo={guideTriggerRef} />}
     </div>
   );

@@ -261,7 +261,7 @@ One club selection, stored locally (`localStorage`, key `rutina:club`) so it sur
 
 - **Settings → Mi club** — the last section on the Settings screen (sliders icon in the header). It shows your club's name and address the moment the screen opens; with no club chosen it says «Aún no has elegido tu club.» and offers **Elegir club**, otherwise **Cambiar club**. Both open the picker below.
 - **Onboarding** — the "your gym" step of the first-launch carousel.
-- **Prompt wizard, step 2** (Import → Preparar prompt) — the club row above the prompt preview, with **Cambiar** / **Elige tu club**.
+- **Prompt wizard, step 1** (Import → Preparar prompt) — the club row at the top of the form, showing the club name and machine count with **Cambiar**, or **Elige tu club** while none is set (plus a hint that without a club the AI won't know which machines there are). It is optional and never blocks **Siguiente**; step 2 shows no club row, it just reads the club chosen here.
 
 The Catálogo tab no longer has a club row or a picker; it only reads the club you chose elsewhere. (Upgrading needs no action: your stored club and equipment exclusions are untouched, only where you edit them moved.)
 
@@ -337,7 +337,7 @@ Training programs are authored by pasting a ready-made prompt into any LLM chat 
 
 On a fresh install (empty library) the Import screen opens on a fork: **Preparar prompt** (recommended), **Ya tengo un rutina.json**, or **Restaurar copia…**. Step-by-step: [`docs/first-run-create-rutina.md`](docs/first-run-create-rutina.md).
 
-1. **Preparar prompt** opens a two-step wizard. Step 1 collects goal, days/week (1-7), session length and injuries (program name is under **Más opciones**; pre-filled as a review if onboarding already answered) — every field optional.
+1. **Preparar prompt** opens a two-step wizard. Step 1 collects your club, goal, days/week (1-7), session length and injuries (program name is under **Más opciones**; pre-filled as a review if onboarding already answered) — every field optional, the club included.
 2. Step 2 composes the full prompt — your club's equipment list plus the rutina JSON Schema **inlined as literal text**, nothing to fetch or attach — with a preview, **Copiar prompt**, three on-screen instructions, and a **Guía completa** sheet. (A single `rutina.schema.json` download remains as a fallback for chats that truncate a long paste — see the guide's Troubleshooting section.)
 3. Paste the prompt into any LLM, then **Ya tengo el JSON →** to reach the JSON screen (paste or choose a file; **Cargar ejemplo** for a sample). Or validate locally: `npm run validate-rutina -- path/to/rutina.json`
 4. If validation fails, press **Copiar errores**, paste the text back to the LLM and re-import.

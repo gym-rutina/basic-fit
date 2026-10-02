@@ -1,246 +1,79 @@
-# Authoring a Rutina with an LLM
+# Create your routine with an AI chat
 
-This guide turns a training program that lives only in your head (or a coach's notes)
-into a `rutina.json` file. The app already fills in most of the prompt for you; review
-and adjust it at the top of this screen, copy it into **any** LLM chat (ChatGPT, Claude,
-Gemini, whatever you have on hand), and import what comes back into the **Rutina** app.
+Turn a training program that only lives in your head (or in a coach's notes) into a
+routine the app can import. Rutina writes the prompt for you, you paste it into **any** AI
+chat (ChatGPT, Claude, Gemini, whatever you have), and you bring the reply back. No
+JSON knowledge, no account, no API key — a normal browser chat is enough.
 
-No JSON knowledge required. No account, no API key — this works in a normal browser chat
-window.
+## The flow
 
-## What the app fills in for you
+1. **Start.** On the import screen, tap **Prepare prompt**.
+2. **Answer a few questions (step 1 of 2).** Choose your club, then fill in your primary
+   goal, days per week, session length and any injuries or movements to avoid. The
+   program name is under **More options**. Everything is optional. Your answers are saved
+   on this device, so next time you see them under **Review your answers**. Tap **Next**.
+3. **Copy the prompt (step 2 of 2).** Tap **Copy prompt**, paste it into your AI chat and
+   send it.
+4. **Copy the reply.** When the AI answers, copy the complete JSON block it returns.
+5. **Import it.** Back in the app, tap **I have the JSON →**, paste the reply (or tap
+   **Choose .json file**), then tap **Import**. If you already have a program, the app
+   then asks whether to **Activate now** or **Save without activating**.
 
-The first time you open Rutina, the onboarding assistant asks about your gym, your
-program's name/goal, your schedule, and any injuries or movements to avoid — one guided
-step per field, each showing what the field is for, how the prompt uses it, and a
-concrete example. **Every step is optional**: skip any of them and the prompt leaves that
-numbered line blank, ready for you to fill in by hand in the textarea if you change your
-mind.
+**Import shows errors?** Tap **Copy errors**, paste them into the same chat and ask the
+AI to fix them and send the complete JSON again. Repeat until the import succeeds.
 
-Your answers are saved on this device, with **one single place to edit them later**: the
-form on this same guide screen, right above the prompt. There is no separate Settings
-entry for this — open it whenever you like, change what you need, and the prompt
-recomputes instantly with every edit (any text you typed directly into the textarea is
-discarded the moment you touch the form; the note next to the textarea warns you of this).
+## Get a better result
 
-> **Language.** Field 7 sets the language of the routine text. It's no longer asked as an
-> onboarding step: the app fills it in automatically from the active UI language (e.g.
-> "English"). Rutina displays exercise names, day labels, technique cues, rules and notes
-> **exactly as the LLM writes them**, in a single language, and never translates them,
-> re-labels them, or requires them to match the app's own interface language (set
-> separately, under **Settings**). If you want output in a language other than the three
-> the interface supports (es/en/be), edit field 7 directly in the textarea before
-> copying — the LLM can produce any language, not just those three. Ask the LLM for **one
-> plain string per field** — never a multilingual object like
-> `{"en": "Monday", "es": "Lunes"}`.
+- **Choose your club.** The prompt then lists only the machines your club has, so the AI
+  builds a routine you can actually do. Without your club it can't know which machines
+  you have.
+- **Your club lacks a machine?** Mark it absent and the prompt shrinks to match. On the
+  **Catalog** tab, tap the chip under its card (**In my club** ↔ **Not in my club**), or
+  go to **Settings → My club → Club equipment**. Both edit the same list. With **Only my
+  club** on, an excluded card disappears from the catalog; turn it off to see the card
+  again.
+- **Language.** The prompt asks for the routine in the app's current language. Want
+  another one? Just tell the AI in the chat, for example "answer in Portuguese". Ask for
+  one language only, not translations side by side.
+- **Previous sessions.** Once you've logged sessions, step 2 shows **Include my previous
+  sessions**, on by default. The AI reads which weights were manageable and adjusts the
+  next phase. Untick it to leave them out; the choice applies to this copy only.
+- **Several phases.** Ask the AI for a **multi-phase plan** and import each phase
+  separately. They sit side by side in **My routines**, ready to activate in order.
+- **Same exercise, same name.** Progress and weights follow each exercise (its name
+  together with its equipment). Ask the AI to reuse the exact names from the previous
+  phase: a respelled name counts as a new exercise with an empty history.
 
-The rutina schema and your club's equipment list are **already inlined in the prompt
-itself** (the `SCHEMA` and `EQUIPMENT` sections) — nothing to fetch or attach for a first
-try. The public repository
-[github.com/gym-rutina/basic-fit](https://github.com/gym-rutina/basic-fit) is still the
-source of truth for that data; the prompt only falls back to a URL if your chat truncated
-the paste (see Troubleshooting below).
+## Equipment the catalog doesn't have
 
-> **Prompt got cut off when you pasted it?** Use the **Download** button on this guide
-> screen to save `rutina.schema.json` — the full schema, with its descriptions — directly
-> to your device, and attach it to the chat manually.
-
-## Step 1 — Review and copy the prompt
-
-Review the form at the top of this screen (name, goal, days per week, session length,
-injuries) — the app has already filled it in with what it knows about you. Edit any
-field if needed, then use the **Copy** button. The composed prompt's size is shown next
-to the button, in case your chat tends to truncate long pastes.
-
-> **Field 6 — target gym**
-> Use the **Club Picker** in the Rutina app — tap the club row in the "Your gym"
-> onboarding step, **Settings → My club**, or the club row above the prompt in this
-> guide screen. Once you pick a club, the app fills in field 6 (name, city, address) and
-> appends the club-scoped equipment list automatically. If your club is not in the
-> directory, type the gym name and address directly into field 6 in the textarea.
->
-> **Does your club lack a machine?** Mark it absent and the equipment list in the prompt
-> shrinks to match, so the LLM is only offered equipment your club has. Either tap the chip
-> under that item's card on the **Catálogo** tab (**In my club** ↔ **Not in my club**), or
-> untick it in **Settings → My club → Club equipment**. Both edit the same saved list.
-> With the **Only my club** filter on, a card you exclude disappears from the catalog;
-> turn the filter off to see it again and add it back.
-
-| # | Field | Filled by | Example |
-|---|-------|-----------|---------|
-| 1 | Who is this for / program name | Onboarding ("Personalize your program" step) · editable on this guide | "Elena — Phase 2 of 3 (volume). 8 months training so far." |
-| 2 | Primary goal this phase | Onboarding (same step) · editable on this guide | "I want more muscle in upper body, especially chest and shoulders..." |
-| 3 | Days per week | Onboarding ("Your schedule" step) · editable on this guide (1–7 selector) | 4 |
-| 4 | Session length budget | Onboarding (same step) · editable on this guide | "45-60 min on weekdays, up to 80 min on Saturdays" |
-| 5 | Injuries / movements to avoid | Onboarding ("Before you start" step) · editable on this guide | "Patellar tendinitis in right knee..." — write "none" if none |
-| 6 | Target gym | Club Picker (onboarding, Settings → My club, or this guide) | Chosen club's name, city and address, plus its equipment list |
-| 7 | Language for the output text | Active UI language (Settings) — never asked | "English" (autonym of the active language) |
-| 8 | Prior progress export | The app's own session history, if you have any logged | Markdown of your sessions, with an "Include my progress" checkbox on by default |
-
-Text fields all have a length cap (fields 1 and 4: 200 characters; field 2: 800; field
-5: 500) — over-length text is truncated on save, never rejected while you type.
-
-Putting "output only JSON, nothing else" at both the top (`ROLE`) and the bottom
-(`OUTPUT`) is deliberate — it's the single highest-leverage instruction for getting
-parseable output from a chat-tuned LLM.
-
-## Step 2 — Import into the Rutina app
-
-1. Copy the LLM's JSON reply (no markdown fences).
-2. Open the **Import** screen in the Rutina app and paste it, or upload a `.json` file.
-3. Tap **Import**. The app validates against the same schema and equipment catalog.
-
-If validation fails, copy the error list from the app and paste it back into the LLM
-chat as your next message. Ask it to fix and re-output the full JSON. Repeat until import
-succeeds.
-
-**Optional — validate on your computer:**
-
-```bash
-npm run validate-rutina -- path/to/your-rutina.json
-```
-
-| Result | Example output | What to do |
-|---|---|---|
-| Success | `✓ Valid rutina: 4 days, 22 exercises` | Import into the app |
-| Schema error | `days[1].label: required` | Paste the whole error block back to the LLM |
-| Equipment-id error | `days[2].exercises[0].equipmentId "g3-xx" not found in data/equipment.json` | Same — paste verbatim |
-
----
-
-## Worked example (composed prompt)
-
-You don't need to type this by hand — this is what the `REQUEST` block looks like once
-you've completed the onboarding assistant (or edited the fields on this guide). The **8
-field labels stay in English** across all three guides — that's the prompt's original
-wording and it doesn't change with the interface language; only your answers and the
-rest of this guide are localized.
-
-```text
-### REQUEST
-
-1. Who is this for / program name: Elena — Phase 2 of 3 (volume). 8 months training so far.
-2. Primary goal this phase: I want more muscle in upper body, especially chest and shoulders. I love cable machines and Smith press.
-3. Days per week: 4
-4. Session length budget: 45-60 min on weekdays, up to 80 min on Saturdays
-5. Injuries / movements to avoid (write "none"/"ninguna" if none): Patellar tendinitis in right knee (since 2024): no barbell squats or lunges, but leg press with partial range is fine.
-6. Target gym (pre-filled by the app's club picker — name, city, address and available equipment ids are listed in the EQUIPMENT section appended below): BasicFit Málaga Alameda, Málaga, Avda. Andalucía s/n (CC Alameda, La Luz)
-7. Language for the output text: English
-8. Prior progress export (optional — paste Markdown from Rutina app Export, or leave blank): Chest Press (g3-s10)
-   · 32kg / hard
-   · 32kg / normal
-   · 35kg / easy
-```
-
-The schema (`SCHEMA`) and your club's equipment list (`EQUIPMENT`) immediately follow
-this in the copied prompt — the LLM doesn't need to go fetch anything on its own.
-
-**Import** into the Rutina app, or run `npm run validate-rutina -- data/rutina-nombre-fase2-draft.json`.
-
----
+If your club has a machine that isn't in the catalog, or the AI swaps a machine your club
+lacks for another one, it may record that in the routine. You never write any of it. A
+machine added this way belongs to that routine only and is tracked like any catalog item;
+swaps are kept with the routine but not shown on screen.
 
 ## Troubleshooting
 
-- **The chat truncated the prompt when you pasted it (long programs or long
-  descriptions).** This is the most common failure with a prompt this size. Use the
-  **Download** button on this guide screen to save `rutina.schema.json` (the full schema,
-  with its descriptions) and attach it to the chat manually, telling the LLM that the
-  pasted prompt's `SCHEMA` section got cut off and to use the attached file instead.
-- **The LLM added a friendly intro or wrapped the JSON in a markdown fence.** Re-send
-  with: "Output ONLY the JSON object, no markdown fence, no explanation."
-- **The LLM's reply got cut off mid-JSON (very long programs).** Ask the LLM to "continue
-  from where you stopped, still outputting only JSON." This is the opposite problem from
-  the one above: here it's the LLM's *reply* that's cut off, not your prompt.
-- **Equipment id not found.** The LLM must use only the ids listed in the `EQUIPMENT`
-  section appended to the prompt — not invented ids. Paste the validator error back and
-  ask it to re-read the equipment list.
-- **Field 6 or the equipment list is missing from the prompt.** You need to pick a club
-  first. Open the **Club Picker** on the "Your gym" onboarding step, in **Settings → My
-  club**, or on this guide screen; once a club is selected the app fills in field 6 and
-  appends the equipment list automatically.
+- **The chat cut off your prompt when you pasted it.** The most common problem with a
+  long prompt. At the bottom of this guide, tap **Download** to save the full schema, then
+  attach that file to the chat and tell the AI the pasted prompt was cut off and it should
+  use the attached file.
+- **The AI added an intro, or wrapped the JSON in a code block.** Reply: "Send only the
+  JSON, no code block, no explanation."
+- **The reply stops in the middle of the JSON (very long programs).** Ask the AI to
+  "continue from where you stopped, still sending only JSON". If the import still fails,
+  ask it to resend the complete JSON in one message.
+- **An error says a piece of equipment wasn't found.** The AI must use only the machines
+  listed in the prompt. Tap **Copy errors**, paste them into the chat and ask it to re-read
+  the equipment list and correct the routine.
 
----
+## Managing your routines
 
-## Using your progress export (field 8)
+Open the **Program** tab, then **My routines**:
 
-If you already have logged sessions, the guide adds your progress Markdown to field 8
-automatically — no copy-paste needed. An **"Include my progress (N sessions)"** checkbox,
-on by default, controls whether it's included in this particular copy of the prompt;
-uncheck it if you'd rather leave it out. The checkbox resets to checked every time you
-open the guide — it's a per-copy choice, not a saved preference.
+1. Tap **Import routine** to add a new one. Importing never overwrites what you already
+   have.
+2. Tap **Activate** on an entry to make it your current program.
+3. Tap the trash icon on an entry and confirm (**Remove**) to delete only that one.
 
-It looks like:
-
-```
-Prensa de Pecho (g3-s10)
-  · 32kg / difícil
-  · 32kg / normal
-  · 35kg / fácil
-
-Jalón al Pecho (g3-s30)
-  · 45kg / normal
-  · 48kg / fácil
-
-Sesiones sin completar:
-  · Lunes — 2026-07-01 (abandonada)
-```
-
-The LLM reads this as evidence of which weights were manageable, which felt too easy or
-too hard, and which sessions were abandoned — and adjusts the next phase accordingly.
-
-**Full format reference:** [`docs/export-format.md`](export-format.md)
-
----
-
-## Keeping exercises trackable across phases
-
-Progress, prefilled weights, and tutorial links are tracked **per exercise**, not per
-machine — two different exercises on the same piece of equipment (a chest press and a
-shoulder press on the same multi-station machine, say) are logged, charted, and exported
-independently. An exercise is identified by its **name** together with the equipment it
-uses, so two things matter when you write the next phase's REQUEST:
-
-- **Reuse the exact name from the previous phase** when this phase repeats an exercise.
-  The progress export (field 8) prints each exercise's name exactly as it was logged —
-  copy it verbatim rather than rephrasing it ("Prensa de Pecho", not "Press de Pecho" or
-  "Chest Press"). A respelled name is treated as a *different* exercise with an empty
-  history — you'd lose the weight trend and prefill you built up.
-- **`videoQuery` is a search query for *this exercise on this equipment*, not for the
-  machine in general.** The app already composes a good query automatically from the
-  exercise name and the equipment name — set `videoQuery` only when you want to override
-  it (a specific variant, a preferred demo, etc.).
-
-You can plan several phases ahead, too: ask the LLM for a **multi-phase plan** and import
-each phase separately, as its own `rutina.json` — they'll be kept side by side in
-**Mis rutinas** (Programa tab), ready to activate in order.
-
----
-
-## Equipment the catalog doesn't have (optional — the LLM's call)
-
-Two optional parts of the rutina file cover gyms that don't match the catalog exactly.
-You never have to write either by hand: the LLM decides, program by program, whether
-they're worth using.
-
-- **An off-catalog machine.** `extraEquipment` isn't only for small accessories such as a
-  band or a foam roller — the LLM can also add a full piece of equipment your club has
-  that isn't in the catalog (`kind` is always `"gear"`). It stays personal to that
-  program, and it's tracked like any catalog item: give it a category and a muscle group.
-- **A recorded swap.** When an exercise's usual machine isn't in your club's equipment
-  list and the LLM picks something else, it may add a `substitutions` entry:
-  `equipmentId` (the usual one), `substituteEquipmentId` (the one used instead) and an
-  optional `reason`. Both ids must be catalog ids or ids from that same program's
-  `extraEquipment`; the importer checks them like any other equipment id. The app doesn't
-  show swaps on screen — they're kept with the program.
-
----
-
-## Updating your program
-
-Your programs are managed in **Mis rutinas**, inside the **Programa** tab:
-
-1. Open the **Programa** tab and tap **Mis rutinas**.
-2. Tap **Importar rutina** and paste a rutina.json to add it as a **new entry** — importing never overwrites what you already have.
-3. Tap **Activar** (Activate) on an entry to make it your current program, or its **Eliminar** (Delete) action to remove just that one.
-
-Deleting an entry never touches your history: past sessions remain in **Historial**, still attributed to their program even after that program has been deleted. Logged weights carry across programs, too — a repeated exercise keeps its weight trend whichever entry is active.
+Removing a routine never touches your history: past sessions stay in **History**, still
+linked to their program. Logged weights carry across programs too.

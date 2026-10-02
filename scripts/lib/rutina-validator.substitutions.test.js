@@ -115,13 +115,14 @@ describe('rutina.schema.json wording (AC19)', () => {
   });
 });
 
-describe('the LLM authoring guide documents the new field and the corrected gear scope (AC15, AC19)', () => {
-  const files = [
-    'docs/llm-rutina-prompt-template.txt',
-    'docs/llm-rutina-prompt.en.md',
-    'docs/llm-rutina-prompt.es.md',
-    'docs/llm-rutina-prompt.be.md',
-  ];
+// back-closes-dialogs-and-wizard-polish AC25: the in-app guide
+// (docs/llm-rutina-prompt.{es,en,be}.md) is written for a phone user and must NOT
+// name JSON keys (extraEquipment, substitutions, substituteEquipmentId, ...) —
+// app/src/data/guideContent.guard.test.js now enforces the opposite for the three
+// articles. The LLM-facing prompt template is where the field is documented, so
+// this contract is pinned there only.
+describe('the LLM prompt template documents the new field and the corrected gear scope (AC15, AC19)', () => {
+  const files = ['docs/llm-rutina-prompt-template.txt'];
 
   it.each(files)('%s names `substitutions` and its two id fields', (rel) => {
     const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -134,11 +135,7 @@ describe('the LLM authoring guide documents the new field and the corrected gear
   // en: "off-catalog", es: "fuera del catálogo"). The be article is checked by
   // Bagnik by eye — a Belarusian phrase cannot be pinned without guessing the
   // translator's wording (tech-plan.md §7 known gap).
-  it.each([
-    ['docs/llm-rutina-prompt-template.txt', /off-catalog/i],
-    ['docs/llm-rutina-prompt.en.md', /off-catalog/i],
-    ['docs/llm-rutina-prompt.es.md', /fuera del cat[aá]logo/i],
-  ])('%s tells the LLM extraEquipment can hold a full off-catalog machine, not just accessories', (rel, phrase) => {
+  it.each([['docs/llm-rutina-prompt-template.txt', /off-catalog/i]])('%s tells the LLM extraEquipment can hold a full off-catalog machine, not just accessories', (rel, phrase) => {
     const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
     expect(text).toMatch(/extraEquipment/);
     expect(text).toMatch(phrase);

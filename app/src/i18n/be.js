@@ -429,7 +429,7 @@ export default {
   'promptWizard.nameLabel': 'Назва праграмы',
   'promptWizard.moreOptions': 'Больш параметраў',
   'promptWizard.copyHeading': 'Скапіруйце свой запыт',
-  'promptWizard.copyIntro': 'У ім ужо ёсць трэнажоры вашага клуба, каб ШІ выкарыстоўваў толькі даступнае.',
+  'promptWizard.copyIntro': 'У ім сабраны вашы адказы і спіс трэнажораў, каб ШІ склаў праграму, якую вы сапраўды зможаце выканаць.',
   'promptWizard.clubRow': '{name} · трэнажораў: {n}',
   'promptWizard.clubChange': 'Змяніць',
   'promptWizard.clubPick': 'Выберыце свой клуб',
@@ -443,7 +443,7 @@ export default {
   'promptWizard.sessionsCheckbox': 'Уключыць мае папярэднія трэніроўкі',
   'promptWizard.step1': 'Устаўце яго ў ваш ШІ-памочнік',
   'promptWizard.step2': 'Скапіруйце поўны блок JSON, які ён верне',
-  'promptWizard.step3': 'Вярніцеся сюды і ўстаўце яго',
+  'promptWizard.step3': 'Націсніце «{button}» і ўставьце яго на наступным экране',
   'promptWizard.haveJson': 'У мяне ўжо ёсць JSON →',
   'promptWizard.fullGuide': 'Поўнае кіраўніцтва',
 

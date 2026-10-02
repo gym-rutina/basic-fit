@@ -433,7 +433,7 @@ export default {
   'promptWizard.nameLabel': 'Name des Programms',
   'promptWizard.moreOptions': 'Weitere Optionen',
   'promptWizard.copyHeading': 'Kopiere deinen Prompt',
-  'promptWizard.copyIntro': 'Er enthält bereits die Geräte deines Studios, damit die KI nur nutzt, was verfügbar ist.',
+  'promptWizard.copyIntro': 'Er bündelt deine Antworten und die Geräteliste, damit die KI dir eine Routine baut, die du wirklich machen kannst.',
   'promptWizard.clubRow': '{name} · {n} Geräte',
   'promptWizard.clubChange': 'Ändern',
   'promptWizard.clubPick': 'Wähle dein Studio',
@@ -447,7 +447,7 @@ export default {
   'promptWizard.sessionsCheckbox': 'Meine bisherigen Einheiten einbeziehen',
   'promptWizard.step1': 'Füge ihn in deinen KI-Assistenten ein',
   'promptWizard.step2': 'Kopiere den vollständigen JSON-Block, den er zurückgibt',
-  'promptWizard.step3': 'Komm hierher zurück und füge ihn ein',
+  'promptWizard.step3': 'Tippe auf „{button}“ und füge es auf dem nächsten Bildschirm ein',
   'promptWizard.haveJson': 'Ich habe das JSON →',
   'promptWizard.fullGuide': 'Vollständige Anleitung',
 

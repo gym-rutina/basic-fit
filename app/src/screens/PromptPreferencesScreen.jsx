@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { FilterPill } from '../../../design-system/components/primitives/FilterPill.jsx';
 import { StepHeader } from '../../../design-system/components/primitives/StepHeader.jsx';
+import { ClubPickerSheet } from '../components/ClubPickerSheet.jsx';
+import { EQUIPMENT } from '../data/equipment.js';
 import { usePromptComposer } from '../lib/usePromptComposer.js';
 import { hasAnsweredFields } from '../lib/promptRequestMode.js';
 import { useHeadingFocus } from '../lib/useHeadingFocus.js';
@@ -13,6 +15,7 @@ const TEXT_KEYS = ['field1', 'field2', 'field4', 'field5'];
 
 const LABEL_STYLE = { display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 };
 const HINT_STYLE = { font: 'var(--text-caption)', color: 'var(--text-muted)', margin: '4px 0 0' };
+const LINK_BUTTON = { minHeight: 44, padding: 0, font: '600 14px/1 var(--font-sans)', color: 'var(--text-link)', background: 'none', border: 'none', cursor: 'pointer' };
 const INPUT_STYLE = { display: 'block', width: '100%', boxSizing: 'border-box', minHeight: 44, border: '1px solid var(--border-control)', borderRadius: 'var(--radius-control)', padding: '10px 12px', font: 'var(--text-body-sm)', color: 'var(--bf-ink)', background: 'var(--bf-white)' };
 
 /**
@@ -22,14 +25,20 @@ const INPUT_STYLE = { display: 'block', width: '100%', boxSizing: 'border-box', 
  * review when any field is already answered (e.g. by onboarding) and as a
  * blank form otherwise; the mode — and which fields start as summary rows — is
  * fixed ON MOUNT so typing never flips the layout mid-edit (AD-3).
+ * The club (optional, never blocks Next) is the first row of the form and opens
+ * ClubPickerSheet; it does not count towards review mode (hasAnsweredFields is
+ * unchanged), and step 2 shows nothing about it (back-closes-dialogs-and-wizard-polish).
  * Router-free: `onNext` / `onBack` are callbacks.
  *
  * Props: { onNext: () => void, onBack: () => void }
  */
 export function PromptPreferencesScreen({ onNext, onBack }) {
   const { t } = useI18n();
-  const { draft, setField, toggleDay } = usePromptComposer();
+  const { draft, setField, toggleDay, club, setClub, excludedIds } = usePromptComposer();
   const headingRef = useHeadingFocus();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const pickerTriggerRef = useRef(null);
+  const machineCount = EQUIPMENT.filter((item) => !(excludedIds && excludedIds.has(item.id))).length;
 
   const [reviewMode] = useState(() => hasAnsweredFields(draft));
   // Fields that start as tappable summary rows (review mode, already answered).
@@ -96,6 +105,19 @@ export function PromptPreferencesScreen({ onNext, onBack }) {
         </p>
 
         <div style={{ display: 'grid', gap: 18 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
+              <Icon name="map-pin" size={18} style={{ color: 'var(--bf-purple)', flexShrink: 0 }} />
+              <span style={{ flex: 1, minWidth: 0, font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
+                {club ? t('promptWizard.clubRow', { name: club.name, n: machineCount }) : t('promptWizard.clubPick')}
+              </span>
+              <button ref={pickerTriggerRef} type="button" onClick={() => setPickerOpen(true)} style={LINK_BUTTON}>
+                {club ? t('promptWizard.clubChange') : t('club.chooseCta')}
+              </button>
+            </div>
+            {!club && <p style={HINT_STYLE}>{t('promptWizard.clubWarning')}</p>}
+          </div>
+
           {renderField({ key: 'field2', label: t('promptRequest.field2.label'), multiline: true, placeholderKey: 'promptRequest.field2.example', hintKey: 'promptRequest.field2.hint' })}
 
           <div>
@@ -146,6 +168,17 @@ export function PromptPreferencesScreen({ onNext, onBack }) {
           </Button>
         </div>
       </div>
+
+      {pickerOpen && (
+        <ClubPickerSheet
+          onSelect={(selected) => {
+            setClub(selected);
+            setPickerOpen(false);
+          }}
+          onClose={() => setPickerOpen(false)}
+          returnFocusTo={pickerTriggerRef}
+        />
+      )}
     </div>
   );
 }

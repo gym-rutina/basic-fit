@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Icon } from '../../../../design-system/components/primitives/Icon.jsx';
 import { useI18n } from '../../i18n/index.js';
+import { useBackClosesDialog } from '../../lib/useBackClosesDialog.js';
 
 /**
  * Shared bottom-sheet scaffolding (tech-debt audit 2026-08-26 F1).
@@ -36,6 +37,11 @@ import { useI18n } from '../../i18n/index.js';
  *              nuance stays at the call site via `onEscape`
  *               (ClubPickerSheet collapses an open listbox first;
  *               ConfirmSheet ignores Escape while `busy`).
+ *   - Back    — the system Back (Android button / gesture, iOS edge swipe, desktop
+ *               browser Back) closes the TOPMOST open dialog instead of leaving the
+ *               page, via the shared `useBackClosesDialog` hook (history marker per
+ *               dialog, nested dialogs one press each). Back == ✕: `onBack`, falling
+ *               back to `onClose`.
  *
  * Opt-outs, each preserving a shipped contract rather than adding one:
  *   - `scrimCloses={false}` — ConfirmSheet and LanguageSheet never closed on
@@ -101,6 +107,10 @@ export const SheetCloseButton = React.forwardRef(function SheetCloseButton({ onC
  *   onClose()        — scrim tap (when `scrimCloses`) and the default Escape action.
  *   onEscape()       — optional Escape override; falls back to `onClose`. Read
  *                      latest state inside it — the listener re-registers per render.
+ *   onBack()         — optional system-Back override; falls back to `onClose` (Back == ✕,
+ *                      even where Escape has a nuance, e.g. ClubPickerSheet's listbox).
+ *                      Return `false` to stay open (Back consumed in place, e.g. ConfirmSheet
+ *                      while `busy`).
  *   role             — panel ARIA role; 'dialog' unless the caller says otherwise
  *                      (ConfirmSheet ships 'alertdialog').
  *   labelledBy       — id of the panel's title element (required for a labelled dialog).
@@ -121,6 +131,7 @@ export const SheetCloseButton = React.forwardRef(function SheetCloseButton({ onC
 export function SheetShell({
   onClose,
   onEscape,
+  onBack,
   role = 'dialog',
   labelledBy,
   scrimCloses = true,
@@ -133,6 +144,7 @@ export function SheetShell({
   style,
   children,
 }) {
+  useBackClosesDialog(onBack ?? onClose);
   const panelRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
 

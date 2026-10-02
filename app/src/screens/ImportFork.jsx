@@ -74,6 +74,7 @@ export function ImportFork({ onPrepare, onImport }) {
 
       {showOnboarding && (
         <OnboardingOverlay
+          guideOnly
           onClose={() => {
             setShowOnboarding(false);
             onboardingLinkRef.current?.focus();

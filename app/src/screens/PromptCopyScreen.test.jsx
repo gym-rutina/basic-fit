@@ -76,36 +76,76 @@ describe('PromptCopyScreen — structure (AC4, AC13)', () => {
   });
 });
 
-describe('PromptCopyScreen — club row (AC4, Q2 approved: ClubPickerSheet reused, club optional)', () => {
+// back-closes-dialogs-and-wizard-polish AC13/D2 — the club moved to wizard step 1
+// (PromptPreferencesScreen.test.jsx); step 2 shows NOTHING about it: no row, no
+// "Cambiar", no machine count, no picker trigger, no no-club warning. The prompt
+// itself still carries the stored club (AC15).
+describe('PromptCopyScreen — no club UI on step 2 (AC13, D2)', () => {
   beforeEach(() => {
     localStorage.clear();
     clearClub();
     db.listSessions.mockResolvedValue([]);
   });
 
-  it('with a club: shows its name and a "Cambiar" control', () => {
+  const outsidePreview = (matcher) =>
+    screen.queryAllByText(matcher).filter((el) => !el.closest('[data-testid="prompt-preview"]'));
+
+  it('with a club stored: no club name, machine count, "Cambiar" or picker trigger outside the prompt preview', () => {
     writeClub(CLUB);
     setup();
-    expect(screen.getByText(/madrid gran v[ií]a/i)).toBeInTheDocument();
-    expect(screen.getByText(/\d+\s+m[aá]quinas/i)).toBeInTheDocument(); // AC4 machine count
-    expect(screen.getByRole('button', { name: /cambiar/i })).toBeInTheDocument();
+    expect(outsidePreview(/madrid gran v[ií]a/i)).toHaveLength(0);
+    expect(screen.queryByText(/\d+\s+m[aá]quinas/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /cambiar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /elegir club|elige tu club/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('"Cambiar" opens the picker; selecting a club updates the row and persists it', async () => {
-    writeClub(CLUB);
-    const { user } = setup();
-    await user.click(screen.getByRole('button', { name: /cambiar/i }));
-    await user.click(screen.getByRole('button', { name: 'pick-stub' }));
-    expect(screen.queryByRole('dialog', { name: 'picker-stub' })).not.toBeInTheDocument();
-    expect(screen.getByText(/barcelona sants/i)).toBeInTheDocument();
-    expect(readClub()).toMatchObject({ clubId: 'club-2' });
-  });
-
-  it('without a club: "Elige tu club" prompt + warning, and Copiar stays enabled', () => {
+  it('without a club: no picker trigger and no "sin tu club" warning; Copiar stays enabled', () => {
     setup();
-    expect(screen.getByRole('button', { name: /elegir club|elige tu club/i })).toBeInTheDocument();
-    expect(screen.getByText(/sin tu club/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /elegir club|elige tu club/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/sin tu club/i)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar prompt/i })).toBeEnabled();
+  });
+
+  it('the copied prompt still carries the stored club (AC15: selection persists, step 2 only reads it)', async () => {
+    writeClub(CLUB);
+    const { user, writeText } = setup('ok');
+    await user.click(screen.getByRole('button', { name: /copiar prompt/i }));
+    expect(writeText.mock.calls[0][0]).toContain('Madrid Gran Vía');
+    expect(readClub()).toMatchObject({ clubId: 'club-1' }); // reading does not disturb storage
+  });
+});
+
+// AC17/AC19 — copy that is true with or without a club, and a step 3 that no
+// longer suggests a paste target on this screen. Catalog-level checks for all 6
+// locales live in i18n/promptWizardCopy.test.js; this is the rendered es screen.
+describe('PromptCopyScreen — wording (AC17, AC19)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    clearClub();
+    db.listSessions.mockResolvedValue([]);
+  });
+
+  it('the intro no longer claims the prompt "already includes your club\'s machines"', () => {
+    setup();
+    expect(screen.queryByText(/ya incluye las m[aá]quinas de tu club/i)).not.toBeInTheDocument();
+  });
+
+  it('step 3 names the "Ya tengo el JSON" button (label derived, no arrow) and says to paste on the NEXT screen', () => {
+    setup();
+    const items = screen.getAllByRole('listitem');
+    const step3 = items[2];
+    expect(step3).toHaveTextContent('Ya tengo el JSON');
+    expect(step3.textContent).not.toContain('→');
+    expect(step3).toHaveTextContent(/siguiente/i);
+    expect(step3).not.toHaveTextContent(/vuelve aqu[ií]/i);
+  });
+
+  it('the step-3 label is the live haveJson label: it matches the button the step points at', () => {
+    setup();
+    const button = screen.getByRole('button', { name: /ya tengo el json/i });
+    const label = button.textContent.replace(/\s*→\s*$/, '');
+    expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(label);
   });
 });
 

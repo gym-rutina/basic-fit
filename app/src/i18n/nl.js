@@ -433,7 +433,7 @@ export default {
   'promptWizard.nameLabel': 'Naam van het programma',
   'promptWizard.moreOptions': 'Meer opties',
   'promptWizard.copyHeading': 'Kopieer je prompt',
-  'promptWizard.copyIntro': 'Hij bevat al de toestellen van je club, zodat de AI alleen gebruikt wat beschikbaar is.',
+  'promptWizard.copyIntro': 'Hij bundelt je antwoorden en de lijst met toestellen, zodat de AI een routine maakt die je echt kunt doen.',
   'promptWizard.clubRow': '{name} · {n} toestellen',
   'promptWizard.clubChange': 'Wijzigen',
   'promptWizard.clubPick': 'Kies je club',
@@ -447,7 +447,7 @@ export default {
   'promptWizard.sessionsCheckbox': 'Mijn eerdere trainingen opnemen',
   'promptWizard.step1': 'Plak hem in je AI-assistent',
   'promptWizard.step2': 'Kopieer het volledige JSON-blok dat je terugkrijgt',
-  'promptWizard.step3': 'Kom hier terug en plak het',
+  'promptWizard.step3': 'Tik op “{button}” en plak het op het volgende scherm',
   'promptWizard.haveJson': 'Ik heb de JSON →',
   'promptWizard.fullGuide': 'Volledige gids',
 

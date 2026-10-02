@@ -12,6 +12,7 @@ import { LanguageSheet } from './LanguageSheet.jsx';
 import { ClubPickerSheet } from './ClubPickerSheet.jsx';
 import { ConfirmSheet } from './ConfirmSheet.jsx';
 import { useI18n, LOCALE_AUTONYMS } from '../i18n/index.js';
+import { useBackClosesDialog } from '../lib/useBackClosesDialog.js';
 
 const DAY_PILLS = [1, 2, 3, 4, 5, 6, 7];
 const FIELD2_CAP = 800;
@@ -163,12 +164,22 @@ function DotIndicator({ total, current }) {
  * R1.5) or at a CONFIRMED header Skip (mockups.md open item #1) — never
  * per-keystroke.
  *
+ * `guideOnly` (the fork's "How the app works →" revisit link): the user has
+ * just come through the carousel, so re-running it from the welcome step and
+ * its input steps would send them back to where they started. This mode shows
+ * only the "How it works" info step, closes with a single button, and never
+ * writes the prompt-request draft or the seen flag.
+ *
  * Props:
  *   onClose: () => void
+ *   guideOnly?: boolean
  */
-export function OnboardingOverlay({ onClose }) {
+export function OnboardingOverlay({ onClose, guideOnly = false }) {
   const { t, locale } = useI18n();
-  const ONBOARDING_STEPS = useMemo(() => buildOnboardingSteps(t), [t]);
+  const ONBOARDING_STEPS = useMemo(() => {
+    const all = buildOnboardingSteps(t);
+    return guideOnly ? all.filter((s) => s.steps) : all;
+  }, [t, guideOnly]);
   const TOTAL_STEPS = ONBOARDING_STEPS.length;
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState(() => draftFromRecord(readPromptRequest()));
@@ -208,7 +219,9 @@ export function OnboardingOverlay({ onClose }) {
   }
 
   function attemptExit() {
-    if (hasDraftContent(draft)) {
+    if (guideOnly) {
+      onClose && onClose();
+    } else if (hasDraftContent(draft)) {
       setShowSkipConfirm(true);
     } else {
       exitImmediately();
@@ -217,7 +230,8 @@ export function OnboardingOverlay({ onClose }) {
 
   function handleNext() {
     if (isLastStep) {
-      persistAndExit();
+      if (guideOnly) onClose && onClose();
+      else persistAndExit();
       return;
     }
     setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
@@ -226,6 +240,18 @@ export function OnboardingOverlay({ onClose }) {
   function handleBack() {
     setStep((s) => Math.max(s - 1, 0));
   }
+
+  // System Back (D1): previous step; on step 1 the same as Skip (guideOnly just closes; a
+  // draft asks "¿Salir sin terminar?"). Stays armed (returns false) whenever the carousel stays.
+  useBackClosesDialog(() => {
+    if (step > 0) {
+      handleBack();
+      return false;
+    }
+    const willConfirm = !guideOnly && hasDraftContent(draft);
+    attemptExit();
+    return willConfirm ? false : undefined;
+  });
 
   function handleClubSelected(selected) {
     setClub(selected);
@@ -460,12 +486,14 @@ export function OnboardingOverlay({ onClose }) {
         flexDirection: 'column',
       }}
     >
-      <div
-        className="sr-only"
-        aria-live="polite"
-      >
-        {t('onboarding.stepAnnouncement', { current: step + 1, total: TOTAL_STEPS })}
-      </div>
+      {!guideOnly && (
+        <div
+          className="sr-only"
+          aria-live="polite"
+        >
+          {t('onboarding.stepAnnouncement', { current: step + 1, total: TOTAL_STEPS })}
+        </div>
+      )}
 
       <div
         style={{
@@ -477,7 +505,7 @@ export function OnboardingOverlay({ onClose }) {
           paddingInline: 'var(--page-pad-x)',
         }}
       >
-        <DotIndicator total={TOTAL_STEPS} current={step} />
+        {guideOnly ? <span /> : <DotIndicator total={TOTAL_STEPS} current={step} />}
         <button
           type="button"
           onClick={attemptExit}
@@ -490,7 +518,7 @@ export function OnboardingOverlay({ onClose }) {
             cursor: 'pointer',
           }}
         >
-          {t('onboarding.skip')}
+          {guideOnly ? t('common.close') : t('onboarding.skip')}
         </button>
       </div>
 
@@ -538,7 +566,7 @@ export function OnboardingOverlay({ onClose }) {
             </p>
           )}
 
-          {isFirst && (
+          {isFirst && !guideOnly && (
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-5)' }}>
               <button
                 type="button"
@@ -634,7 +662,7 @@ export function OnboardingOverlay({ onClose }) {
           </Button>
         )}
         <Button variant="primary" onClick={handleNext} style={isFirst ? { marginLeft: 'auto' } : undefined}>
-          {isLastStep ? t('onboarding.start') : t('onboarding.next')}
+          {guideOnly ? t('common.close') : isLastStep ? t('onboarding.start') : t('onboarding.next')}
         </Button>
       </div>
 
