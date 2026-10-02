@@ -213,6 +213,7 @@ export default {
   'progress.noDataForExercise': 'No data for this exercise yet.',
   'progress.volumeTitle': 'Volume',
   'progress.noVolumeData': 'No volume data yet.',
+  'progress.volumeCaption': 'Planned sets × reps × logged weight, per session (kg).',
   'progress.frequencyTitle': 'Frequency',
   'progress.last7Days': 'Last 7 days',
   'progress.last30Days': 'Last 30 days',

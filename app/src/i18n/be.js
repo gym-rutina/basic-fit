@@ -215,6 +215,7 @@ export default {
   'progress.noDataForExercise': 'Пакуль няма даных для гэтага практыкавання.',
   'progress.volumeTitle': 'Аб’ём',
   'progress.noVolumeData': 'Пакуль няма даных аб аб’ёме.',
+  'progress.volumeCaption': 'Запланаваныя падыходы × паўторы × зафіксаваная вага за сесію (кг).',
   'progress.frequencyTitle': 'Частата',
   'progress.last7Days': 'Апошнія 7 дзён',
   'progress.last30Days': 'Апошнія 30 дзён',

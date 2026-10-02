@@ -219,6 +219,7 @@ export default {
   'progress.noDataForExercise': 'Noch keine Daten für diese Übung.',
   'progress.volumeTitle': 'Volumen',
   'progress.noVolumeData': 'Noch keine Volumendaten.',
+  'progress.volumeCaption': 'Geplante Sätze × Wiederholungen × erfasstes Gewicht, pro Training (kg).',
   'progress.frequencyTitle': 'Frequenz',
   'progress.last7Days': 'Letzte 7 Tage',
   'progress.last30Days': 'Letzte 30 Tage',

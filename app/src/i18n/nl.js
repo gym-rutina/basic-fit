@@ -219,6 +219,7 @@ export default {
   'progress.noDataForExercise': 'Nog geen gegevens voor deze oefening.',
   'progress.volumeTitle': 'Volume',
   'progress.noVolumeData': 'Nog geen volumedgegevens.',
+  'progress.volumeCaption': 'Geplande sets × herhalingen × geregistreerd gewicht, per sessie (kg).',
   'progress.frequencyTitle': 'Frequentie',
   'progress.last7Days': 'Laatste 7 dagen',
   'progress.last30Days': 'Laatste 30 dagen',

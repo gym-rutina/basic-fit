@@ -215,7 +215,22 @@ export function ProgressScreen({ rutina }) {
               {t('progress.noVolumeData')}
             </p>
           ) : (
-            <VolumeBarChart bars={volumes} />
+            <>
+              {/* progress-volume-fix AC9: say what the number IS — planned sets ×
+                  reps × the weight the user logged (actual reps per set are not
+                  logged). A caption, not a heading. */}
+              <p
+                style={{
+                  font: 'var(--text-body-sm)',
+                  color: 'var(--text-muted)',
+                  margin: '0 0 10px',
+                  overflowWrap: 'anywhere',
+                }}
+              >
+                {t('progress.volumeCaption')}
+              </p>
+              <VolumeBarChart bars={volumes} locale={locale} />
+            </>
           )}
         </section>
 

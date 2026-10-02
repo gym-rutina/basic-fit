@@ -3,10 +3,12 @@
  * library). Three named exports consumed by ProgressScreen.jsx.
  *
  * All <svg> elements carry aria-hidden="true"; readable summaries / aria-labels
- * are provided by sibling DOM or per-cell attributes.
+ * are provided by sibling DOM or per-cell attributes. VolumeBarChart's svg
+ * (bars + visible value/date labels) is aria-hidden too; its readable text is
+ * the sibling .sr-only list, one "<date> · <value> kg" item per bar.
  */
 import React from 'react';
-import { defaultT } from '../i18n/index.js';
+import { defaultT, DEFAULT_LOCALE } from '../i18n/index.js';
 
 // Bare tokens, no hex fallbacks — the DS-wide convention (tech-debt audit
 // 2026-08-26 F9): tokens are guaranteed by the shared stylesheet, and a
@@ -101,50 +103,118 @@ export function WeightProgressChart({ points = [] }) {
 // ─── VolumeBarChart ───────────────────────────────────────────────────────────
 
 const VC_BAR_W = 28;
-const VC_GAP = 6;
-const VC_H = 100;
+// Bar pitch 48 px (28 bar + 20 gap): a 6-char value label and a short date at
+// font 10 both fit under / over their own bar without touching the neighbour.
+const VC_GAP = 20;
+const VC_H = 100; // bar area, as before
 const VC_PAD = 8;
+const VC_LABEL_TOP = 16; // band above the tallest bar: the value label
+const VC_LABEL_BOTTOM = 18; // band under the baseline: the date label
+const VC_FONT = 10;
+
+/** Finite number > 0, else 0 — a NaN/Infinity/missing/negative volume draws as a flat zero bar. */
+const safeVolume = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+
+/**
+ * Intl formatters for the chart. An unknown/invalid locale tag must not crash
+ * the Progress tab, so fall back to the app's default locale.
+ */
+function makeFormatters(locale) {
+  const build = (loc) => ({
+    number: new Intl.NumberFormat(loc),
+    date: new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'short' }),
+  });
+  try {
+    return build(locale);
+  } catch {
+    return build(DEFAULT_LOCALE);
+  }
+}
+
+/** "YYYY-MM-DD" → short local date. Local noon (like buildFrequencyGrid): no day shift in any timezone. */
+function formatDay(dateFmt, key) {
+  const [y, m, d] = String(key).split('-').map(Number);
+  const date = new Date(y, m - 1, d, 12);
+  return Number.isNaN(date.getTime()) ? '' : dateFmt.format(date);
+}
 
 /**
  * Horizontal-scroll bar chart of per-session volume.
  *
- * @param {{ bars: Array<{sessionId: string, date: string, volume: number}> }} props
+ * The <svg> draws the bars with a visible value above and a short date under
+ * each one; it stays aria-hidden (the file's convention). The readable copy is
+ * the sibling visually-hidden list — one "<date> · <value> kg" item per bar,
+ * announced once (progress-volume-fix AC8). A non-finite volume is drawn as a
+ * flat zero bar and printed as 0, never NaN (AC7).
+ *
+ * @param {{ bars: Array<{sessionId: string, date: string, volume: number}>, locale?: string }} props
  */
-export function VolumeBarChart({ bars = [] }) {
+export function VolumeBarChart({ bars = [], locale = DEFAULT_LOCALE }) {
   if (bars.length === 0) return null;
 
-  const maxVol = Math.max(...bars.map((b) => b.volume), 1);
+  const fmt = makeFormatters(locale);
+  const items = bars.map((bar) => {
+    const volume = safeVolume(bar.volume);
+    return {
+      key: bar.sessionId,
+      volume,
+      value: fmt.number.format(volume),
+      day: formatDay(fmt.date, bar.date),
+    };
+  });
+
+  const maxVol = items.reduce((max, it) => Math.max(max, it.volume), 1);
   // Width follows bar count only — a fixed min (was 280) overflowed cover-display
   // viewports when the scroll parent expanded to fit the SVG.
-  const svgW = Math.max(1, bars.length * (VC_BAR_W + VC_GAP) + 2 * VC_PAD);
+  const pitch = VC_BAR_W + VC_GAP;
+  const svgW = Math.max(1, items.length * pitch + 2 * VC_PAD);
+  const svgH = VC_LABEL_TOP + VC_H + VC_LABEL_BOTTOM;
   const innerH = VC_H - 2 * VC_PAD;
+  const baseline = VC_LABEL_TOP + VC_H - VC_PAD;
 
   return (
-    <div style={{ overflowX: 'auto', maxWidth: '100%', minWidth: 0 }}>
-      <svg
-        aria-hidden="true"
-        viewBox={`0 0 ${svgW} ${VC_H}`}
-        width={svgW}
-        height={VC_H}
-        style={{ display: 'block', maxWidth: 'none' }}
-      >
-        {bars.map((bar, i) => {
-          const bh = Math.max(4, (bar.volume / maxVol) * innerH);
-          const x = VC_PAD + i * (VC_BAR_W + VC_GAP);
-          const y = VC_H - VC_PAD - bh;
-          return (
-            <rect
-              key={bar.sessionId}
-              x={x}
-              y={y}
-              width={VC_BAR_W}
-              height={bh}
-              rx={3}
-              fill={PURPLE}
-            />
-          );
-        })}
-      </svg>
+    <div style={{ position: 'relative', minWidth: 0, maxWidth: '100%' }}>
+      <div style={{ overflowX: 'auto', maxWidth: '100%', minWidth: 0 }}>
+        <svg
+          aria-hidden="true"
+          viewBox={`0 0 ${svgW} ${svgH}`}
+          width={svgW}
+          height={svgH}
+          style={{ display: 'block', maxWidth: 'none' }}
+        >
+          {items.map((it, i) => {
+            const bh = Math.max(4, (it.volume / maxVol) * innerH);
+            const x = VC_PAD + i * pitch;
+            const y = baseline - bh;
+            const cx = x + VC_BAR_W / 2;
+            return (
+              <g key={it.key}>
+                <rect x={x} y={y} width={VC_BAR_W} height={bh} rx={3} fill={PURPLE} />
+                <text x={cx} y={y - 4} textAnchor="middle" fontSize={VC_FONT} fill="currentColor">
+                  {it.value}
+                </text>
+                <text
+                  x={cx}
+                  y={baseline + 13}
+                  textAnchor="middle"
+                  fontSize={VC_FONT}
+                  fill="var(--text-muted)"
+                >
+                  {it.day}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      <ul className="sr-only">
+        {items.map((it) => (
+          <li key={it.key}>{`${it.day} · ${it.value} kg`}</li>
+        ))}
+      </ul>
     </div>
   );
 }

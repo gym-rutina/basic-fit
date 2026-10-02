@@ -84,6 +84,51 @@ export function buildWeightSeries(sessions = [], exerciseKeyValue) {
   return points.sort((a, b) => (a.completedAt < b.completedAt ? -1 : 1));
 }
 
+// A reps string whose number is followed by one of these (whole word) is a timed
+// hold ("30s", "45 s", "1 min", "30-45s"), not a load x reps prescription.
+const TIME_UNIT =
+  /^(?:s|sec|secs|seg|segs|second|seconds|segundo|segundos|m|min|mins|minute|minutes|minuto|minutos)(?![a-z])/i;
+
+/**
+ * How many reps one set counts for in the planned-volume proxy
+ * (progress-volume-fix P1/P2). `rutina.schema.json` types `reps` as a STRING
+ * ("10-12", "8 a 10", "30s", "AMRAP"), so sets * reps * weight used to be NaN
+ * for any range or hold.
+ *
+ * - a number > 0 (finite) → that number, floored
+ * - a string → its leading integer; a range gives its LOWER bound ("10-12" →
+ *   10, "8 a 10" → 8); "8 c/lado" / "8 por lado" / "8 each" → 8 (never doubled)
+ * - a timed hold ("30s", "1 min", "30-45s") → 0: not load x reps
+ * - anything else ("", "AMRAP", "al fallo", null, NaN, negative, 0, objects) → 0
+ *
+ * @param {unknown} reps
+ * @returns {number} finite integer >= 0; 0 means "not countable as load x reps"
+ */
+export function parseRepsCount(reps) {
+  if (typeof reps === 'number') return Number.isFinite(reps) && reps > 0 ? Math.floor(reps) : 0;
+  if (typeof reps !== 'string') return 0;
+  const m = /^(\d+)\s*(.*)$/.exec(reps.trim());
+  if (!m) return 0;
+  // Drop an optional range tail ("-12", "– 12", "a 10", "to 10") so the unit
+  // check sees what follows the whole range.
+  const rest = m[2].replace(/^(?:[-–—]|a|to)\s*\d+\s*/i, '');
+  return TIME_UNIT.test(rest) ? 0 : parseInt(m[1], 10);
+}
+
+/** Coerces to a finite number > 0, else 0 — a NaN/negative factor must not poison a total. */
+const finiteNonNeg = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+
+/**
+ * Planned volume of one exercise: sets x reps x logged weight. ONE formula for
+ * every resolution tier (snapshot and legacy join), so the parser cannot drift
+ * between them (AC4). Always a finite number >= 0 (AC1).
+ */
+const plannedVolume = (sets, reps, weightUsed) =>
+  finiteNonNeg(sets) * parseRepsCount(reps) * finiteNonNeg(weightUsed);
+
 /**
  * Builds a rutina map from exercise key to {sets, reps}. Keyed by exercise
  * key, not equipmentId (AC11 — the pre-existing bug this fixes): a day with
@@ -91,8 +136,11 @@ export function buildWeightSeries(sessions = [], exerciseKeyValue) {
  * the first's prescription, so a chest-only log wrongly scored the
  * shoulder day's sets×reps.
  *
+ * `reps` is the schema's STRING ("10-12", "30s"); parse it with
+ * parseRepsCount, never multiply it directly.
+ *
  * @param {object} rutina
- * @returns {Map<string, {sets: number, reps: number}>}
+ * @returns {Map<string, {sets: number, reps: string|number}>}
  */
 function buildRutinaMap(rutina) {
   const map = new Map();
@@ -143,7 +191,7 @@ export function buildSessionVolumes(sessions = [], rutina) {
     if (contributing.every((ex) => ex.sets != null && ex.reps != null)) {
       let volume = 0;
       for (const ex of contributing) {
-        volume += ex.sets * ex.reps * ex.weightUsed;
+        volume += plannedVolume(ex.sets, ex.reps, ex.weightUsed);
       }
       return volume;
     }
@@ -157,7 +205,7 @@ export function buildSessionVolumes(sessions = [], rutina) {
         const rutinaEx = key != null ? rutinaMap.get(key) : undefined;
         if (!rutinaEx) continue;
         if (ex.weightUsed == null) continue;
-        volume += rutinaEx.sets * rutinaEx.reps * ex.weightUsed;
+        volume += plannedVolume(rutinaEx.sets, rutinaEx.reps, ex.weightUsed);
       }
       return volume;
     }
@@ -166,15 +214,28 @@ export function buildSessionVolumes(sessions = [], rutina) {
     return null;
   }
 
+  // Same-day order is deterministic (AC5): date, then startedAt, then session
+  // id. The sort key lives on an internal wrapper so the returned points keep
+  // exactly { sessionId, date, volume }.
+  const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
   return past
     .map((s) => {
       const volume = resolveVolumePoint(s);
       if (volume === null) return null;
       const dateRef = s.endedAt || s.startedAt;
-      return { sessionId: s.id, date: localDateKey(new Date(dateRef)), volume };
+      return {
+        startedAt: s.startedAt,
+        point: { sessionId: s.id, date: localDateKey(new Date(dateRef)), volume },
+      };
     })
-    .filter((point) => point != null)
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
+    .filter((entry) => entry != null)
+    .sort(
+      (a, b) =>
+        cmp(a.point.date, b.point.date) ||
+        cmp(a.startedAt, b.startedAt) ||
+        cmp(a.point.sessionId, b.point.sessionId)
+    )
+    .map((entry) => entry.point);
 }
 
 /**
