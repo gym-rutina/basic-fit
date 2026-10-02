@@ -53,6 +53,10 @@ import { useEffect, useRef } from 'react';
  * it) and, within LOST_MS of the watchdog, the user presses Back and that lands exactly on the
  * entry we expected, that one Back is taken for ours and swallowed (the dialog is re-armed, so the
  * next Back works). After LOST_MS we give up on the traversal and recover (re-arm / retry).
+ * Likewise, if our own traversal lands MORE than WATCHDOG_MS + LOST_MS (11s) late — past the point
+ * where we wrote it off — it is read as a user Back and the topmost dialog closes by mistake. Only a
+ * badly stalled device/CI box gets there; no code path can tell the two apart from the popstate alone.
+ * Not yet verified on real hardware: the Android/iOS manual Back check is still open.
  */
 
 const KEY = '__bfDialog';

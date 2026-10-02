@@ -110,7 +110,11 @@ function Shell() {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
         <InstallBanner />
         <SessionInProgressBanner status={activeSession.status} session={activeSession.session} />
-        <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+        {/* position: relative — the containing block for absolutely positioned descendants. Without it
+            the `.sr-only` spans (position: absolute) resolve against the viewport, escape this scroller
+            and the shell's overflow: hidden, and stretch the DOCUMENT to the page's full length: a second
+            scrollbar beside this one on long screens (Program day detail). */}
+        <main style={{ position: 'relative', flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
           <Routes>
             <Route
               path="/import"

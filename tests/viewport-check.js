@@ -22,7 +22,7 @@ const puppeteer = require('puppeteer');
 const REPO_ROOT = path.resolve(__dirname, '..');
 const BASE_URL = process.argv[2] || 'http://localhost:4173';
 const WIDTHS = [280, 360, 390, 412, 768];
-const ROUTES = ['/import', '/', '/program', '/catalog', '/history', '/progress', '/session', '/export'];
+const ROUTES = ['/import', '/', '/program', '/program/0', '/catalog', '/history', '/progress', '/session', '/export'];
 const HEIGHT = 800;
 
 const EXAMPLE_RUTINA = JSON.parse(
@@ -171,6 +171,15 @@ async function seedIndexedDB(page, { rutina, sessions }) {
           if (!db.objectStoreNames.contains('lastWeights')) {
             db.createObjectStore('lastWeights', { keyPath: 'exerciseKey' });
           }
+          if (!db.objectStoreNames.contains('clubEquipment')) {
+            db.createObjectStore('clubEquipment', { keyPath: 'clubId' });
+          }
+          if (!db.objectStoreNames.contains('rutinas')) {
+            db.createObjectStore('rutinas', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('reportOutbox')) {
+            db.createObjectStore('reportOutbox', { keyPath: 'key' });
+          }
         };
         req.onsuccess = (event) => {
           const db = event.target.result;
@@ -189,14 +198,30 @@ async function seedIndexedDB(page, { rutina, sessions }) {
             );
             return;
           }
-          const tx = db.transaction(['activeRutina', 'sessions'], 'readwrite');
-          tx.objectStore('activeRutina').put({
-            key: 'current',
+          // Current shape (db.js DB_VERSION 4+): the rutina lives in the `rutinas`
+          // library; `activeRutina.current` is only a POINTER { key, rutinaId }.
+          // The old { key, rutina, importedAt } row is no longer read, so seeding
+          // it left getActiveRutina() null and the shell redirected every seeded
+          // route to /import (/progress, /history, /export were never drawn).
+          // Sessions carry the same attribution createSession stamps.
+          const rutinaId = 'viewport-test-rutina';
+          const program = rutinaData.program || {};
+          const tx = db.transaction(['rutinas', 'activeRutina', 'sessions'], 'readwrite');
+          tx.objectStore('rutinas').put({
+            id: rutinaId,
             rutina: rutinaData,
             importedAt: new Date().toISOString(),
+            seq: 1,
           });
+          tx.objectStore('activeRutina').put({ key: 'current', rutinaId });
           for (const session of sessionData) {
-            tx.objectStore('sessions').put(session);
+            tx.objectStore('sessions').put({
+              ...session,
+              rutinaId,
+              rutinaName: program.name,
+              phaseName: program.phaseName,
+              phaseNumber: program.phaseNumber,
+            });
           }
           tx.oncomplete = () => {
             db.close();
@@ -220,7 +245,7 @@ function seedPlanForRoute(route) {
   }
   // Home / Program need an imported rutina; otherwise the shell redirects to /import
   // and we never paint the screen under test.
-  if (route === '/' || route === '/program') {
+  if (route === '/' || route === '/program' || route === '/program/0') {
     return { rutina: EXAMPLE_RUTINA, sessions: [] };
   }
   return null;
@@ -273,6 +298,15 @@ async function checkRoute(page, width, route, errorSink) {
     }
     await new Promise((r) => setTimeout(r, 500));
 
+    // A stale seed shape makes the shell redirect to /import, and the overflow
+    // checks below would then pass against the wrong screen. Fail loudly instead.
+    if (seed) {
+      const hash = await page.evaluate(() => window.location.hash);
+      if (!hash.startsWith(`#${route}`)) {
+        failures.push(`seeded route redirected: expected #${route}, landed on ${hash || '(none)'}`);
+      }
+    }
+
     const overflow = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
@@ -280,6 +314,19 @@ async function checkRoute(page, width, route, errorSink) {
     if (overflow.scrollWidth > overflow.clientWidth + 1) {
       failures.push(
         `horizontal overflow: scrollWidth ${overflow.scrollWidth} > clientWidth ${overflow.clientWidth}`
+      );
+    }
+
+    // The shell (App.jsx) scrolls inside <main>; the document itself must never
+    // scroll, or a second scrollbar appears beside main's (an escaped
+    // position:absolute .sr-only span did exactly that on Program day detail).
+    const docScroll = await page.evaluate(() => ({
+      scrollHeight: document.documentElement.scrollHeight,
+      clientHeight: document.documentElement.clientHeight,
+    }));
+    if (docScroll.scrollHeight > docScroll.clientHeight + 1) {
+      failures.push(
+        `document scrolls vertically: scrollHeight ${docScroll.scrollHeight} > clientHeight ${docScroll.clientHeight}`
       );
     }
 
