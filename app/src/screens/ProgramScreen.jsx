@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
 import { SectionBanner } from '../../../design-system/components/composite/SectionBanner.jsx';
 import { ExerciseCard } from '../../../design-system/components/composite/ExerciseCard.jsx';
-import { SummaryTable } from '../../../design-system/components/composite/SummaryTable.jsx';
 import { RuleItem } from '../../../design-system/components/primitives/RuleItem.jsx';
 import { NoteItem } from '../../../design-system/components/primitives/NoteItem.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
@@ -25,8 +24,9 @@ function SectionTitle({ children }) {
  * Porting Plan). ONE component, branching on whether :dayIndex is present
  * in the route — ProgramScreen({ rutina }) per tech-plan.md's literal file
  * layout (a single ProgramScreen.jsx, not two files): "/program" is the
- * day-list overview (phase info, warmup/cooldown, derived summary table,
- * rules, notes); "/program/:dayIndex" drills into one day's full exercise
+ * day-list overview (phase info, warmup/cooldown, rules, notes; the
+ * Training days list is the sole per-day overview); "/program/:dayIndex"
+ * drills into one day's full exercise
  * render. Mirrors ux-design.md's "Program → Day list → Day detail" flow,
  * replacing the original single-page anchor-nav document.
  *
@@ -71,18 +71,6 @@ function ProgramOverview({ rutina }) {
     [t('program.rest'), t('common.secondsFull', { n: phaseInfo.restSeconds })],
     [t('program.frequency'), t('program.perWeek', { n: phaseInfo.frequencyPerWeek })],
   ];
-
-  // Generated from `days` at render time — never a separately authored
-  // field (rutina.schema.json deliberately has no summaryTable property;
-  // spec.md's Render AC requires this be derived, not authored).
-  const summaryRows = days.map((day) => [
-    <span dir="auto">
-      {day.label}
-      {day.intro ? ' — ' + day.intro : ''}
-    </span>,
-    dayFocusLabels(day.exercises, { t }).join(', ') || '—',
-    String(day.exercises.length),
-  ]);
 
   return (
     <>
@@ -178,13 +166,6 @@ function ProgramOverview({ rutina }) {
           subtitle={t('program.cooldownSubtitle', { n: cooldown.durationMinutes })}
           items={cooldown.steps.map((step, i) => <span key={i} dir="auto">{step}</span>)}
         />
-
-        <section style={{ display: 'grid', gap: 'var(--space-4)' }}>
-          <SectionTitle>{t('program.weeklySummaryTitle')}</SectionTitle>
-          <div style={{ overflowX: 'auto' }}>
-            <SummaryTable columns={[t('program.colDay'), t('program.colFocus'), t('program.colExercises')]} rows={summaryRows} />
-          </div>
-        </section>
 
         {rules.length > 0 && (
           <section style={{ display: 'grid', gap: 'var(--space-4)' }}>

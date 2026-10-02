@@ -6,7 +6,7 @@ import { defaultT } from '../i18n/index.js';
  * shipped 27-item dataset) — the same vocabulary rutina.schema.json's
  * exercises[].muscleGroups is authored in, so one map serves both the
  * per-exercise Tag labels (ExerciseCard) and the day "focus" summary
- * (ProgramScreen's derived SummaryTable, tech-plan.md's explicit
+ * (ProgramScreen's Training days row, tech-plan.md's explicit
  * requirement: never read a focus string from an authored field).
  *
  * pwa-ui-language AC6: this is UI chrome, not data (tech-plan.md's own

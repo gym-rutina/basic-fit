@@ -66,7 +66,7 @@ function renderDayDetail(locale) {
 }
 
 // pwa-ui-language AC16 code-QA follow-up (Bagnik fail #1, fix cycle 1) — the
-// overview route (day-list, warmup/cooldown, weekly summary) is a SEPARATE
+// overview route (day-list, warmup/cooldown) is a SEPARATE
 // render path from the day-detail one above, and Bagnik found six of the
 // twelve missing dir="auto" sites live here.
 function renderOverview(locale) {
@@ -246,8 +246,7 @@ describe('axis-3 nodes carry dir="auto" and no lang (AC16)', () => {
  * 1 HomeScreen site, and all 3 ActiveSessionScreen sites (2 unique lines,
  * one of which needs a second, collapsed exercise to render at all).
  *
- * Not covered here: `ScreenHeader`/`SectionBanner`/`SummaryTable`/
- * `DetailItem` themselves are deliberately unchanged (they also render
+ * Not covered here: `ScreenHeader`/`SectionBanner`/`DetailItem` themselves are deliberately unchanged (they also render
  * chrome), so there is nothing further to assert on the shared components —
  * only the call sites that feed them axis-3 values.
  */
@@ -264,15 +263,21 @@ describe('axis-3 nodes carry dir="auto" on the program overview (AC16)', () => {
     expect(marked).toContain(BE_RUTINA.cooldown.steps[0]);
   });
 
-  it('marks the day label inside the weekly summary table specifically', () => {
-    // The day-list link row above the table already carried dir="auto"
-    // before this fix cycle, so asserting against the whole container would
-    // pass even if the summary-table cell (the actual regression) were never
-    // fixed — scope the query to the <table> to prove that cell specifically.
+  it('marks the day label in the Training days row — the only day-label node on the overview', () => {
+    // program-remove-weekly-summary AC6: the weekly summary table that used
+    // to carry a second day-label cell is gone, so the Training days link row
+    // (/program/0) is the one and only place the overview renders a day label.
+    // Scope the query to that row (it must exist — no vacuous pass, no throw
+    // on a missing <table>) and pin that no other dir="auto" node repeats the
+    // label elsewhere on the screen.
     const { container } = renderOverview('es');
-    const table = container.querySelector('table');
-    const marked = [...table.querySelectorAll('[dir="auto"]')].map(textOf);
-    expect(marked).toContain(BE_RUTINA.days[0].label);
+    const row = container.querySelector('a[href="/program/0"]');
+    expect(row).not.toBeNull();
+    const markedInRow = [...row.querySelectorAll('[dir="auto"]')].map(textOf);
+    expect(markedInRow).toContain(BE_RUTINA.days[0].label);
+
+    const markedOnScreen = [...container.querySelectorAll('[dir="auto"]')].map(textOf);
+    expect(markedOnScreen.filter((text) => text === BE_RUTINA.days[0].label)).toHaveLength(1);
   });
 
   it('does not mark the overview chrome as dir="auto"', () => {
