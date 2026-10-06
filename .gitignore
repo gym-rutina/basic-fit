@@ -27,6 +27,7 @@ Thumbs.db
 
 # --- Editor (per-developer AI chat history, not team-shared) ---
 .claude/
+.omp/
 .specstory/
 AGENTS.md
 CLAUDE.md
