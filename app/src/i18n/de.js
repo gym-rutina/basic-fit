@@ -107,36 +107,26 @@ export default {
   'onboarding.step1.title': 'Dein Trainer — ohne Konto, ohne Verbindung',
   'onboarding.step1.body': 'Speichere deine Routine und deinen Verlauf auf diesem Gerät. Kein Konto, kein API-Schlüssel.',
   'onboarding.step2.preamble':
-    'Rutina erstellt dein Programm nicht — du erstellst es mit einem LLM-Chat (ChatGPT, Claude, Gemini…) und importierst es hier.',
+    'Rutina erstellt dein Programm nicht: du erstellst es mit einem KI-Chat (ChatGPT, Claude, Gemini…) und importierst es hier.',
   'onboarding.step3.title': 'So funktioniert es',
-  'onboarding.step3.step1': 'Fülle den Prompt aus',
-  'onboarding.step3.step2': 'Füge ihn in einen LLM-Chat ein',
-  'onboarding.step3.step3': 'Kopiere die JSON-Antwort',
-  'onboarding.step3.step4': 'Importiere sie in die App',
-  'onboarding.step3.outcome1': '✓ gültig → fertig',
-  'onboarding.step3.outcome2': '✗ fehlerhaft → korrigieren und erneut versuchen',
+  'onboarding.step3.step1': 'Beantworte ein paar Fragen und die App schreibt den Prompt für dich',
+  'onboarding.step3.step2': 'Kopiere den Prompt und füge ihn in deinen KI-Chat ein — ChatGPT, Gemini, welchen du auch nutzt',
+  'onboarding.step3.step3': 'Der Chat antwortet mit deiner Routine; kopiere diese Antwort',
+  'onboarding.step3.step4': 'Füge die Antwort in die App ein und deine Routine ist fertig',
+  'onboarding.step3.glossLlm': 'Ein LLM ist einfach der KI-Chat, den du schon nutzt (ChatGPT, Gemini, Claude…). Nichts zu installieren.',
+  'onboarding.step3.glossJson': 'Die Antwort kommt im JSON-Format, ist aber nur Text: kopieren und einfügen, mehr nicht.',
+  'onboarding.step3.outcome1': '✓ Wenn die App die Antwort akzeptiert, ist deine Routine fertig',
+  'onboarding.step3.outcome2': '✗ Wenn etwas fehlschlägt, sagt dir die App, was zu korrigieren ist, und du versuchst es erneut',
   'onboarding.clubStep.title': 'Dein Studio',
   'onboarding.clubStep.body': 'Der Assistent passt die Übungen an die Ausstattung an, die in deinem Studio verfügbar ist.',
-  'onboarding.nameGoalStep.title': 'Personalisiere dein Programm',
-  'onboarding.nameGoalStep.body': 'Je detaillierter du bist, desto persönlicher wird die Routine.',
-  'onboarding.scheduleStep.title': 'Dein Zeitplan',
-  'onboarding.scheduleStep.body': 'Wie viele Tage und wie viel Zeit du jede Woche zum Trainieren hast.',
-  'onboarding.injuriesStep.title': 'Bevor du abschließt',
-  'onboarding.injuriesStep.body':
-    'Der Assistent schließt die von dir genannten Bewegungen aus. Leer lassen, wenn du keine Einschränkungen hast.',
-  'onboarding.skipConfirm.title': 'Ohne Abschluss beenden?',
-  'onboarding.skipConfirm.body': 'Was du eingegeben hast, wird gespeichert. Den Rest kannst du später über die Anleitung abschließen.',
-  'onboarding.skipConfirm.confirm': 'Beenden',
-  'onboarding.skipConfirm.cancel': 'Hier bleiben',
 
-  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  // ── promptRequest (PromptPreferencesScreen / GuideOverlay form) ───
   'promptRequest.field1.label': 'Name / Programm',
   'promptRequest.field1.hint': 'Du kannst eine Phase, einen Namen oder Kontext zu deinem Fortschritt ergänzen.',
   'promptRequest.field1.example': 'Elena — Phase 2 von 3 (Volumen). Ich trainiere seit 8 Monaten.',
   'promptRequest.field2.label': 'Hauptziel',
   'promptRequest.field2.hint':
     'Ziel, Übungen, die dir Spaß machen, bevorzugte Ausstattung, YouTube-Kanäle, denen du folgst, was du hasst, wie du trainierst...',
-  'promptRequest.field2.hintSmart': 'Du hast {cat1}, {cat2} und {cat3} in deinem Studio — erzähl ihm, welche dir gefallen.',
   'promptRequest.field2.example':
     'Ich möchte mehr Muskeln im Oberkörper aufbauen, besonders Brust und Schultern. Ich liebe Kabelmaschinen und die Smith-Maschine — freie Gewichte geben mir weniger Sicherheit. Ich folge Jeff Nippard auf YouTube und mag seinen evidenzbasierten Ansatz mit hoher Frequenz und sauberer Technik. Kein Cardio. Ich kann sehr intensiv trainieren, wenn zwischen den Sätzen gute Pause ist (2-3 Min.).',
   'promptRequest.field3.label': 'Tage pro Woche',
@@ -149,7 +139,6 @@ export default {
   'promptRequest.field5.example':
     'Patellasehnenentzündung im rechten Knie (seit 2024): keine freien Kniebeugen oder Ausfallschritte, aber Beinpresse mit teilweiser Bewegungsamplitude geht. Linke Schulter: leichtes Impingement — kein Schulterdrücken über Kopf, Schrägbankdruck an der Maschine macht keine Probleme.',
   'promptRequest.field5.placeholder': 'keine',
-  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'Anleitung zum Erstellen mit LLM ansehen →',
@@ -353,12 +342,12 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} erledigt, {weight} Kilo, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} erledigt, {difficulty}',
 
-  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
-  'session.notHereAction': 'Nicht hier',
-  'session.notHereAria': '{machine} als in diesem Studio nicht verfügbar melden',
+  // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
+  'session.notHereAction': 'Mein Studio hat dieses Gerät nicht',
   'session.reportedBody': 'Gemeldet. Im Katalog dieses Studios ausgeblendet. Du kannst das unter Katalog → Mein Studio rückgängig machen.',
   'session.notesLabel': 'Notizen (optional)',
   'session.notesPlaceholder': 'z. B. keine Rolle, langen Griff benutzt',
+  'session.addNoteAction': 'Notiz',
 
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Noch keine Sessions aufgezeichnet',

@@ -108,36 +108,26 @@ export default {
   'onboarding.step1.title': 'Tu entrenador sin cuentas ni conexión',
   'onboarding.step1.body': 'Guarda tu rutina y tu historial en este dispositivo. Sin cuenta, sin clave API.',
   'onboarding.step2.preamble':
-    'Rutina no genera tu programa — tú lo creas con un chat LLM (ChatGPT, Claude, Gemini…) y lo importas aquí.',
+    'Rutina no genera tu programa: lo creas con un chat de IA (ChatGPT, Claude, Gemini…) y lo importas aquí.',
   'onboarding.step3.title': 'Así funciona',
-  'onboarding.step3.step1': 'Rellena el prompt',
-  'onboarding.step3.step2': 'Cópialo en un chat LLM',
-  'onboarding.step3.step3': 'Copia la respuesta JSON',
-  'onboarding.step3.step4': 'Impórtala en la app',
-  'onboarding.step3.outcome1': '✓ pasa → listo',
-  'onboarding.step3.outcome2': '✗ falla → corrige y vuelve a intentar',
+  'onboarding.step3.step1': 'Responde unas preguntas y la app escribe el prompt por ti',
+  'onboarding.step3.step2': 'Copia el prompt y pégalo en tu chat de IA — ChatGPT, Gemini, el que uses',
+  'onboarding.step3.step3': 'El chat te responde con tu rutina; copia esa respuesta',
+  'onboarding.step3.step4': 'Pega la respuesta en la app y tu rutina queda lista',
+  'onboarding.step3.glossLlm': 'LLM es simplemente el chat de IA que ya usas (ChatGPT, Gemini, Claude…). Nada que instalar.',
+  'onboarding.step3.glossJson': 'La respuesta llega en formato JSON, pero es solo texto: copiar y pegar, nada más.',
+  'onboarding.step3.outcome1': '✓ Si la app acepta la respuesta, tu rutina está lista',
+  'onboarding.step3.outcome2': '✗ Si algo falla, la app te dice qué corregir y lo intentas de nuevo',
   'onboarding.clubStep.title': 'Tu gimnasio',
   'onboarding.clubStep.body': 'El asistente adaptará los ejercicios al equipamiento disponible en tu club.',
-  'onboarding.nameGoalStep.title': 'Personaliza tu programa',
-  'onboarding.nameGoalStep.body': 'Cuanto más detallado seas, más personalizada la rutina.',
-  'onboarding.scheduleStep.title': 'Tu horario',
-  'onboarding.scheduleStep.body': 'Cuántos días y cuánto tiempo tienes para entrenar cada semana.',
-  'onboarding.injuriesStep.title': 'Antes de terminar',
-  'onboarding.injuriesStep.body':
-    'El asistente excluirá los movimientos que indiques. Puedes dejarlo en blanco si no tienes restricciones.',
-  'onboarding.skipConfirm.title': '¿Salir sin terminar?',
-  'onboarding.skipConfirm.body': 'Lo que hayas escrito se guardará. Podrás completar el resto más tarde desde la guía.',
-  'onboarding.skipConfirm.confirm': 'Salir',
-  'onboarding.skipConfirm.cancel': 'Seguir aquí',
 
-  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  // ── promptRequest (PromptPreferencesScreen / GuideOverlay form) ───
   'promptRequest.field1.label': 'Nombre / programa',
   'promptRequest.field1.hint': 'Puedes añadir fase, nombre propio o contexto de tu progreso.',
   'promptRequest.field1.example': 'Elena — Fase 2 de 3 (volumen). Llevo 8 meses entrenando.',
   'promptRequest.field2.label': 'Objetivo principal',
   'promptRequest.field2.hint':
     'Objetivo, ejercicios que te gustan, equipamiento preferido, canales de YouTube que sigues, qué odias, cómo entrenas...',
-  'promptRequest.field2.hintSmart': 'Tienes {cat1}, {cat2} y {cat3} en tu gym — cuéntale cuáles te gustan.',
   'promptRequest.field2.example':
     'Quiero más músculo en tren superior, sobre todo pecho y hombros. Me encantan las máquinas de cable y el press en Smith, los pesos libres me dan menos confianza. Sigo a Jeff Nippard en YouTube — me mola el enfoque de alta frecuencia y técnica limpia. No me gusta el cardio. Puedo ir muy intenso si hay buen descanso entre series (2-3 min).',
   'promptRequest.field3.label': 'Días por semana',
@@ -150,7 +140,6 @@ export default {
   'promptRequest.field5.example':
     'Tendinitis rotuliana en rodilla derecha (desde 2024): sin sentadilla libre ni zancadas, pero prensa con rango parcial va bien. Hombro izquierdo: impingement leve — sin press militar, el press inclinado en máquina no molesta.',
   'promptRequest.field5.placeholder': 'ninguna',
-  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'Ver la guía de creación con LLM →',
@@ -353,12 +342,12 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} completado, {weight} kilos, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} completado, {difficulty}',
 
-  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
-  'session.notHereAction': 'No está',
-  'session.notHereAria': 'Reportar {machine} como no disponible en este club',
+  // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
+  'session.notHereAction': 'Mi club no tiene esta máquina',
   'session.reportedBody': 'Reportado. Se ha ocultado en el catálogo de este club. Puedes revertirlo desde Catálogo → Mi club.',
   'session.notesLabel': 'Notas (opcional)',
   'session.notesPlaceholder': 'p. ej. sin polea, usé el agarre largo',
+  'session.addNoteAction': 'Nota',
 
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Aún no hay sesiones registradas',

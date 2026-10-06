@@ -4,14 +4,14 @@ import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HashRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { OnboardingOverlay } from './OnboardingOverlay.jsx';
-import { PROMPT_REQUEST_KEY } from '../lib/promptRequestStorage.js';
 import { I18nProvider } from '../i18n/index.js';
 import { pressSystemBack, settleHistory, resetHashTo } from '../test-utils/history.js';
 
 /**
  * back-closes-dialogs-and-wizard-polish AC5 (+ AC3/AC4 for the onboarding
  * carousel) — decision D1: Back = previous step; on step 1 Back = the same as
- * *Skip* (incl. the "¿Salir sin terminar?" confirm when a draft exists); the
+ * *Skip* (there is no draft confirm anymore — onboarding-fork-shortening
+ * removed the input steps, so the carousel collects nothing to lose); the
  * fork's `guideOnly` revisit simply closes. Real jsdom history + a real
  * HashRouter, like sheet/backClosesDialog.test.jsx.
  */
@@ -32,10 +32,6 @@ vi.mock('../data/gyms.js', () => ({
   loadClubs: async () => [],
   findClubById: async () => null,
   resolveLegacyGymId: async () => null,
-}));
-
-vi.mock('../lib/useClubExclusions.js', () => ({
-  useClubExclusions: vi.fn(() => ({ excludedIds: new Set(), exclude: vi.fn(), include: vi.fn(), writeFailed: false })),
 }));
 
 import { markOnboardingSeen } from '../lib/onboardingStorage.js';
@@ -99,7 +95,7 @@ async function next(user, times = 1) {
   }
 }
 
-const stepText = (n) => screen.getByText(new RegExp(`paso ${n} de 6`, 'i'));
+const stepText = (n) => screen.getByText(new RegExp(`paso ${n} de 3`, 'i'));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -113,31 +109,23 @@ afterEach(async () => {
 });
 
 describe('AC5 — carousel: Back = previous step', () => {
-  it('on step 4 Back goes to step 3, stays open, keeps the route and keeps what was typed', async () => {
+  it('on the club step Back goes to step 2, stays open, and keeps the route', async () => {
     const { user, onClose } = await mountOverlayAtB();
-    await next(user, 3); // step 4: name + goal
-    await user.type(screen.getByLabelText(/objetivo principal/i), 'Marcador-draft-xyz');
-    expect(stepText(4)).toBeInTheDocument();
+    await next(user, 2); // step 3: club
+    expect(stepText(3)).toBeInTheDocument();
 
     await pressSystemBack();
 
-    expect(stepText(3)).toBeInTheDocument();
+    expect(stepText(2)).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
     expect(markOnboardingSeen).not.toHaveBeenCalled();
     expect(currentPath()).toBe('/b');
-
-    await next(user, 1);
-    expect(screen.getByLabelText(/objetivo principal/i)).toHaveValue('Marcador-draft-xyz'); // draft intact
-  }, 15000); // 2 s cold on its own (typing + 3 steps): headroom so a loaded full-suite run cannot hit the 5 s default
+  }, 15000); // 2 s cold on its own (3 steps): headroom so a loaded full-suite run cannot hit the 5 s default
 
   it('Back keeps working step after step (armed again each time) all the way down to step 1', async () => {
     const { user, onClose } = await mountOverlayAtB();
-    await next(user, 4); // step 5
-    await pressSystemBack();
-    expect(stepText(4)).toBeInTheDocument();
-    await pressSystemBack();
-    expect(stepText(3)).toBeInTheDocument();
+    await next(user, 2); // step 3
     await pressSystemBack();
     expect(stepText(2)).toBeInTheDocument();
     await pressSystemBack();
@@ -146,7 +134,7 @@ describe('AC5 — carousel: Back = previous step', () => {
     expect(currentPath()).toBe('/b');
   });
 
-  it('on step 1 with no draft Back is Skip: it marks onboarding seen, closes, and the route is untouched', async () => {
+  it('on step 1 Back is Skip: it marks onboarding seen, closes, and the route is untouched', async () => {
     const { user, onClose } = await mountOverlayAtB();
     await next(user, 1);
     await pressSystemBack(); // step 2 -> step 1
@@ -162,45 +150,10 @@ describe('AC5 — carousel: Back = previous step', () => {
     await pressSystemBack(); // and now Back leaves the page, in one press
     expect(currentPath()).toBe('/a');
   });
-
-  it('on step 1 WITH a draft Back opens the leave-without-finishing confirm instead of closing', async () => {
-    localStorage.setItem(PROMPT_REQUEST_KEY, JSON.stringify({ field2: 'Hipertrofia' }));
-    const { onClose } = await mountOverlayAtB();
-
-    await pressSystemBack();
-
-    expect(screen.getByRole('alertdialog', { name: /salir sin terminar/i })).toBeInTheDocument();
-    expect(onClose).not.toHaveBeenCalled();
-    expect(markOnboardingSeen).not.toHaveBeenCalled();
-    expect(currentPath()).toBe('/b');
-  });
-
-  it('Back on that confirm is Cancel ("Seguir aquí"), never Leave: nothing is written, the carousel stays, and Back re-asks', async () => {
-    localStorage.setItem(PROMPT_REQUEST_KEY, JSON.stringify({ field2: 'Hipertrofia' }));
-    const before = localStorage.getItem(PROMPT_REQUEST_KEY);
-    const { onClose } = await mountOverlayAtB();
-    await pressSystemBack(); // opens the confirm
-
-    await pressSystemBack(); // AC4: closes ONLY the confirm (topmost)
-
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(stepText(1)).toBeInTheDocument();
-    expect(onClose).not.toHaveBeenCalled();
-    expect(markOnboardingSeen).not.toHaveBeenCalled();
-    expect(localStorage.getItem(PROMPT_REQUEST_KEY)).toBe(before);
-    expect(currentPath()).toBe('/b');
-
-    await pressSystemBack(); // the carousel is still armed: step 1 + draft -> asks again
-    expect(screen.getByRole('alertdialog', { name: /salir sin terminar/i })).toBeInTheDocument();
-    expect(currentPath()).toBe('/b');
-  });
 });
 
 describe('AC5 — guideOnly (fork "How the app works" revisit): Back just closes', () => {
-  it('closes with no draft write and no seen-flag write, and the next Back leaves the page', async () => {
-    localStorage.setItem(PROMPT_REQUEST_KEY, JSON.stringify({ field2: 'Hipertrofia' }));
-    const before = localStorage.getItem(PROMPT_REQUEST_KEY);
+  it('closes with no seen-flag write, and the next Back leaves the page', async () => {
     const { onClose } = await mountOverlayAtB({ guideOnly: true });
     expect(screen.getByRole('heading', { name: /así funciona/i })).toBeInTheDocument();
 
@@ -208,7 +161,6 @@ describe('AC5 — guideOnly (fork "How the app works" revisit): Back just closes
 
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(markOnboardingSeen).not.toHaveBeenCalled();
-    expect(localStorage.getItem(PROMPT_REQUEST_KEY)).toBe(before);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(currentPath()).toBe('/b');
 
@@ -250,7 +202,7 @@ describe('AC4 — dialogs opened over the carousel close first, one per Back', (
     expect(currentPath()).toBe('/b');
   });
 
-  it('closing the picker with its own ✕ leaves the carousel armed: the next Back is the carousel\'s Back, not a page exit', async () => {
+  it("closing the picker with its own ✕ leaves the carousel armed: the next Back is the carousel's Back, not a page exit", async () => {
     const { user } = await mountOverlayAtB();
     await next(user, 2);
     await user.click(screen.getByRole('button', { name: /elegir club/i }));
@@ -280,7 +232,7 @@ describe('AC3 — leaving the carousel by its own controls leaves no stale entry
 
   it('Empezar on the last step: one Back afterwards reaches the previous page', async () => {
     const { user, onClose } = await mountOverlayAtB();
-    await next(user, 5);
+    await next(user, 2);
     await user.click(screen.getByRole('button', { name: /^empezar$/i }));
     await settleHistory();
     expect(onClose).toHaveBeenCalledTimes(1);

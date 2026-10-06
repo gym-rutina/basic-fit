@@ -102,36 +102,26 @@ export default {
   'onboarding.step1.title': 'Your trainer, no accounts, no connection needed',
   'onboarding.step1.body': 'Save your routine and history on this device. No account, no API key.',
   'onboarding.step2.preamble':
-    'Rutina does not generate your program — you create it with an LLM chat (ChatGPT, Claude, Gemini…) and import it here.',
+    'Rutina does not create your program: you create it with an AI chat (ChatGPT, Claude, Gemini…) and import it here.',
   'onboarding.step3.title': 'How it works',
-  'onboarding.step3.step1': 'Fill in the prompt',
-  'onboarding.step3.step2': 'Paste it into an LLM chat',
-  'onboarding.step3.step3': 'Copy the JSON reply',
-  'onboarding.step3.step4': 'Import it into the app',
-  'onboarding.step3.outcome1': '✓ passes → ready',
-  'onboarding.step3.outcome2': '✗ fails → fix it and try again',
+  'onboarding.step3.step1': 'Answer a few questions and the app writes the prompt for you',
+  'onboarding.step3.step2': 'Copy the prompt and paste it into your AI chat — ChatGPT, Gemini, whichever you use',
+  'onboarding.step3.step3': 'The chat replies with your routine; copy that reply',
+  'onboarding.step3.step4': 'Paste the reply into the app and your routine is ready',
+  'onboarding.step3.glossLlm': 'An LLM is simply the AI chat you already use (ChatGPT, Gemini, Claude…). Nothing to install.',
+  'onboarding.step3.glossJson': 'The reply arrives in JSON format, but it is just text: copy and paste, nothing more.',
+  'onboarding.step3.outcome1': '✓ If the app accepts the reply, your routine is ready',
+  'onboarding.step3.outcome2': '✗ If something fails, the app tells you what to fix and you try again',
   'onboarding.clubStep.title': 'Your gym',
   'onboarding.clubStep.body': "The assistant will match exercises to your club's available equipment.",
-  'onboarding.nameGoalStep.title': 'Personalize your program',
-  'onboarding.nameGoalStep.body': 'The more detail you give, the more personalized the routine.',
-  'onboarding.scheduleStep.title': 'Your schedule',
-  'onboarding.scheduleStep.body': 'How many days and how much time you have to train each week.',
-  'onboarding.injuriesStep.title': 'Before you start',
-  'onboarding.injuriesStep.body':
-    "The assistant will exclude the movements you name. Leave it blank if you don't have restrictions.",
-  'onboarding.skipConfirm.title': 'Leave without finishing?',
-  'onboarding.skipConfirm.body': "What you've entered will be saved. You can finish the rest later from the guide.",
-  'onboarding.skipConfirm.confirm': 'Leave',
-  'onboarding.skipConfirm.cancel': 'Stay here',
 
-  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  // ── promptRequest (PromptPreferencesScreen / GuideOverlay form) ───
   'promptRequest.field1.label': 'Program name',
   'promptRequest.field1.hint': 'Add a phase number, your name, or any context that helps you recognise this program.',
   'promptRequest.field1.example': 'Elena — Phase 2 of 3 (volume). 8 months training so far.',
   'promptRequest.field2.label': 'Primary goal',
   'promptRequest.field2.hint':
     'Goal, exercises you enjoy, preferred equipment, YouTube channels you follow, what you hate, how you train...',
-  'promptRequest.field2.hintSmart': 'You have {cat1}, {cat2} and {cat3} at your gym — tell it which ones you like.',
   'promptRequest.field2.example':
     'I want more muscle in upper body, especially chest and shoulders. I love cable machines and Smith press — free weights feel less safe to me. I follow Jeff Nippard on YouTube, I like high-frequency evidence-based training. No cardio. I can go very intense if I get 2-3 min rest between sets.',
   'promptRequest.field3.label': 'Days per week',
@@ -144,7 +134,6 @@ export default {
   'promptRequest.field5.example':
     'Patellar tendinitis in right knee (since 2024): no barbell squats or lunges, but leg press with partial range is fine. Left shoulder impingement: no overhead press, incline machine press is OK.',
   'promptRequest.field5.placeholder': 'none',
-  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'View the LLM creation guide →',
@@ -347,12 +336,12 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} completed, {weight} kilos, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} completed, {difficulty}',
 
-  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
-  'session.notHereAction': 'Not here',
-  'session.notHereAria': 'Report {machine} as not available at this club',
+  // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
+  'session.notHereAction': 'My club doesn’t have this machine',
   'session.reportedBody': 'Reported. It has been hidden in this club’s catalog. You can undo it from Catalog → My club.',
   'session.notesLabel': 'Notes (optional)',
   'session.notesPlaceholder': 'e.g. no pulley, used the long grip',
+  'session.addNoteAction': 'Note',
 
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'No sessions recorded yet',

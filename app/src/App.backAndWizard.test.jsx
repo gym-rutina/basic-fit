@@ -162,10 +162,10 @@ describe('A — first-run onboarding carousel (AC5) inside the real Shell', () =
     await settleHistory();
     const forkHeading = screen.getByRole('heading', { level: 1, name: /crea tu rutina/i });
     await user.click(screen.getByRole('button', { name: /^siguiente$/i }));
-    expect(screen.getByText(/paso 2 de 6/i)).toBeInTheDocument();
+    expect(screen.getByText(/paso 2 de 3/i)).toBeInTheDocument();
 
     await pressSystemBack();
-    expect(screen.getByText(/paso 1 de 6/i)).toBeInTheDocument();
+    expect(screen.getByText(/paso 1 de 3/i)).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     await pressSystemBack();

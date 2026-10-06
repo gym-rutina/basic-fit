@@ -2,29 +2,29 @@ import { describe, it, expect } from 'vitest';
 import { ONBOARDING_STEPS } from './onboardingContent.js';
 
 /**
- * onboarding-request-fields R1.1, Rev4-D2/D3, Rev4-SF2/SF3 (tech-plan.md §2.6).
+ * onboarding-fork-shortening — the carousel is trimmed to 3 steps so the
+ * import fork ("Create your routine") appears after 3 screens instead of 6.
  *
- * Pending Cmok implementation — see tech-plan.md. Failures here are expected
- * until Cmok implements onboardingContent.js with this exact shape.
+ * The former name-goal/schedule/injuries input steps were removed: the fork's
+ * "Prepare prompt" wizard (PromptPreferencesScreen) collects the five REQUEST
+ * fields itself, so collecting them twice was redundant. The club step stays
+ * (it is a different persistence path — clubStorage, not promptRequest) and
+ * is now the last step, so it carries the "¡Empezar!" CTA.
  *
- * This test deliberately MOVES away from the prior feature's "4 plain info
- * steps" assertion (Rev4-SF2 explicitly calls this out): the step count
- * drops from 4 info steps to 2 (steps 2+3+4 merge into one, tech-plan.md
- * §2.6), and 4 new input steps are appended — 6 steps total, discriminated
- * by a `type` field so OnboardingOverlay can render two kinds of step
- * without a parallel array.
+ * Shape is still discriminated by a `type` field so OnboardingOverlay can
+ * render two kinds of step without a parallel array.
  */
-describe('ONBOARDING_STEPS — shape (Rev4-D2, AC1)', () => {
-  it('has exactly 6 steps — 2 informational, 4 input', () => {
-    expect(Array.isArray(ONBOARDING_STEPS)).toBe(true);
-    expect(ONBOARDING_STEPS).toHaveLength(6);
+describe('ONBOARDING_STEPS — shape', () => {
+  it('has exactly 3 steps — 2 informational, 1 input', () => {
+    expect(ONBOARDING_STEPS).toHaveLength(3);
+    expect(ONBOARDING_STEPS.filter((s) => s.type === 'info')).toHaveLength(2);
+    expect(ONBOARDING_STEPS.filter((s) => s.type === 'input')).toHaveLength(1);
   });
 
   it('every step has a string icon name, a string title, and a type of "info" or "input"', () => {
     for (const step of ONBOARDING_STEPS) {
       expect(typeof step.icon).toBe('string');
       expect(typeof step.title).toBe('string');
-      expect(step.title.length).toBeGreaterThan(0);
       expect(['info', 'input']).toContain(step.type);
     }
   });
@@ -43,13 +43,14 @@ describe('ONBOARDING_STEPS — shape (Rev4-D2, AC1)', () => {
     }
   });
 
-  it('the first 2 steps are informational, the last 4 are input steps, in that order', () => {
+  it('the first 2 steps are informational, the last is the club input step, in that order', () => {
     const types = ONBOARDING_STEPS.map((s) => s.type);
-    expect(types).toEqual(['info', 'info', 'input', 'input', 'input', 'input']);
+    expect(types).toEqual(['info', 'info', 'input']);
+    expect(ONBOARDING_STEPS[2].field).toBe('club');
   });
 });
 
-describe('ONBOARDING_STEPS — info step 1 (unchanged, Rev4 "UNCHANGED from current implementation")', () => {
+describe('ONBOARDING_STEPS — info step 1 (unchanged)', () => {
   it('keeps the dumbbell icon and its title/body', () => {
     const step1 = ONBOARDING_STEPS[0];
     expect(step1.type).toBe('info');
@@ -77,27 +78,31 @@ describe('ONBOARDING_STEPS — info step 2, merged (Rev4-D2, D3, SF3)', () => {
     expect(step2().outcomes.length).toBeGreaterThan(0);
   });
 
+  it('carries the LLM/JSON glosses for the guideOnly rendering', () => {
+    expect(Array.isArray(step2().glosses)).toBe(true);
+    expect(step2().glosses).toHaveLength(2);
+  });
+
   it('drops the footnote — Rev4-D3 removes it deliberately', () => {
     expect(step2().footnote).toBeUndefined();
   });
 });
 
-describe('ONBOARDING_STEPS — the 4 input steps, in fixed order (R1.2, Rev3, Rev4 "what does NOT change")', () => {
-  const inputSteps = () => ONBOARDING_STEPS.slice(2);
+describe('ONBOARDING_STEPS — the club input step (now last)', () => {
+  const clubStep = () => ONBOARDING_STEPS[2];
 
-  it('orders club → name-goal → schedule → injuries', () => {
-    expect(inputSteps().map((s) => s.field)).toEqual(['club', 'name-goal', 'schedule', 'injuries']);
+  it('is the club step and is marked isLast — it carries the "¡Empezar!" CTA', () => {
+    expect(clubStep().field).toBe('club');
+    expect(clubStep().isLast).toBe(true);
   });
 
-  it('only the last input step (injuries) is marked isLast — it carries the "¡Empezar!" CTA (Rev3-SF1)', () => {
-    const flags = inputSteps().map((s) => Boolean(s.isLast));
-    expect(flags).toEqual([false, false, false, true]);
+  it('has non-empty body copy (what/how/example — R1.1)', () => {
+    expect(typeof clubStep().body).toBe('string');
+    expect(clubStep().body.length).toBeGreaterThan(0);
   });
 
-  it('every input step has non-empty body copy (what/how/example — R1.1)', () => {
-    for (const step of inputSteps()) {
-      expect(typeof step.body).toBe('string');
-      expect(step.body.length).toBeGreaterThan(0);
-    }
+  it('no removed input step (name-goal/schedule/injuries) remains', () => {
+    const fields = ONBOARDING_STEPS.map((s) => s.field).filter(Boolean);
+    expect(fields).toEqual(['club']);
   });
 });

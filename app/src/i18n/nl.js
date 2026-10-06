@@ -107,36 +107,26 @@ export default {
   'onboarding.step1.title': 'Je coach, zonder account of verbinding',
   'onboarding.step1.body': 'Bewaar je routine en geschiedenis op dit apparaat. Geen account, geen API-sleutel.',
   'onboarding.step2.preamble':
-    'Rutina maakt je programma niet — je maakt het met een LLM-chat (ChatGPT, Claude, Gemini…) en importeert het hier.',
+    'Rutina maakt je programma niet: je maakt het met een AI-chat (ChatGPT, Claude, Gemini…) en importeert het hier.',
   'onboarding.step3.title': 'Zo werkt het',
-  'onboarding.step3.step1': 'Vul de prompt in',
-  'onboarding.step3.step2': 'Plak het in een LLM-chat',
-  'onboarding.step3.step3': 'Kopieer het JSON-antwoord',
-  'onboarding.step3.step4': 'Importeer het in de app',
-  'onboarding.step3.outcome1': '✓ geldig → klaar',
-  'onboarding.step3.outcome2': '✗ fout → herstel en probeer opnieuw',
+  'onboarding.step3.step1': 'Beantwoord een paar vragen en de app schrijft de prompt voor je',
+  'onboarding.step3.step2': 'Kopieer de prompt en plak hem in je AI-chat — ChatGPT, Gemini, wat je ook gebruikt',
+  'onboarding.step3.step3': 'De chat antwoordt met je routine; kopieer dat antwoord',
+  'onboarding.step3.step4': 'Plak het antwoord in de app en je routine is klaar',
+  'onboarding.step3.glossLlm': 'Een LLM is gewoon de AI-chat die je al gebruikt (ChatGPT, Gemini, Claude…). Niets te installeren.',
+  'onboarding.step3.glossJson': 'Het antwoord komt in JSON-formaat, maar is gewoon tekst: kopiëren en plakken, meer niet.',
+  'onboarding.step3.outcome1': '✓ Als de app het antwoord accepteert, is je routine klaar',
+  'onboarding.step3.outcome2': '✗ Als iets mislukt, zegt de app wat je moet corrigeren en probeer je opnieuw',
   'onboarding.clubStep.title': 'Je sportschool',
   'onboarding.clubStep.body': 'De assistent past de oefeningen aan op de apparatuur die in je club beschikbaar is.',
-  'onboarding.nameGoalStep.title': 'Personaliseer je programma',
-  'onboarding.nameGoalStep.body': 'Hoe gedetailleerder je bent, hoe persoonlijker de routine wordt.',
-  'onboarding.scheduleStep.title': 'Je schema',
-  'onboarding.scheduleStep.body': 'Hoeveel dagen en hoeveel tijd je elke week kunt trainen.',
-  'onboarding.injuriesStep.title': 'Voordat je klaar bent',
-  'onboarding.injuriesStep.body':
-    'De assistent sluit de bewegingen uit die je aangeeft. Laat het leeg als je geen beperkingen hebt.',
-  'onboarding.skipConfirm.title': 'Afsluiten zonder af te ronden?',
-  'onboarding.skipConfirm.body': 'Wat je hebt ingevuld, wordt bewaard. Je kunt de rest later via de handleiding afronden.',
-  'onboarding.skipConfirm.confirm': 'Stoppen',
-  'onboarding.skipConfirm.cancel': 'Hier blijven',
 
-  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  // ── promptRequest (PromptPreferencesScreen / GuideOverlay form) ───
   'promptRequest.field1.label': 'Naam / programma',
   'promptRequest.field1.hint': 'Je kunt een fase, eigen naam of context over je voortgang toevoegen.',
   'promptRequest.field1.example': 'Elena — Fase 2 van 3 (volume). Ik train nu 8 maanden.',
   'promptRequest.field2.label': 'Hoofddoel',
   'promptRequest.field2.hint':
     'Doel, oefeningen die je leuk vindt, voorkeursmateriaal, YouTube-kanalen die je volgt, wat je haat, hoe je traint...',
-  'promptRequest.field2.hintSmart': 'Je hebt {cat1}, {cat2} en {cat3} in je sportschool — vertel welke je leuk vindt.',
   'promptRequest.field2.example':
     'Ik wil meer spiermassa in mijn bovenlichaam, vooral borst en schouders. Ik ben dol op cable machines en de Smith press — vrije gewichten geven me minder vertrouwen. Ik volg Jeff Nippard op YouTube, ik vind zijn evidence-based aanpak met hoge frequentie en schone techniek leuk. Geen cardio. Ik kan erg intensief trainen als er goed herstel tussen de sets zit (2-3 min).',
   'promptRequest.field3.label': 'Dagen per week',
@@ -149,7 +139,6 @@ export default {
   'promptRequest.field5.example':
     'Patellapeesontsteking in rechterknie (sinds 2024): geen vrije squat of lunges, maar leg press met gedeeltelijke bewegingsuitslag kan wel. Linkerschouder: licht impingement — geen shoulder press, incline press op het toestel geeft geen klachten.',
   'promptRequest.field5.placeholder': 'geen',
-  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'Bekijk de LLM-handleiding →',
@@ -353,12 +342,12 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} voltooid, {weight} kilo, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} voltooid, {difficulty}',
 
-  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
-  'session.notHereAction': 'Niet hier',
-  'session.notHereAria': 'Meld {machine} als niet beschikbaar in deze club',
+  // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
+  'session.notHereAction': 'Mijn club heeft dit toestel niet',
   'session.reportedBody': 'Gemeld. Verborgen in de catalogus van deze club. Je kunt dit ongedaan maken via Catalogus → Mijn club.',
   'session.notesLabel': 'Notities (optioneel)',
   'session.notesPlaceholder': 'bijv. geen katrol, lange greep gebruikt',
+  'session.addNoteAction': 'Notitie',
 
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Nog geen sessies geregistreerd',

@@ -104,36 +104,26 @@ export default {
   'onboarding.step1.title': 'Ваш трэнер без уліковых запісаў і злучэння',
   'onboarding.step1.body': 'Захоўвайце сваю руціну і гісторыю на гэтай прыладзе. Без уліковага запісу, без ключа API.',
   'onboarding.step2.preamble':
-    'Rutina не стварае вашу праграму — вы ствараеце яе ў чаце LLM (ChatGPT, Claude, Gemini…) і імпартуеце сюды.',
+    'Rutina не стварае вашу праграму: вы ствараеце яе ў ШІ-чате (ChatGPT, Claude, Gemini…) і імпартуеце сюды.',
   'onboarding.step3.title': 'Як гэта працуе',
-  'onboarding.step3.step1': 'Запоўніце prompt',
-  'onboarding.step3.step2': 'Устаўце яго ў чат LLM',
-  'onboarding.step3.step3': 'Скапіруйце адказ JSON',
-  'onboarding.step3.step4': 'Імпартуйце ў прыкладанне',
-  'onboarding.step3.outcome1': '✓ прайшло → гатова',
-  'onboarding.step3.outcome2': '✗ не атрымалася → выпраўце і паспрабуйце зноў',
+  'onboarding.step3.step1': 'Адкажыце на некалькі пытанняў — праграма напіша запыт за вас',
+  'onboarding.step3.step2': 'Скапіруйце запыт і ўстаўце ў ваш ШІ-чат — ChatGPT, Gemini, які карыстаецеся',
+  'onboarding.step3.step3': 'Чат адкажа вашай праграмай; скапіруйце гэты адказ',
+  'onboarding.step3.step4': 'Устаўце адказ у праграму — і ваша праграма гатова',
+  'onboarding.step3.glossLlm': 'ШІ (LLM) — гэта проста чат, якім вы ўжо карыстаецеся (ChatGPT, Gemini, Claude…). Нічога ўсталёўваць не трэба.',
+  'onboarding.step3.glossJson': 'Адказ прыходзіць у фармаце JSON, але гэта проста тэкст: скапіраваць і ўставіць — больш нічога.',
+  'onboarding.step3.outcome1': '✓ Калі праграма прыме адказ — ваша праграма гатова',
+  'onboarding.step3.outcome2': '✗ Калі што-то не прайшло, праграма падкажа, што выправіць, і паспрабуеце зноў',
   'onboarding.clubStep.title': 'Ваш трэнажорны зал',
   'onboarding.clubStep.body': 'Памочнік падбярэ практыкаванні пад абсталяванне, даступнае ў вашым клубе.',
-  'onboarding.nameGoalStep.title': 'Наладзьце сваю праграму',
-  'onboarding.nameGoalStep.body': 'Чым больш падрабязна вы апішаце, тым больш персаналізаванай будзе руціна.',
-  'onboarding.scheduleStep.title': 'Ваш графік',
-  'onboarding.scheduleStep.body': 'Колькі дзён і колькі часу ў вас ёсць для трэніровак кожны тыдзень.',
-  'onboarding.injuriesStep.title': 'Перад пачаткам',
-  'onboarding.injuriesStep.body':
-    'Памочнік выключыць рухі, якія вы пазначыце. Пакіньце пустым, калі абмежаванняў няма.',
-  'onboarding.skipConfirm.title': 'Выйсці, не закончыўшы?',
-  'onboarding.skipConfirm.body': 'Тое, што вы ўвялі, будзе захавана. Астатняе можна дапоўніць пазней у кіраўніцтве.',
-  'onboarding.skipConfirm.confirm': 'Выйсці',
-  'onboarding.skipConfirm.cancel': 'Застацца тут',
 
-  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  // ── promptRequest (PromptPreferencesScreen / GuideOverlay form) ───
   'promptRequest.field1.label': 'Назва / праграма',
   'promptRequest.field1.hint': 'Дадай нумар фазы, імя ці кантэкст, каб лёгка пазнаць праграму.',
   'promptRequest.field1.example': 'Алена — Фаза 2 з 3 (аб\'ём). Займаюся 8 месяцаў.',
   'promptRequest.field2.label': 'Асноўная мэта',
   'promptRequest.field2.hint':
     'Мэта, любімыя практыкаванні, абсталяванне, якое падабаецца, YouTube-каналы, якія глядзіш, што не любіш, як трэніруешся...',
-  'promptRequest.field2.hintSmart': 'У вас ёсць {cat1}, {cat2} і {cat3} у вашым зале — раскажыце, якія вам падабаюцца.',
   'promptRequest.field2.example':
     'Хачу больш мышц у верхняй частцы цела, асабліва грудзей і плячэй. Люблю трос і трэнажёры Смітта, вольныя вагі мне менш падабаюцца. Гляджу Джэфа Ніпарда на YouTube — падабаецца высокачастотны падыход. Кардыё — не. Магу трэніравацца вельмі інтэнсіўна пры доўгім адпачынку (2-3 мін).',
   'promptRequest.field3.label': 'Дзён на тыдзень',
@@ -146,7 +136,6 @@ export default {
   'promptRequest.field5.example':
     'Тэндыніт каленнай чашачкі ў правым калене (з 2024): без прысяданняў і выпадаў, але прэс нагамі з частковым дыяпазонам нармальна. Левае плячо: лёгкі імпінджмент — без жіму над галавой, нахіленае жымоўе ў трэнажёры ўсё ж добра.',
   'promptRequest.field5.placeholder': 'няма',
-  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'Паглядзіце кіраўніцтва па стварэнні з LLM →',
@@ -349,12 +338,12 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} завершана, {weight} кілаграмаў, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} завершана, {difficulty}',
 
-  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
-  'session.notHereAction': 'Няма тут',
-  'session.notHereAria': 'Паведаміць, што {machine} недаступны ў гэтым клубе',
+  // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
+  'session.notHereAction': 'У маім клубе няма гэтага трэнажора',
   'session.reportedBody': 'Паведамлена. Трэнажор схаваны ў каталогу гэтага клуба. Вярнуць яго можна ў раздзеле Каталог → Мой клуб.',
   'session.notesLabel': 'Нататкі (неабавязкова)',
   'session.notesPlaceholder': 'напр., без блока, выкарыстаў доўгі хват',
+  'session.addNoteAction': 'Нататка',
 
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Пакуль няма запісаных сесій',

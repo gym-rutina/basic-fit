@@ -107,36 +107,26 @@ export default {
   'onboarding.step1.title': 'Ton coach, sans compte ni connexion',
   'onboarding.step1.body': 'Sauvegarde ta routine et ton historique sur cet appareil. Sans compte, sans clé API.',
   'onboarding.step2.preamble':
-    'Rutina ne génère pas ton programme — tu le crées avec un chat LLM (ChatGPT, Claude, Gemini…) et tu l’importes ici.',
+    'Rutina ne crée pas ton programme : tu le crées avec un chat IA (ChatGPT, Claude, Gemini…) et tu l’importes ici.',
   'onboarding.step3.title': 'Voici comment ça marche',
-  'onboarding.step3.step1': 'Remplis le prompt',
-  'onboarding.step3.step2': 'Colle-le dans un chat LLM',
-  'onboarding.step3.step3': 'Copie la réponse JSON',
-  'onboarding.step3.step4': 'Importe-la dans l’app',
-  'onboarding.step3.outcome1': '✓ passe → prêt',
-  'onboarding.step3.outcome2': '✗ échoue → corrige et réessaie',
+  'onboarding.step3.step1': 'Réponds à quelques questions et l’app écrit le prompt pour toi',
+  'onboarding.step3.step2': 'Copie le prompt et colle-le dans ton chat IA — ChatGPT, Gemini, celui que tu utilises',
+  'onboarding.step3.step3': 'Le chat te répond avec ta routine ; copie cette réponse',
+  'onboarding.step3.step4': 'Colle la réponse dans l’app et ta routine est prête',
+  'onboarding.step3.glossLlm': 'Un LLM, c’est simplement le chat IA que tu utilises déjà (ChatGPT, Gemini, Claude…). Rien à installer.',
+  'onboarding.step3.glossJson': 'La réponse arrive au format JSON, mais ce n’est que du texte : copier-coller, rien de plus.',
+  'onboarding.step3.outcome1': '✓ Si l’app accepte la réponse, ta routine est prête',
+  'onboarding.step3.outcome2': '✗ Si quelque chose échoue, l’app te dit quoi corriger et tu réessaies',
   'onboarding.clubStep.title': 'Ta salle de sport',
   'onboarding.clubStep.body': 'L’assistant adaptera les exercices à l’équipement disponible dans ton club.',
-  'onboarding.nameGoalStep.title': 'Personnalise ton programme',
-  'onboarding.nameGoalStep.body': 'Plus tu es détaillé, plus la routine sera personnalisée.',
-  'onboarding.scheduleStep.title': 'Ton planning',
-  'onboarding.scheduleStep.body': 'Combien de jours et combien de temps tu peux consacrer à l’entraînement chaque semaine.',
-  'onboarding.injuriesStep.title': 'Avant de terminer',
-  'onboarding.injuriesStep.body':
-    'L’assistant exclura les mouvements que tu indiques. Tu peux laisser vide si tu n’as pas de restrictions.',
-  'onboarding.skipConfirm.title': 'Quitter sans terminer ?',
-  'onboarding.skipConfirm.body': 'Ce que tu as écrit sera sauvegardé. Tu pourras compléter le reste plus tard depuis le guide.',
-  'onboarding.skipConfirm.confirm': 'Quitter',
-  'onboarding.skipConfirm.cancel': 'Rester ici',
 
-  // ── promptRequest (OnboardingOverlay input steps / GuideOverlay form) ───
+  // ── promptRequest (PromptPreferencesScreen / GuideOverlay form) ───
   'promptRequest.field1.label': 'Nom / programme',
   'promptRequest.field1.hint': 'Tu peux ajouter une phase, un prénom ou du contexte sur ta progression.',
   'promptRequest.field1.example': 'Elena — Phase 2 sur 3 (volume). Cela fait 8 mois que je m’entraîne.',
   'promptRequest.field2.label': 'Objectif principal',
   'promptRequest.field2.hint':
     'Objectif, exercices que tu aimes, matériel préféré, chaînes YouTube suivies, ce que tu détestes, comment tu t’entraînes...',
-  'promptRequest.field2.hintSmart': 'Tu as {cat1}, {cat2} et {cat3} dans ta salle — raconte-lui lesquels tu préfères.',
   'promptRequest.field2.example':
     'Je veux prendre du muscle dans le haut du corps, surtout pectoraux et épaules. J’adore les machines à poulie et le press Smith — les poids libres m’inspirent moins confiance. Je suis Jeff Nippard sur YouTube, j’aime son approche haute fréquence et technique propre. Pas de cardio. Je peux aller très intensif si j’ai un bon repos entre les séries (2-3 min).',
   'promptRequest.field3.label': 'Jours par semaine',
@@ -149,7 +139,6 @@ export default {
   'promptRequest.field5.example':
     'Tendinite rotulienne au genou droit (depuis 2024) : pas de squat libre ni de fentes, mais la presse avec amplitude partielle va bien. Épaule gauche : conflit léger — pas de développé militaire, le développé incliné en machine ne dérange pas.',
   'promptRequest.field5.placeholder': 'aucune',
-  'promptRequest.counter': '{n} / {max}',
 
   // ── guide (guideLocale.js / GuideOverlay.jsx) ───────────────────────────
   'guide.linkText': 'Voir le guide de création avec LLM →',
@@ -352,12 +341,12 @@ export default {
   'session.completedAnnouncementWithWeight': '{label} terminé, {weight} kilos, {difficulty}',
   'session.completedAnnouncementNoWeight': '{label} terminé, {difficulty}',
 
-  // ── club-equipment-reporting (ActiveSessionScreen «No está» row + notes) ──
-  'session.notHereAction': 'Pas ici',
-  'session.notHereAria': 'Signaler {machine} comme indisponible dans ce club',
+  // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
+  'session.notHereAction': 'Mon club n’a pas cette machine',
   'session.reportedBody': 'Signalé. Masqué dans le catalogue de ce club. Vous pouvez l’annuler depuis Catalogue → Mon club.',
   'session.notesLabel': 'Notes (facultatif)',
   'session.notesPlaceholder': 'p. ex. pas de poulie, prise longue utilisée',
+  'session.addNoteAction': 'Note',
 
   // ── history (HistoryScreen.jsx) ──────────────────────────────────────────
   'history.emptyTitle': 'Aucune séance enregistrée pour le moment',
