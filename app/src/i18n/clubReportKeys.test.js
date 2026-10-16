@@ -12,14 +12,14 @@ import { UI_LOCALES, CATALOGS } from './index.js';
  */
 
 const ANCHORS = {
-  'session.notHereAction': { es: 'No está', en: 'Not here' },
-  'session.notHereAria': { es: 'Reportar {machine} como no disponible en este club', en: 'Report {machine} as not available at this club' },
+  'session.notHereAction': { es: 'Mi club no tiene esta máquina', en: 'My club doesn’t have this machine' },
   'session.reportedBody': {
     es: 'Reportado. Se ha ocultado en el catálogo de este club. Puedes revertirlo desde Catálogo → Mi club.',
     en: 'Reported. It has been hidden in this club’s catalog. You can undo it from Catalog → My club.',
   },
   'session.notesLabel': { es: 'Notas (opcional)', en: 'Notes (optional)' },
   'session.notesPlaceholder': { es: 'p. ej. sin polea, usé el agarre largo', en: 'e.g. no pulley, used the long grip' },
+  'session.addNoteAction': { es: 'Nota', en: 'Note' },
 };
 
 describe('club-equipment-reporting i18n keys (AC20)', () => {
@@ -39,12 +39,6 @@ describe('club-equipment-reporting i18n keys (AC20)', () => {
       for (const locale of UI_LOCALES.filter((l) => l !== 'es')) {
         expect({ key, locale, copiedFromEs: CATALOGS[locale][key] === CATALOGS.es[key] }).toEqual({ key, locale, copiedFromEs: false });
       }
-    }
-  });
-
-  it('keeps the {machine} token in the accessible-name string of every locale', () => {
-    for (const locale of UI_LOCALES) {
-      expect(CATALOGS[locale]['session.notHereAria']).toContain('{machine}');
     }
   });
 

@@ -97,13 +97,16 @@ function DifficultyPicker({ value, onChange, t }) {
  * buildVideoQuery, so the sheet always has a video, and the old "resolved +
  * sparse → plain text" branch is unreachable and has been removed (D8).
  *
- * club-equipment-reporting S1 (ux-design §2, tech-plan D10): ONLY the resolved-
- * catalog branch can carry «No está». It shows when a club is selected, the
- * club's exclusions have loaded (never act before knowing) and the machine is
- * not already excluded locally; once tapped it is replaced, for the rest of the
- * visit, by the polite-live-region confirmation (one-tap finality — corrections
- * live in Catálogo → Mi club). Gear and unresolved rows never get it (AC4).
- * `reporting` = { clubId, excludedIds, reportedIds, onNotHere }.
+ * club-equipment-reporting S1 (ux-design.md, revised 2026-10-06 UAT): the
+ * «No está» action lives INSIDE the EquipmentReferenceSheet, not on the row —
+ * the row shows only the equipment link. It appears in the sheet when a club
+ * is selected, the club's exclusions have loaded (never act before knowing)
+ * and the machine is not already excluded locally; once tapped it is replaced,
+ * for the rest of the visit, by the polite-live-region confirmation (one-tap
+ * finality — corrections live in Catálogo → Mi club). Gear and unresolved rows
+ * never get it (AC4) — they have no sheet at all.
+ * `reporting` = { clubId, excludedIds, reportedIds, onNotHere }; only the
+ * resolved-catalog branch forwards it into the sheet.
  */
 function EquipmentRow({ ex, extraEquipment, locale, t, reporting }) {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -140,69 +143,37 @@ function EquipmentRow({ ex, extraEquipment, locale, t, reporting }) {
   const canReport = Boolean(reporting && reporting.clubId && reporting.excludedIds && !excludedLocally);
 
   return (
-    // One grid item (the card lays its children out in a gap grid): the action
-    // and the confirmation belong to this row, not to the card.
+    // One grid item (the card lays its children out in a gap grid). The row is
+    // just the equipment link; the «No está» action lives inside the sheet.
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <button
-          ref={triggerRef}
-          type="button"
-          aria-haspopup="dialog"
-          onClick={() => setSheetOpen(true)}
-          style={{
-            all: 'unset',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '6px 0',
-            flex: 1,
-            minWidth: 0,
-            boxSizing: 'border-box',
-          }}
-        >
-          {imageUrl && (
-            <img
-              src={imageUrl}
-              alt=""
-              style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 'var(--radius-control)', flexShrink: 0 }}
-            />
-          )}
-          <span style={{ flex: 1, minWidth: 0, font: 'var(--text-body-sm)', color: 'var(--bf-ink)' }}>
-            {displayName}
-          </span>
-          <Icon name="chevron-right" size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-        </button>
-
-        {canReport && !reported && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            aria-label={t('session.notHereAria', { machine: equipmentDisplayName(eq, locale) })}
-            onClick={() => reporting.onNotHere(eq.id)}
-            style={{ minHeight: 44, padding: '0 10px', flexShrink: 0 }}
-          >
-            {t('session.notHereAction')} <Icon name="x" size={14} />
-          </Button>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="dialog"
+        onClick={() => setSheetOpen(true)}
+        style={{
+          all: 'unset',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          padding: '6px 0',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            alt=""
+            style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 'var(--radius-control)', flexShrink: 0 }}
+          />
         )}
-      </div>
-
-      {/* The status region is mounted while the action is offered (empty), so
-          the confirmation is ANNOUNCED when its text arrives rather than
-          appearing together with its own live region. */}
-      {(canReport || reported) && (
-        <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-          {reported && (
-            <>
-              <Icon name="check-circle" size={16} style={{ color: 'var(--bf-success)', marginTop: 2 }} />
-              <span dir="auto" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}>
-                {t('session.reportedBody')}
-              </span>
-            </>
-          )}
-        </div>
-      )}
+        <span style={{ flex: 1, minWidth: 0, font: 'var(--text-body-sm)', color: 'var(--bf-ink)' }}>
+          {displayName}
+        </span>
+        <Icon name="chevron-right" size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+      </button>
 
       {sheetOpen && (
         <EquipmentReferenceSheet
@@ -211,6 +182,7 @@ function EquipmentRow({ ex, extraEquipment, locale, t, reporting }) {
           steps={steps}
           videoHref={videoHref}
           videoLabel={videoLabel}
+          reporting={{ equipmentId: eq.id, canReport, reported, onNotHere: reporting?.onNotHere }}
           onClose={() => {
             setSheetOpen(false);
             triggerRef.current?.focus();
@@ -240,7 +212,11 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
   const [difficulty, setDifficulty] = useState(ex.difficulty ?? null);
   // club-equipment-reporting AC16: the optional private note. Seeded from the
   // saved record so a reopened card re-fills, like weight and difficulty.
+  // 2026-10-06 UAT: the textarea is NOT shown by default — a small toggle
+  // button next to «Marcar completado» reveals it (notes are rare); a card
+  // that already carries a saved note opens with the textarea visible.
   const [notes, setNotes] = useState(ex.loggedNotes ?? '');
+  const [showNotes, setShowNotes] = useState(() => Boolean(ex.loggedNotes));
   const notesInputId = 'notes-' + ex.exerciseIndex + '-' + (ex.equipmentId ?? 'x');
   // 'loading' | 'filled' | 'empty' — "is the input empty" cannot tell apart
   // "not looked up yet" from "looked up, nothing there" (tech-plan.md D9),
@@ -261,6 +237,7 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
       setWeight(ex.weightUsed ?? '');
       setDifficulty(ex.difficulty ?? null);
       setNotes(ex.loggedNotes ?? '');
+      setShowNotes(Boolean(ex.loggedNotes));
       return undefined;
     }
     if (!isExpanded) return undefined;
@@ -287,7 +264,7 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
     return () => {
       cancelled = true;
     };
-  }, [isExpanded, isDone, ex.equipmentId, ex.name, ex.weightUsed, ex.difficulty]);
+  }, [isExpanded, isDone, ex.equipmentId, ex.name, ex.weightUsed, ex.difficulty, ex.loggedNotes]);
 
   const isCurrent = isExpanded || (isNextPending && !isDone);
 
@@ -392,49 +369,66 @@ function ExerciseLogCard({ ex, isExpanded, isNextPending, onToggle, onComplete, 
             <DifficultyPicker value={difficulty} onChange={setDifficulty} t={t} />
           </div>
 
-          <div>
-            <label
-              htmlFor={notesInputId}
-              style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}
-            >
-              {t('session.notesLabel')}
-            </label>
-            <textarea
-              id={notesInputId}
-              rows={2}
-              dir="auto"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t('session.notesPlaceholder')}
-              style={{
-                width: '100%',
-                boxSizing: 'border-box',
-                font: '400 15px/1.4 var(--font-sans)',
-                color: 'var(--bf-ink)',
-                border: '1px solid var(--border-control)',
-                borderRadius: 'var(--radius-control)',
-                padding: '10px 14px',
-                resize: 'vertical',
-              }}
-            />
-          </div>
+          {showNotes && (
+            <div>
+              <label
+                htmlFor={notesInputId}
+                style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}
+              >
+                {t('session.notesLabel')}
+              </label>
+              <textarea
+                id={notesInputId}
+                rows={2}
+                dir="auto"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t('session.notesPlaceholder')}
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  font: '400 15px/1.4 var(--font-sans)',
+                  color: 'var(--bf-ink)',
+                  border: '1px solid var(--border-control)',
+                  borderRadius: 'var(--radius-control)',
+                  padding: '10px 14px',
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+          )}
 
-          <Button
-            variant="primary"
-            disabled={!difficulty}
-            onClick={() =>
-              onComplete({
-                exerciseIndex: ex.exerciseIndex,
-                equipmentId: ex.equipmentId,
-                name: ex.name,
-                weightUsed: weight === '' ? null : Number(weight),
-                difficulty,
-                notes,
-              })
-            }
-          >
-            <Icon name="check" size={16} /> {t('session.markCompleteAction')}
-          </Button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              variant="primary"
+              disabled={!difficulty}
+              onClick={() =>
+                onComplete({
+                  exerciseIndex: ex.exerciseIndex,
+                  equipmentId: ex.equipmentId,
+                  name: ex.name,
+                  weightUsed: weight === '' ? null : Number(weight),
+                  difficulty,
+                  notes,
+                })
+              }
+              style={{ flex: 1 }}
+            >
+              <Icon name="check" size={16} /> {t('session.markCompleteAction')}
+            </Button>
+            {!showNotes && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label={t('session.addNoteAction')}
+                onClick={() => setShowNotes(true)}
+                style={{ flexShrink: 0 }}
+              >
+                <Icon name="pencil" size={14} /> {t('session.addNoteAction')}
+              </Button>
+            )}
+          </div>
           {isDone && (
             <Button variant="ghost" onClick={() => onUndo(ex.exerciseIndex)}>
               {t('common.undo')}
@@ -466,7 +460,7 @@ export function ActiveSessionScreen({ onSessionEnded }) {
   const [club] = useState(() => readClub());
   const clubId = club?.clubId ?? null;
   const { excludedIds, exclude } = useClubExclusions(clubId, { method: 'session' });
-  // Machines reported via «No está» during this visit — drives the row's
+  // Machines reported via «No está» during this visit — drives the sheet's
   // one-tap-final confirmation state (not persisted: the exclusion is).
   const [reportedIds, setReportedIds] = useState(() => new Set());
   // AC3: at most one implicit present-report per equipment per session.

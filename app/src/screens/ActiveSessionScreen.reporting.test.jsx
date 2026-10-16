@@ -80,14 +80,23 @@ function mount(rutina, { club = CLUB, excluded = [], session, hang = false } = {
   );
 }
 
-const notHereName = new RegExp(`^Reportar ${CAT_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} como no disponible en este club$`);
-const notHereButton = () => screen.queryByRole('button', { name: /^Reportar .+ como no disponible en este club$/ });
+const notHereName = /^Mi club no tiene esta máquina$/;
+const notHereButton = () => screen.queryByRole('button', { name: notHereName });
+// 2026-10-06 UAT: «No está» moved INSIDE the EquipmentReferenceSheet — the
+// tests open the sheet (tap the equipment link) before looking for it.
+async function openSheet(user) {
+  await user.click(await screen.findByRole('button', { name: new RegExp(CAT_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }));
+  await screen.findByRole('dialog');
+}
 
 async function complete(user, { weight = '40', notes } = {}) {
   const w = await screen.findByLabelText(/peso usado/i);
   await user.clear(w);
   await user.type(w, weight);
-  if (notes !== undefined) await user.type(screen.getByLabelText(/notas \(opcional\)/i), notes);
+  if (notes !== undefined) {
+    await user.click(screen.getByRole('button', { name: /nota/i }));
+    await user.type(screen.getByLabelText(/notas \(opcional\)/i), notes);
+  }
   await user.click(screen.getByRole('radio', { name: /normal/i }));
   await user.click(screen.getByRole('button', { name: /marcar completado/i }));
 }
@@ -100,11 +109,13 @@ beforeEach(() => {
 });
 afterEach(() => localStorage.clear());
 
-describe('S1 — «No está» on the equipment reference row (AC1, AC2, AC4)', () => {
+describe('S1 — club absence report inside the equipment reference sheet (AC1, AC2, AC4)', () => {
   it('offers exactly one report action on a catalog machine with a club selected, named for what it does (AC1)', async () => {
+    const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
+    await openSheet(user);
     const btn = await screen.findByRole('button', { name: notHereName });
-    expect(btn).toHaveTextContent('No está');
+    expect(btn).toHaveTextContent('Mi club no tiene esta máquina');
     // AC1: no separate "confirm present" control exists
     expect(screen.queryByRole('button', { name: /está aquí|confirmar presente|presente/i })).not.toBeInTheDocument();
     expect(btn.style.minHeight === '44px' || getComputedStyle(btn).minHeight === '44px').toBe(true);
@@ -113,6 +124,7 @@ describe('S1 — «No está» on the equipment reference row (AC1, AC2, AC4)', (
   it('tap: excludes locally through the single exclusions path AND enqueues an absent/session report (AC2)', async () => {
     const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
+    await openSheet(user);
 
     await user.click(await screen.findByRole('button', { name: notHereName }));
 
@@ -124,6 +136,7 @@ describe('S1 — «No está» on the equipment reference row (AC1, AC2, AC4)', (
   it('one-tap finality: the action is replaced by the confirmation, announced politely, pointing corrections to Catálogo → Mi club', async () => {
     const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
+    await openSheet(user);
 
     await user.click(await screen.findByRole('button', { name: notHereName }));
 
@@ -138,6 +151,7 @@ describe('S1 — «No está» on the equipment reference row (AC1, AC2, AC4)', (
     outbox.enqueueReport.mockRejectedValue(new Error('outbox down'));
     const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
+    await openSheet(user);
 
     await user.click(await screen.findByRole('button', { name: notHereName }));
 
@@ -146,9 +160,12 @@ describe('S1 — «No está» on the equipment reference row (AC1, AC2, AC4)', (
   });
 
   it('renders NO action with no club selected — the row is today\'s row (AC4)', async () => {
+    const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]), { club: null });
     await screen.findByLabelText(/peso usado/i);
+    await openSheet(user);
     expect(notHereButton()).not.toBeInTheDocument();
+    expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
   });
 
   it('renders NO action on a gear row (AC4 / AC19)', async () => {
@@ -158,24 +175,30 @@ describe('S1 — «No está» on the equipment reference row (AC1, AC2, AC4)', (
     mount(rutina);
     await screen.findByLabelText(/peso usado/i);
     expect(notHereButton()).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('renders NO action on an unresolved id (AC4)', async () => {
     mount(rutinaWith([ex(UNRESOLVED_ID, 'Curl')]));
     await screen.findByLabelText(/peso usado/i);
     expect(notHereButton()).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('renders NO action while exclusions are still loading — the tri-state: never report before knowing', async () => {
+    const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]), { hang: true });
     await screen.findByLabelText(/peso usado/i);
+    await openSheet(user);
     expect(notHereButton()).not.toBeInTheDocument();
   });
 
   it('renders NO action when the machine is already excluded locally — it was reported when it was excluded (no false "Reportado")', async () => {
+    const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]), { excluded: [CATALOG_ID] });
     await screen.findByLabelText(/peso usado/i);
     await waitFor(() => expect(db.getClubExclusions).toHaveBeenCalled());
+    await openSheet(user);
     expect(notHereButton()).not.toBeInTheDocument();
     expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
   });
@@ -278,13 +301,21 @@ describe('implicit present-report on completion (AC3, AC4)', () => {
 });
 
 describe('S2 — personal notes (AC16, AC18)', () => {
-  it('shows an optional, labelled, 2-row textarea in the completion cluster', async () => {
+  it('hides the textarea by default; the add-note toggle reveals an optional, labelled, 2-row textarea', async () => {
+    const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
-    const box = await screen.findByLabelText(/notas \(opcional\)/i);
+    await screen.findByLabelText(/peso usado/i);
+    expect(screen.queryByLabelText(/notas \(opcional\)/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /nota/i }));
+
+    const box = screen.getByLabelText(/notas \(opcional\)/i);
     expect(box.tagName).toBe('TEXTAREA');
     expect(box).toHaveAttribute('rows', '2');
     expect(box).toHaveAttribute('dir', 'auto');
     expect(box).toHaveAttribute('placeholder', 'p. ej. sin polea, usé el agarre largo');
+    // Revealed once: no second toggle button while the textarea is open.
+    expect(screen.queryByRole('button', { name: /nota/i })).not.toBeInTheDocument();
   });
 
   it('completing without a note works exactly as before and stores no `notes` key', async () => {
@@ -313,6 +344,7 @@ describe('S2 — personal notes (AC16, AC18)', () => {
     const w = await screen.findByLabelText(/peso usado/i);
     await user.type(w, '40');
     // paste-like: set the long value in one event (typing 250 chars is slow)
+    await user.click(screen.getByRole('button', { name: /nota/i }));
     const box = screen.getByLabelText(/notas \(opcional\)/i);
     await user.click(box);
     await user.paste('x'.repeat(250));

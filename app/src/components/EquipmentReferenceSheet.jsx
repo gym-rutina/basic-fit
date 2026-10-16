@@ -1,10 +1,12 @@
 import React, { useRef } from 'react';
 import { SheetShell, SheetCloseButton } from './sheet/SheetShell.jsx';
+import { Button } from '../../../design-system/components/primitives/Button.jsx';
+import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { useI18n } from '../i18n/index.js';
 
 /**
  * Bottom-sheet overlay showing equipment reference detail.
- * Props: { name, imageUrl, steps, videoHref, videoLabel, onClose }
+ * Props: { name, imageUrl, steps, videoHref, videoLabel, reporting, onClose }
  * Reuses ConfirmSheet positioning + GuideOverlay dialog/Escape patterns.
  * Sections (image, Técnica, video) are omitted when their prop is absent/empty.
  *
@@ -14,8 +16,18 @@ import { useI18n } from '../i18n/index.js';
  * stays reachable in the Catálogo tab). The sheet's title is the MACHINE (it
  * must match the row that opened it), so `videoLabel` is what tells the user
  * the link is scoped to a specific exercise on that machine.
+ *
+ * club-equipment-reporting S1 (revised 2026-10-06 UAT): the optional
+ * `reporting` prop = { equipmentId, canReport, reported, onNotHere } puts the
+ * club-absence report in here instead of on the exercise row. It renders while
+ * `canReport` is true and no report has been made this visit; after the tap it
+ * is replaced by the polite-live-region confirmation (one-tap finality —
+ * corrections live in Catálogo → Mi club). The sheet's title already names the
+ * machine, so the button needs no machine-specific accessible name. The caller
+ * computes all of it — this sheet holds no club state of its own. When the
+ * prop is absent (CatalogScreen callers never report from here) nothing renders.
  */
-export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, videoLabel, onClose }) {
+export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, videoLabel, reporting, onClose }) {
   const { t } = useI18n();
   const resolvedVideoLabel = videoLabel ?? t('equipment.watchTutorial');
   // Shared with SheetShell: the shell autofocuses the ✕ on mount (and now
@@ -35,7 +47,18 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
         <img
           src={imageUrl}
           alt={name}
-          style={{ width: '100%', borderRadius: 'var(--radius-md)', marginBottom: 16, display: 'block', objectFit: 'cover' }}
+          style={{
+            // Never upscale beyond the source image's natural size: on wide
+            // (desktop) sheets width:100% blew the photo up past 100%. The
+            // image renders at its natural size, shrinks to fit on narrow
+            // screens, and centers when narrower than the sheet.
+            width: 'auto',
+            maxWidth: '100%',
+            marginInline: 'auto',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: 16,
+            display: 'block',
+          }}
         />
       )}
 
@@ -68,6 +91,40 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
           {resolvedVideoLabel}
           <span className="sr-only"> {t('common.opensNewTab')}</span>
         </a>
+      )}
+
+      {/* club-equipment-reporting S1: the club-absence report action and its
+          one-tap finality confirmation. The sheet's title already names the
+          machine, so the label can say plainly what the report claims. The
+          status region is mounted while the action is offered (empty), so the
+          confirmation is ANNOUNCED when its text arrives rather than appearing
+          together with its own live region. */}
+      {reporting && (reporting.canReport || reporting.reported) && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            {reporting.canReport && !reporting.reported && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => reporting.onNotHere(reporting.equipmentId)}
+                style={{ minHeight: 44, padding: '0 10px' }}
+              >
+                <Icon name="alert-triangle" size={14} style={{ color: 'var(--bf-danger)' }} /> {t('session.notHereAction')}
+              </Button>
+            )}
+          </div>
+          <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            {reporting.reported && (
+              <>
+                <Icon name="check-circle" size={16} style={{ color: 'var(--bf-success)', marginTop: 2 }} />
+                <span dir="auto" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}>
+                  {t('session.reportedBody')}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </SheetShell>
   );

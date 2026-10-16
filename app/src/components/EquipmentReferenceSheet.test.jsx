@@ -23,6 +23,8 @@ describe('EquipmentReferenceSheet', () => {
     expect(dialog).toHaveAttribute('aria-labelledby', 'equipment-sheet-title');
     expect(screen.getByText(RICH.name)).toBeInTheDocument();
     expect(screen.getByRole('img', { name: RICH.name })).toHaveAttribute('src', RICH.imageUrl);
+    // The photo must never be upscaled: natural size, capped at sheet width.
+    expect(screen.getByRole('img', { name: RICH.name })).toHaveStyle({ width: 'auto', maxWidth: '100%' });
     expect(screen.getByText('Técnica')).toBeInTheDocument();
     expect(screen.getByText('Ajusta el asiento')).toBeInTheDocument();
     expect(screen.getByText('Empuja controladamente')).toBeInTheDocument();
@@ -149,5 +151,39 @@ describe('EquipmentReferenceSheet — exercise tutorial link (AC18′)', () => {
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
     expect(link).toHaveAccessibleName(/se abre en una pestaña nueva/i);
+  });
+});
+
+describe('EquipmentReferenceSheet — club reporting action (2026-10-06 UAT)', () => {
+  const REPORT = { equipmentId: 'g3-s70', canReport: true, reported: false, onNotHere: vi.fn() };
+
+  it('shows the club-absence action only when reporting.canReport is set, and no report has been made', () => {
+    render(<EquipmentReferenceSheet {...RICH} reporting={REPORT} onClose={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Mi club no tiene esta máquina' })).toBeInTheDocument();
+    expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when the prop is absent (catalog callers never report from here)', () => {
+    render(<EquipmentReferenceSheet {...RICH} onClose={vi.fn()} />);
+
+    expect(screen.queryByRole('button', { name: /no tiene/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
+  });
+
+  it('one-tap finality: tapping replaces the action with the polite confirmation (live region), and the ✕-style report icon is gone', async () => {
+    const onNotHere = vi.fn();
+    const user = userEvent.setup();
+    const { rerender } = render(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, onNotHere }} onClose={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /no tiene/i }));
+    expect(onNotHere).toHaveBeenCalledWith('g3-s70');
+
+    // The parent flips `reported` on the same visit; the sheet then shows the
+    // confirmation instead of the action, inside a polite live region.
+    rerender(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, onNotHere, reported: true }} onClose={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: /no tiene/i })).not.toBeInTheDocument();
+    const live = [...document.querySelectorAll('[aria-live="polite"], [role="status"]')].map((n) => n.textContent).join(' | ');
+    expect(live).toMatch(/Reportado\. Se ha ocultado/);
   });
 });
