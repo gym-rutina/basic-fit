@@ -1,0 +1,923 @@
+openapi: 3.1.0
+info:
+  title: gym-rutina — Backend API (multi-tenant, white-label)
+  version: 0.3.0            # SemVer. Bump on every contract change; log in CHANGELOG.md.
+  description: >
+    Contract between the public PWA client (`gym-rutina/basic-fit`; BasicFit is the
+    first tenant's client) and the private multi-tenant backend
+    (`gym-rutina/backend`). This directory is the single source of truth: the
+    backend vendors it by `git subtree` (see README.md).
+
+    STATUS: bootstrap. Only `GET /v1/health`, `GET /v1/tenant/config` and
+    `POST /v1/club-equipment/reports` are implemented on the backend; every
+    other operation is answered with `501 not_implemented` until the feature
+    that owns it lands. Operations marked `x-status: draft` have bodies that
+    are a first sketch and WILL be refined (a MINOR bump); only the fields
+    their tests pin are stable.
+
+    MULTI-TENANCY: every request carries `X-Tenant-Id` (see components.parameters
+    TenantId), except `GET /v1/health` (tenant optional) and
+    `POST /v1/webhooks/stripe` (called by Stripe, which cannot send it — the
+    tenant is derived from the verified event). The backend scopes accounts,
+    credits, subscriptions, generation, sync and reports by tenant; per-tenant
+    config lives server-side in `tenants/`. An unknown or inactive tenant is
+    `unknown_tenant`. `basicfit` is tenant #1.
+
+    CONTRACT VERSION: the client sends `X-Contract-Version: <major>`; a major
+    the server does not support is `contract_version_unsupported`.
+
+    Design rules that outrank convenience:
+      * The app works fully offline with NO account. Every endpoint here is
+        optional; the client degrades to `LocalBackend` on any failure and
+        never shows an error screen for a missing or expired session.
+      * The generated rutina is validated server-side with the SAME validator
+        the client ships (`rutina-core/`, generated from
+        `scripts/lib/rutina-validator.js`; see README.md). A server rutina the
+        client later rejects is a P1 defect.
+      * The sync payload IS the `full-data-backup` envelope at the same
+        `formatVersion` — no second serialisation.
+      * No credential, token or account id is ever written into a backup file.
+      * "constraints/injuries" free text is special-category health data
+        (GDPR Art. 9). It is sent ONLY with a separate named consent
+        (`healthDataConsent: true`) and is never stored server-side beyond the
+        generation request's lifetime.
+
+servers:
+  - url: https://api.example.invalid        # placeholder, never a live host; set per environment via VITE_BACKEND_URL
+    description: placeholder (nothing is deployed)
+
+tags:
+  - name: account
+  - name: credits       # prepaid generation credits (packs)
+  - name: subscription  # Plus (monthly subscription)
+  - name: withdrawals   # online withdrawal function (consumer law)
+  - name: generation    # LLM rutina generation with auto-retry loop
+  - name: sync          # restore/backup transport (requires Plus)
+  - name: club-equipment  # anonymous collector (club-equipment-reporting)
+  - name: webhooks
+  - name: meta
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  # ─────────────────────────────── meta ────────────────────────────────
+  /v1/health:
+    parameters:
+      - $ref: '#/components/parameters/TenantIdOptional'
+      - $ref: '#/components/parameters/ContractVersion'
+    get:
+      tags: [meta]
+      summary: Liveness + contract version advertised by this server.
+      description: >
+        Tenant-agnostic: it never fails because of a bad tenant. With a valid
+        `X-Tenant-Id` it also reports that tenant's catalogue version; without
+        one (or with an unknown tenant) `equipmentCatalogueVersion` is `null`.
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, contractVersion]
+                properties:
+                  status: { type: string, enum: [ok] }
+                  contractVersion: { type: string, example: "0.3.0" }
+                  equipmentCatalogueVersion:
+                    type: [string, 'null']
+                    description: >
+                      The tenant's equipment catalogue `metadata.version` the
+                      server validates generations against. `null` when no
+                      valid tenant was supplied.
+
+  /v1/tenant/config:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    get:
+      tags: [meta]
+      summary: >
+        Public per-tenant runtime surface: catalogue version, generation output
+        locales and the plan grant sizes. Never a price id, never a secret.
+      description: >
+        Instance data (equipment.json, gym directory, brand) is still bundled in
+        the client build, not served here. `plans` exposes grant SIZES only so
+        the client needs no credit-count literal; Stripe ids and prompt
+        references are never returned.
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tenantId, displayName, equipmentCatalogueVersion, generationOutputLocales, plans]
+                additionalProperties: false
+                properties:
+                  tenantId: { type: string, example: basicfit }
+                  displayName: { type: string, example: BasicFit }
+                  equipmentCatalogueVersion: { type: string }
+                  generationOutputLocales:
+                    type: array
+                    items: { type: string }
+                    description: BCP-47 codes generation can produce for this tenant.
+                  plans:
+                    type: object
+                    required: [plus, pack]
+                    additionalProperties: false
+                    properties:
+                      plus:
+                        type: object
+                        required: [creditsPerPeriod, subscriptionCreditCap]
+                        additionalProperties: false
+                        properties:
+                          creditsPerPeriod: { type: integer, minimum: 1 }
+                          subscriptionCreditCap: { type: integer, minimum: 1 }
+                      pack:
+                        type: object
+                        required: [credits]
+                        additionalProperties: false
+                        properties:
+                          credits: { type: integer, minimum: 1 }
+        '400': { $ref: '#/components/responses/Error' }   # unknown_tenant, contract_version_unsupported
+
+  # ────────────────────────────── account ──────────────────────────────
+  /v1/account:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    post:
+      tags: [account]
+      summary: Create an account. Minimum fields only.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SignUpRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/Session' }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }   # email_in_use
+        '429': { $ref: '#/components/responses/Error' }
+    get:
+      tags: [account]
+      summary: Current account snapshot (email, credit balance, sync-enabled flag).
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [account]
+      summary: >
+        Delete the account and all server-side data (GDPR Art. 17). Local device
+        data is untouched. Idempotent.
+      responses:
+        '202':
+          description: Deletion scheduled; body states the completion window.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [deletedWithin]
+                properties:
+                  deletedWithin: { type: string, example: "30d" }
+        '401': { $ref: '#/components/responses/Error' }
+
+  /v1/account/session:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    post:
+      tags: [account]
+      summary: Sign in — exchange credentials for a session token.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SignInRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/Session' }
+        '401': { $ref: '#/components/responses/Error' }   # invalid_credentials
+        '429': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [account]
+      summary: Sign out — revoke the current session token. Local data intact.
+      responses:
+        '204': { description: Signed out. }
+        '401': { $ref: '#/components/responses/Error' }
+
+  # ────────────────────────────── credits ──────────────────────────────
+  /v1/credits:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    get:
+      tags: [credits]
+      summary: Current credit balance + ledger tail.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreditBalance' }
+        '401': { $ref: '#/components/responses/Error' }
+
+  /v1/credits/checkout:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    post:
+      tags: [credits]
+      summary: >
+        Start a prepaid-pack purchase (one-off). Returns a hosted Stripe
+        Checkout URL. The client opens it; fulfilment is asynchronous via
+        `POST /v1/webhooks/stripe`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [packId]
+              properties:
+                packId:
+                  type: string
+                  description: One of the packs from GET /v1/credits/packs.
+                locale:
+                  type: string
+                  description: BCP-47; drives checkout language and currency copy.
+      responses:
+        '200':
+          description: Checkout created.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [checkoutUrl, expiresAt]
+                properties:
+                  checkoutUrl: { type: string, format: uri }
+                  expiresAt: { type: string, format: date-time }
+        '400': { $ref: '#/components/responses/Error' }   # unknown_pack
+        '401': { $ref: '#/components/responses/Error' }
+
+  /v1/credits/packs:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    get:
+      tags: [credits]
+      summary: Available prepaid packs (price + credit count) in the given locale/currency.
+      security: []
+      parameters:
+        - in: query
+          name: locale
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CreditPack' }
+
+  # ──────────────────────────── subscription ───────────────────────────
+  /v1/subscription:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    get:
+      tags: [subscription]
+      summary: The account's Plus subscription state (draft).
+      x-status: draft
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '401': { $ref: '#/components/responses/Error' }
+
+  /v1/subscription/checkout:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    post:
+      tags: [subscription]
+      summary: >
+        Start a Plus subscription or a pack purchase through a hosted checkout
+        (draft). The request carries the express-consent record; checkout cannot
+        complete without it.
+      x-status: draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubscriptionCheckoutRequest' }
+      responses:
+        '200':
+          description: Checkout created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HostedUrl' }
+        '400': { $ref: '#/components/responses/Error' }   # consent_required, invalid_request, unknown_pack
+        '401': { $ref: '#/components/responses/Error' }
+
+  /v1/subscription/portal:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    post:
+      tags: [subscription]
+      summary: >
+        Open the provider's hosted customer portal (cancel, update payment
+        method) for the authenticated account (draft).
+      x-status: draft
+      responses:
+        '200':
+          description: Portal session created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HostedUrl' }
+        '401': { $ref: '#/components/responses/Error' }
+
+  # ───────────────────────────── withdrawals ───────────────────────────
+  /v1/withdrawals:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    post:
+      tags: [withdrawals]
+      summary: >
+        Online withdrawal function: submit a withdrawal declaration for a
+        purchase and receive an acknowledgement (draft).
+      x-status: draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WithdrawalRequest' }
+      responses:
+        '200':
+          description: Declaration received; the body is the acknowledgement.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WithdrawalAcknowledgement' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+
+  # ─────────────────────────────── webhooks ────────────────────────────
+  /v1/webhooks/stripe:
+    post:
+      tags: [webhooks]
+      summary: >
+        Stripe fulfilment webhook (draft). Verifies the Stripe signature, then
+        credits the ledger / updates the subscription idempotently by event id.
+        NOT called by the client.
+      description: >
+        Stripe cannot send `X-Tenant-Id`; the tenant is derived from the event
+        metadata AFTER the signature is verified. The body is never trusted
+        before verification.
+      x-status: draft
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '204': { description: Processed (idempotent by provider event id). }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { description: Bad signature. }
+
+  # ──────────────────────────── generation ─────────────────────────────
+  /v1/generations:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    post:
+      tags: [generation]
+      summary: >
+        Submit a structured intake and start a generation job. Reserves one
+        credit, consumes it on delivery and auto-refunds on exhausted-retry
+        failure. Returns immediately with a job handle — generation with retries
+        can take tens of seconds, so this is async.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GenerationIntake' }
+      responses:
+        '202':
+          description: Job accepted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenerationJob' }
+        '400': { $ref: '#/components/responses/Error' }   # invalid_intake, health_consent_required
+        '401': { $ref: '#/components/responses/Error' }
+        '402': { $ref: '#/components/responses/Error' }   # no_credits
+        '429': { $ref: '#/components/responses/Error' }   # per-account daily ceiling
+
+  /v1/generations/{jobId}:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    get:
+      tags: [generation]
+      summary: >
+        Poll a generation job. Safe to call after the app was backgrounded or
+        the device locked mid-generation — the job survives and the result is
+        recoverable. Terminal states: `succeeded`, `failed`.
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Job state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenerationJob' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  # ─────────────────────────────── sync ────────────────────────────────
+  /v1/sync:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    get:
+      tags: [sync]
+      summary: >
+        Fetch the latest cloud snapshot. Body is the `full-data-backup` envelope
+        verbatim plus a `revision` for optimistic concurrency. 404 when sync is
+        enabled but nothing has been pushed yet. Requires Plus.
+      responses:
+        '200':
+          description: Snapshot.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyncSnapshot' }
+        '401': { $ref: '#/components/responses/Error' }
+        '402': { $ref: '#/components/responses/Error' }   # plus_required
+        '404': { $ref: '#/components/responses/Error' }   # no_snapshot
+        '409': { $ref: '#/components/responses/Error' }   # sync_not_enabled
+    put:
+      tags: [sync]
+      summary: >
+        Push a full snapshot. `If-Match: <revision>` guards against a lost
+        update; a mismatch returns 412 with the server snapshot so the client
+        can run the union-by-session-id merge (session ids are already UUIDs)
+        and retry. Never destructive server-side. Requires Plus.
+      parameters:
+        - in: header
+          name: If-Match
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BackupEnvelope' }
+      responses:
+        '200':
+          description: Stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [revision, storedAt]
+                properties:
+                  revision: { type: string }
+                  storedAt: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/Error' }
+        '402': { $ref: '#/components/responses/Error' }   # plus_required
+        '409': { $ref: '#/components/responses/Error' }   # sync_not_enabled
+        '412':
+          description: Revision mismatch — server snapshot returned for client-side merge.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyncSnapshot' }
+        '413': { $ref: '#/components/responses/Error' }   # snapshot_too_large
+
+  /v1/sync/enabled:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    put:
+      tags: [sync]
+      summary: Opt in / out of sync. Opting out deletes the stored snapshot. Opting in requires Plus.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties: { enabled: { type: boolean } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { enabled: { type: boolean } }
+        '401': { $ref: '#/components/responses/Error' }
+        '402': { $ref: '#/components/responses/Error' }   # plus_required
+
+  # ──────────────────────── club-equipment collector ───────────────────
+  /v1/club-equipment/reports:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - $ref: '#/components/parameters/ContractVersion'
+    post:
+      tags: [club-equipment]
+      summary: >
+        Submit one "machine present / absent at this club" report from the
+        active session. Anonymous — no account required.
+      description: >
+        PRIVACY: the collector persists NO IP address, NO user agent and NO
+        fingerprint — nor any hash, digest or truncation of them. Abuse limiting
+        is in-memory only (a short-lived per-source counter that is never
+        persisted, logged or echoed). The request carries no field that could
+        identify a person or device: exactly the six fields of
+        `ClubEquipmentReport`, and anything else is rejected. What is stored
+        is the report plus the tenant and the server receive time.
+
+        Idempotent by the client-supplied `reportId` within a tenant: a replay
+        answers 202 and stores nothing more. The client keeps an invisible local
+        outbox and retries later on failure.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ClubEquipmentReport' }
+      responses:
+        '202': { description: Accepted (idempotent by client-supplied reportId). }
+        '400': { $ref: '#/components/responses/Error' }   # invalid_request, unknown_tenant
+        '429': { $ref: '#/components/responses/Error' }   # rate_limited; details.retryAfter
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Session token from POST /v1/account or POST /v1/account/session.
+
+  parameters:
+    TenantId:
+      name: X-Tenant-Id
+      in: header
+      required: true
+      schema: { type: string, example: basicfit }
+      description: >
+        Which white-label tenant this request belongs to. The client sets it
+        from its build-time VITE_TENANT_ID. Unknown or inactive →
+        `unknown_tenant`. Scopes accounts, credits, subscriptions, generation,
+        sync and reports.
+    TenantIdOptional:
+      name: X-Tenant-Id
+      in: header
+      required: false
+      schema: { type: string, example: basicfit }
+      description: Optional on tenant-agnostic operations (health).
+    ContractVersion:
+      name: X-Contract-Version
+      in: header
+      required: false
+      schema: { type: string, example: "0" }
+      description: >
+        The contract MAJOR the client was built against. A major the server does
+        not support → `contract_version_unsupported`.
+
+  responses:
+    Session:
+      description: A session token + the account it belongs to.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [token, expiresAt, account]
+            properties:
+              token: { type: string }
+              expiresAt: { type: string, format: date-time }
+              account: { $ref: '#/components/schemas/Account' }
+    Error:
+      description: Typed error. `code` is stable and drives client behaviour; `message` is human copy.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: >
+            See contract/errors.md for the closed set. `backend_unavailable` is
+            client-only and never appears on the wire.
+          enum:
+            - invalid_request
+            - unknown_tenant                # X-Tenant-Id missing / unknown / inactive
+            - invalid_credentials
+            - email_in_use
+            - unauthorized
+            - session_expired
+            - no_credits
+            - plus_required                 # Plus-only feature without an active Plus
+            - unknown_pack
+            - invalid_intake
+            - generation_failed             # retries exhausted — user NOT charged
+            - rate_limited
+            - daily_ceiling_reached
+            - sync_not_enabled
+            - no_snapshot
+            - revision_mismatch
+            - snapshot_too_large
+            - contract_version_unsupported
+            - health_consent_required
+            - consent_required              # checkout without the express-consent record
+            - not_implemented               # endpoint exists in the contract, handler not built yet
+            - provider_unavailable
+            - internal
+        message: { type: string }
+        retryable: { type: boolean, default: false }
+        details:
+          type: object
+          additionalProperties: true
+          description: >
+            Diagnostic data, never PII or secrets. e.g. `retryAfter` (seconds)
+            for rate_limited, the validator error list for generation_failed.
+
+    SignUpRequest:
+      type: object
+      required: [email, password]
+      additionalProperties: false      # every field must be justifiable
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 10 }
+        locale: { type: string, description: BCP-47; sets receipt + email language. }
+
+    SignInRequest:
+      type: object
+      required: [email, password]
+      additionalProperties: false
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    Account:
+      type: object
+      required: [id, email, credits, syncEnabled, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        credits: { type: integer, minimum: 0 }
+        syncEnabled: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    CreditBalance:
+      type: object
+      required: [credits, ledger]
+      properties:
+        credits: { type: integer, minimum: 0 }
+        ledger:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            required: [at, delta, reason]
+            properties:
+              at: { type: string, format: date-time }
+              delta: { type: integer }
+              reason:
+                type: string
+                enum: [purchase, generation_spend, generation_refund, adjustment]
+              generationId: { type: string }
+
+    CreditPack:
+      type: object
+      required: [packId, credits, priceDisplay, currency]
+      properties:
+        packId: { type: string }
+        credits: { type: integer, minimum: 1 }
+        priceDisplay: { type: string, example: "€2,99" }   # localised, tax-inclusive
+        currency: { type: string, example: EUR }
+
+    ConsentRecord:
+      type: object
+      description: >
+        Express consent to immediate supply of digital content, acknowledging
+        that the right of withdrawal is lost once supply begins. The consent
+        text VERSION is stored with the purchase.
+      required: [version, accepted]
+      additionalProperties: false
+      properties:
+        version: { type: string, description: Version id of the consent text the user saw. }
+        accepted: { type: boolean, description: true only after an explicit, unticked-by-default act. }
+
+    HostedUrl:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, format: uri, description: Provider-hosted page the client opens. }
+        expiresAt: { type: string, format: date-time }
+
+    Subscription:
+      type: object
+      description: Draft shape — refined by the subscription feature.
+      required: [status]
+      properties:
+        status: { type: string, enum: [none, active, past_due, canceled] }
+        currentPeriodEnd: { type: [string, 'null'], format: date-time }
+        cancelAtPeriodEnd: { type: boolean }
+
+    SubscriptionCheckoutRequest:
+      type: object
+      required: [plan, locale, consent]
+      additionalProperties: false
+      properties:
+        plan:
+          type: string
+          enum: [plus, pack]
+          description: Plus subscription or one-off pack.
+        locale: { type: string, description: BCP-47; drives checkout language and currency copy. }
+        consent: { $ref: '#/components/schemas/ConsentRecord' }
+
+    WithdrawalRequest:
+      type: object
+      description: Draft shape — refined by the withdrawal feature.
+      required: [purchaseRef, declaration]
+      additionalProperties: false
+      properties:
+        purchaseRef: { type: string, description: Opaque reference of the purchase being withdrawn from. }
+        declaration: { type: string, minLength: 1, maxLength: 1000, description: The customer's declaration, kept with its date and time. }
+
+    WithdrawalAcknowledgement:
+      type: object
+      description: >
+        Acknowledgement to be handed to the customer on a durable medium: the
+        declaration's content and its date and time.
+      required: [withdrawalId, purchaseRef, declaration, declaredAt]
+      properties:
+        withdrawalId: { type: string }
+        purchaseRef: { type: string }
+        declaration: { type: string }
+        declaredAt: { type: string, format: date-time }
+
+    GenerationIntake:
+      type: object
+      required: [goals, experience, daysPerWeek, sessionMinutes, equipmentContext, outputLocale]
+      additionalProperties: false
+      description: >
+        Structured form, NOT a chat. Field set is UX-owned; this is the
+        grounding shape.
+      properties:
+        goals:
+          type: array
+          items: { type: string, enum: [strength, hypertrophy, endurance, general_fitness, weight_loss] }
+          minItems: 1
+        experience: { type: string, enum: [beginner, intermediate, advanced] }
+        daysPerWeek: { type: integer, minimum: 1, maximum: 7 }
+        sessionMinutes: { type: integer, minimum: 20, maximum: 150 }
+        equipmentContext:
+          type: object
+          description: >
+            Which machines generation may use. `clubId` scopes to the user's
+            actual club catalogue; `fullCatalogue` uses all of data/equipment.json.
+          oneOf:
+            - { required: [clubId], properties: { clubId: { type: string } } }
+            - { required: [fullCatalogue], properties: { fullCatalogue: { const: true } } }
+        constraintsText:
+          type: string
+          maxLength: 500
+          description: >
+            Free-text injuries/constraints. Special-category health data.
+            Sent ONLY when healthDataConsent is true; the server never persists
+            it past the request.
+        healthDataConsent:
+          type: boolean
+          default: false
+          description: GDPR Art. 9(2)(a) explicit, named consent. Gates constraintsText.
+        history:
+          type: object
+          description: >
+            Optional — the user's existing training history, in the
+            `full-data-backup` LLM-export shape, to seed a next phase. Never
+            includes settings or the invite URL.
+          additionalProperties: true
+        outputLocale:
+          type: string
+          description: Rutina content language; defaults to UI locale, user can override.
+
+    GenerationJob:
+      type: object
+      required: [jobId, status, createdAt]
+      properties:
+        jobId: { type: string }
+        status: { type: string, enum: [queued, running, succeeded, failed] }
+        createdAt: { type: string, format: date-time }
+        attempts:
+          type: integer
+          description: Validator-retry attempts used so far (bounded, config-driven).
+        progressHint:
+          type: string
+          enum: [composing_prompt, awaiting_model, validating, retrying, finalising]
+        result:
+          type: object
+          description: Present only when status=succeeded.
+          required: [rutina, equipmentCatalogueVersion, generatedAt]
+          properties:
+            rutina:
+              type: object
+              description: >
+                A validated rutina payload — identical shape to an imported one.
+                Passes the client's validateImportedRutina on arrival.
+              additionalProperties: true
+            equipmentCatalogueVersion:
+              type: string
+              description: data/equipment.json metadata.version used.
+            generatedAt: { type: string, format: date-time }
+        error:
+          allOf:
+            - $ref: '#/components/schemas/Error'
+          description: Present only when status=failed. code=generation_failed ⇒ not charged.
+
+    BackupEnvelope:
+      type: object
+      description: >
+        The `full-data-backup` file contents, verbatim. Defined authoritatively
+        by that feature's backup.schema.json. Reproduced here as the sync body
+        so both repos share one shape. MUST NOT contain credentials, tokens or
+        account ids.
+      required: [formatVersion, appVersion, exportedAt, data]
+      properties:
+        formatVersion: { type: integer, minimum: 1 }
+        appVersion: { type: string }
+        exportedAt: { type: string, format: date-time }
+        data:
+          type: object
+          required: [rutinas, activeRutinaId, sessions, lastWeights, settings]
+          properties:
+            rutinas:
+              type: array
+              items:
+                type: object
+                required: [id, rutina, importedAt, seq]
+            activeRutinaId: { type: [string, 'null'] }
+            sessions: { type: array, items: { type: object } }
+            lastWeights: { type: array, items: { type: object } }
+            settings:
+              type: object
+              description: Enumerated localStorage registry. No tokens.
+              additionalProperties: true
+
+    SyncSnapshot:
+      allOf:
+        - $ref: '#/components/schemas/BackupEnvelope'
+        - type: object
+          required: [revision, storedAt]
+          properties:
+            revision: { type: string, description: Opaque; use in If-Match on PUT. }
+            storedAt: { type: string, format: date-time }
+
+    ClubEquipmentReport:
+      type: object
+      description: >
+        Exactly what the shipped client sends (`equipmentReports.js`). Six
+        fields and nothing else — no note, no substitute, no catalogue version,
+        nothing that identifies a person or a device.
+      required: [reportId, clubId, equipmentId, signal, method, reportedAt]
+      additionalProperties: false
+      properties:
+        reportId:
+          type: string
+          format: uuid
+          description: Client-generated UUID — the dedupe key (idempotent within a tenant).
+        clubId: { type: string, minLength: 1 }
+        equipmentId: { type: string, minLength: 1 }
+        signal:
+          type: string
+          enum: [present, absent]
+          description: Whether the user found the machine at this club.
+        method:
+          type: string
+          enum: [session, catalog]
+          description: Where the report came from (an active session, or the catalogue).
+        reportedAt: { type: string, format: date-time }

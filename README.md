@@ -80,7 +80,8 @@ basicfit-rutina/
 │       │   ├── libraryNoticeStorage.js  # One-shot "Mis rutinas" migration-notice flag ('rutina:libraryNoticeSeen')
 │       │   ├── backupFormat.js     # buildBackup/parseBackup/reconcileLastWeights — the backup envelope, pure + isomorphic
 │       │   ├── settingsRegistry.js # The 6-key localStorage allowlist backed up/restored (readAllSettings/writeAllSettings)
-│       │   └── appVersion.js       # package.json `version`, stamped into the backup envelope's `appVersion` field
+│       │   ├── appVersion.js       # package.json `version`, stamped into the backup envelope's `appVersion` field
+│       │   └── backend/            # Optional-backend seam: BackendClient (LocalBackend = today's offline app, HttpBackend), createBackend(), BackendProvider, session storage — inert unless VITE_BACKEND_URL is set (see "Optional backend")
 │       └── data/
 │           └── equipment.js        # Imports data/equipment.json at build time
 ├── data/
@@ -96,6 +97,8 @@ basicfit-rutina/
 │       ├── equipment.schema.json
 │       ├── rutina.schema.json      # Schema for training programs
 │       └── backup.schema.json      # Full-data backup envelope schema (draft-07, additionalProperties: true)
+├── contract/                       # Client ⇄ backend contract: openapi.yaml, errors.md, types.d.ts, CHANGELOG.md — see contract/README.md
+│   └── rutina-core/                #   GENERATED copy of the rutina validator + schema for the backend (npm run build:contract)
 ├── design-system/                  # Component library (tokens, primitives, composites)
 ├── scripts/                        # Node.js build and scraping scripts
 │   ├── lib/
@@ -104,6 +107,8 @@ basicfit-rutina/
 │   ├── scrape-gyms.js              # I/O shell for the club directory scrape — network + writes data/gyms/ (see below)
 │   ├── normalize-equipment.js      # Fixup pass over data/equipment.json — writes only when content actually changes
 │   ├── validate-data.js            # Schema + directory validation for equipment.json and data/gyms/
+│   ├── build-contract.js           # Generates contract/rutina-core/ from scripts/lib/rutina-validator.js + data/schema/rutina.schema.json (fs + path only)
+│   ├── contract/                   # Vitest suites pinning contract/ (OpenAPI lint, error codes, wire-report conformance, rutina-core drift, secret scan)
 │   └── validate-rutina.js          # CLI validator for rutina.json files
 ├── tests/
 │   └── viewport-check.js           # Puppeteer: no horizontal scroll + tab-bar row-wrap at 280/360/390/412/768px
@@ -129,6 +134,7 @@ basicfit-rutina/
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run test:viewport` | Puppeteer viewport regression: 280/360/390/412/768px × routes (requires `npm run preview` running) |
 | `npm run validate-data` | Validate `data/equipment.json` (and `data/gyms/`, when present) against their required shape |
+| `npm run build:contract` | Regenerate `contract/rutina-core/` (the backend's copy of the rutina validator + schema). A drift test fails if the committed copy is stale, so run it after touching `scripts/lib/rutina-validator.js` or `data/schema/rutina.schema.json`. |
 | `npm run validate-rutina -- <path>` | Validate a `rutina.json` file against its schema + cross-check `equipmentId`/`extraEquipment` values |
 | `npm run serve` | Serve the repo root on port 3000 |
 | `npm run normalize-equipment` | Fixup pass over `data/equipment.json` (resolves video-search placeholders, rewrites dead JHT manual URLs). Writes the file **only when something actually changed** — safe to run repeatedly, and a no-op run prints a message instead of rewriting the file. |
@@ -291,6 +297,21 @@ The app treats the link as an opaque string and nothing more: it never renders t
 > Se guarda solo en este dispositivo; la app nunca lo envía a ningún sitio. Cualquiera con este enlace puede entrar al club. La app no puede comprobar si el enlace sigue válido.
 
 That second sentence matters — anyone you forward the link to can enter the club too, so treat it like a key. And if the browser blocks storage (some private-browsing modes), **Guardar** reports the failure plainly instead of pretending the link was saved. On **Inicio**, a saved link adds an outline **Acceso** button (with a QR-code icon) pinned to the bottom of the screen just above the tab bar; see step 2 of "Using the PWA" above.
+
+## Optional backend
+
+The app is, and stays, **fully usable offline with no account and no server**. A backend is strictly optional and switched on at build time:
+
+| Variable | Meaning |
+|---|---|
+| `VITE_BACKEND_URL` | Base URL of the backend. Must be `https://…`, or `http://localhost` / `http://127.0.0.1` for development. Unset or invalid → **no backend**. |
+| `VITE_TENANT_ID` | Which tenant the build belongs to; sent as `X-Tenant-Id`. Defaults to `basicfit`. |
+
+With `VITE_BACKEND_URL` unset (the default, and what ships today) **nothing changes**: the app uses `LocalBackend` — the offline app — which makes no request, stores nothing, and renders nothing new. No account, sign-in or purchase screen exists yet; the code that would call a backend (`app/src/lib/backend/`) is a seam with no UI on top of it.
+
+The anonymous "this machine is not at my club" reports (Catalog and active session) keep their own single queue and transport (`reportOutbox` → `reportFlush`). They are sent only when `VITE_BACKEND_URL` is valid, carry exactly six fields (`reportId`, `clubId`, `equipmentId`, `signal`, `method`, `reportedAt`) and nothing that identifies a person or a device.
+
+The wire format — endpoints, error codes, the report shape — is defined once, in [`contract/`](contract/README.md) (versioned with SemVer). The backend is a separate private repository (`gym-rutina/backend`) that is not built yet; when it exists it will vendor `contract/` with `git subtree`. Nothing is deployed and `servers:` in the contract is a placeholder host. This repository never contains server code, keys or a live URL.
 
 ## Languages
 

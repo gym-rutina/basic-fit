@@ -1,0 +1,355 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Rutina Schema",
+  "description": "A training program (rutina): phases, days, exercises, warmup/cooldown, rules, and notes. This is the data contract an LLM produces (see docs/llm-rutina-prompt.md) and rutina-pwa consumes. Exercise equipment references are validated separately, by id, against data/equipment.json (not expressible in JSON Schema alone — see scripts/validate-rutina.js). No summaryTable field exists here on purpose: a program's summary table is derived from `days` at render time, never authored separately.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "program", "phaseInfo", "warmup", "cooldown", "days", "rules", "notes"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of this rutina data format, so future rutina-pwa releases can detect and migrate older exported files. Current value: 1."
+    },
+    "program": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Program identity and phase metadata shown in the program header.",
+      "required": ["name", "phaseName", "phaseNumber", "gymId", "durationWeeks", "lastUpdated"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Person/program name, e.g. \"Alejandro — Fase 1\"."
+        },
+        "phaseName": {
+          "type": "string",
+          "description": "Name of this training phase, e.g. \"Adaptación\", \"Hipertrofia\"."
+        },
+        "phaseNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sequential phase number, e.g. 1, 2, 3."
+        },
+        "gymId": {
+          "description": "Identifies which club this program was authored for. Accepts EITHER the legacy numeric id (1..7, joining the original 7 hand-entered Malaga gyms via LEGACY_CLUBS) OR a 32-hex club GUID from data/gyms/<CC>.json (D3) — both resolve to a club record, so a rutina.json exported before this feature keeps validating unmodified.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{32}$"
+            }
+          ]
+        },
+        "durationWeeks": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many weeks this phase runs for."
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Date this program was last updated, as YYYY-MM-DD."
+        }
+      }
+    },
+    "phaseInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The phase info banner shown at the top of the program: objective, target intensity, rest range, and weekly frequency.",
+      "required": ["objective", "intensityPercent", "restSeconds", "frequencyPerWeek"],
+      "properties": {
+        "objective": {
+          "type": "string",
+          "description": "Free-text description of this phase's training objective, e.g. \"Técnica, preparación de articulaciones, adaptación del sistema nervioso central\"."
+        },
+        "intensityPercent": {
+          "type": "string",
+          "description": "Target intensity as a percentage or percentage range, e.g. \"60-65%\"."
+        },
+        "restSeconds": {
+          "type": "string",
+          "description": "Target rest time between sets for this phase, as a range in seconds, e.g. \"60-90\". (Distinct from exercises[].restSeconds, which is a single number per exercise.)"
+        },
+        "frequencyPerWeek": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7,
+          "description": "How many days per week this phase is trained."
+        }
+      }
+    },
+    "warmup": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Warmup block performed before the day's exercises.",
+      "required": ["durationMinutes", "steps"],
+      "properties": {
+        "durationMinutes": {
+          "type": "string",
+          "description": "Warmup duration, as a number or range in minutes, e.g. \"5-7\"."
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Ordered list of warmup instruction lines.",
+          "items": {
+            "type": "string",
+            "description": "One warmup instruction line, e.g. \"Elíptica o cinta de correr (5-7 minutos a ritmo suave)\"."
+          }
+        }
+      }
+    },
+    "cooldown": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Cooldown block performed after the day's exercises.",
+      "required": ["durationMinutes", "steps"],
+      "properties": {
+        "durationMinutes": {
+          "type": "string",
+          "description": "Cooldown duration, as a number or range in minutes, e.g. \"5\"."
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Ordered list of cooldown instruction lines.",
+          "items": {
+            "type": "string",
+            "description": "One cooldown instruction line, e.g. \"Estiramientos suaves de los grupos musculares trabajados\"."
+          }
+        }
+      }
+    },
+    "days": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered list of training days in this program.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "One training day: a label, optional intro text, and an ordered list of exercises.",
+        "required": ["label", "exercises"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Day label, e.g. \"Lunes\", \"Full Body A\"."
+          },
+          "intro": {
+            "type": "string",
+            "description": "Optional short intro text for this day, e.g. a session name or focus note."
+          },
+          "exercises": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Ordered list of exercises performed on this day.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "One exercise: name, targeted muscle groups, equipment reference, and prescription.",
+              "required": ["name", "muscleGroups", "sets", "reps", "restSeconds"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Exercise name, e.g. \"Prensa de Pecho\"."
+                },
+                "muscleGroups": {
+                  "type": "array",
+                  "minItems": 1,
+                  "description": "Muscle group tags targeted by this exercise, e.g. [\"pectoralis-major\", \"triceps\"].",
+                  "items": {
+                    "type": "string",
+                    "description": "One muscle group tag."
+                  }
+                },
+                "equipmentId": {
+                  "type": ["string", "null"],
+                  "description": "Equipment reference by id — MUST exist in data/equipment.json OR this rutina's extraEquipment[] (R4.1). Never a free-text equipment name. Optional: absent or null means bodyweight (R3.2, X2) — the UI shows the exercise name only. Cross-checked by scripts/lib/rutina-validator.js (not expressible in JSON Schema alone)."
+                },
+                "sets": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Number of sets, e.g. 3."
+                },
+                "reps": {
+                  "type": "string",
+                  "description": "Reps (or hold duration for planks/holds, e.g. \"30s\") as a string to support ranges, e.g. \"10-12\"."
+                },
+                "restSeconds": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Rest time after this exercise, in seconds, e.g. 75."
+                },
+                "intensity": {
+                  "type": "string",
+                  "description": "Optional intensity or RIR (reps in reserve) cue, e.g. \"RIR 2-3\"."
+                },
+                "technique": {
+                  "type": "array",
+                  "description": "Optional ordered list of technique/cue steps.",
+                  "items": {
+                    "type": "string",
+                    "description": "One technique/cue line."
+                  }
+                },
+                "videoQuery": {
+                  "type": "string",
+                  "description": "Optional video search query or full URL for a demonstration video, e.g. \"tutorial prensa pecho maquina\"."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "description": "Ordered list of short rule/guideline items for the program. May be empty.",
+      "items": {
+        "type": "string",
+        "description": "One rule/guideline line, e.g. \"Hidratación - 2-3 litros de agua al día\"."
+      }
+    },
+    "notes": {
+      "type": "array",
+      "description": "List of titled notes. May be empty.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "One note with a title and body text.",
+        "required": ["title", "body"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Note title, e.g. \"Progresión\"."
+          },
+          "body": {
+            "type": "string",
+            "description": "Note body text."
+          }
+        }
+      }
+    },
+    "substitutions": {
+      "type": "array",
+      "description": "Optional, LLM-authored record that this rutina swapped one machine for another — e.g. an exercise's usual equipment is not in the club's filtered equipment table, so the LLM chose a different one (club-equipment-reporting AC14). Fill it in ONLY when you decide an explicit substitution note is worth recording; no rutina needs it and there is no static per-item mapping. Both ids resolve against the same valid equipmentId union the exercises use (catalog ids + this rutina's extraEquipment ids), cross-checked by scripts/lib/rutina-validator.js (not expressible in JSON Schema alone). Metadata only in v1: no screen reads it, it just round-trips through export/import.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["equipmentId", "substituteEquipmentId"],
+        "properties": {
+          "equipmentId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The equipment that was expected or usual — a catalog id or one of this rutina's extraEquipment ids."
+          },
+          "substituteEquipmentId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The equipment used instead — a catalog id or one of this rutina's extraEquipment ids."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Optional short human-readable reason for the swap."
+          }
+        }
+      }
+    },
+    "extraEquipment": {
+      "type": "array",
+      "description": "Per-rutina, LLM-proposed equipment that is NOT in data/equipment.json — R3.3. It covers both simple accessories (a band, a foam roller, a towel) and a FULL off-catalog machine or free-weight piece a club has that the shared catalog lacks (club-equipment-reporting AC19). It stays personal to this rutina: no photo, no moderation, no shared-catalog impact. Give category and muscleGroup when known, so weight/difficulty/notes tracking works for it exactly as for a catalog item. Optional, no maxItems cap (DD-001). Ids in here plus the catalog's own ids form the valid equipmentId union for this rutina's exercises (R4.1); a gear id colliding with a catalog id is a validation error (AC23, checked by scripts/lib/rutina-validator.js, not expressible in JSON Schema alone).",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "names"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "Kebab-case slug. Must not collide with a catalog id in data/equipment.json (AC23)."
+          },
+          "kind": {
+            "const": "gear",
+            "description": "Always the literal string \"gear\" — the value equipment.schema.json deliberately rejects (M11, AC44c)."
+          },
+          "names": {
+            "type": "object",
+            "required": ["en", "es", "be"],
+            "properties": {
+              "en": { "type": "string", "minLength": 1 },
+              "es": { "type": "string", "minLength": 1 },
+              "be": { "type": "string", "minLength": 1 }
+            }
+          },
+          "category": {
+            "type": "string",
+            "description": "Optional free-text category — gear does not have to fit the catalog's 8-value enum."
+          },
+          "muscleGroup": {
+            "type": "object",
+            "properties": {
+              "primary": { "type": "array", "items": { "type": "string" } },
+              "secondary": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "descriptions": {
+            "type": "object",
+            "properties": {
+              "en": { "type": "string" },
+              "es": { "type": "string" },
+              "be": { "type": "string" }
+            }
+          },
+          "instructions": {
+            "type": "object",
+            "properties": {
+              "en": { "type": "string" },
+              "es": { "type": "string" },
+              "be": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "progression": {
+      "type": "array",
+      "description": "Optional phase-2+-style month/week progression blocks. Omit this whole property if not applicable.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "One month of progression, containing ordered week blocks.",
+        "required": ["month", "weeks"],
+        "properties": {
+          "month": {
+            "type": "string",
+            "description": "Month label, e.g. \"Mes 1\"."
+          },
+          "weeks": {
+            "type": "array",
+            "description": "Ordered list of week blocks within this month.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "One week's progression focus, with an optional deload flag.",
+              "required": ["label", "focus"],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "description": "Week label, e.g. \"Semana 1\"."
+                },
+                "focus": {
+                  "type": "string",
+                  "description": "Free-text focus for this week, e.g. \"Aumentar volumen 10%\"."
+                },
+                "deload": {
+                  "type": "boolean",
+                  "description": "Optional flag marking this week as a deload (reduced-intensity) week."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "basicfit-rutina",
-  "version": "1.26.0",
+  "version": "1.27.0",
   "description": "BasicFit Equipment Catalog and Routine Generator",
   "scripts": {
     "serve": "npx --yes serve . -p 3000",
@@ -23,7 +23,8 @@
     "pretest:viewport": "vite build && node scripts/copy-static-pages.js",
     "test:viewport": "node tests/viewport-check.js",
     "ds:check-bundle": "node scripts/ds-bundle-freshness.js",
-    "ds:fix-bundle": "node scripts/ds-bundle-postprocess.js"
+    "ds:fix-bundle": "node scripts/ds-bundle-postprocess.js",
+    "build:contract": "node scripts/build-contract.js"
   },
   "keywords": [
     "fitness",
@@ -51,6 +52,7 @@
     "@testing-library/user-event": "^14.5.2",
     "@vitejs/plugin-react": "^4.3.4",
     "fake-indexeddb": "^6.0.0",
+    "js-yaml": "^4.1.0",
     "jsdom": "^25.0.1",
     "marked": "^15.0.12",
     "vite": "^6.0.3",

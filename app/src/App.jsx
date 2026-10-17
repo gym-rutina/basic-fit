@@ -22,6 +22,7 @@ import { hasSeenOnboarding } from './lib/onboardingStorage.js';
 import { startOpportunisticFlush } from './lib/reportFlush.js';
 import { useActiveSession } from './hooks/useActiveSession.js';
 import { I18nProvider } from './i18n/index.js';
+import { BackendProvider } from './lib/backend/BackendProvider.jsx';
 
 /**
  * `/import` entry (import-flow-guided-first D2, AC1/AC8, tech-plan AD-2): the
@@ -199,11 +200,15 @@ export default function App() {
   // whenever the browser comes back online. Inert (no timer, no listener, no
   // network) while VITE_BACKEND_URL is unset.
   useEffect(() => startOpportunisticFlush(), []);
+  // backend-bootstrap: the backend seam (LocalBackend unless VITE_BACKEND_URL
+  // is valid). Inert: renders only its children and makes no request on mount.
   return (
-    <I18nProvider>
-      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Shell />
-      </HashRouter>
-    </I18nProvider>
+    <BackendProvider>
+      <I18nProvider>
+        <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Shell />
+        </HashRouter>
+      </I18nProvider>
+    </BackendProvider>
   );
 }
