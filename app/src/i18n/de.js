@@ -344,6 +344,9 @@ export default {
 
   // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
   'session.notHereAction': 'Mein Studio hat dieses Gerät nicht',
+  'session.notHereConfirmTitle': 'Dieses Gerät in deinem Studio ausblenden?',
+  'session.notHereConfirmBody': 'Es wird aus dem Katalog deines Studios entfernt und eine anonyme Meldung wird gesendet. Du kannst das unter Katalog → Mein Studio rückgängig machen.',
+  'session.notHereConfirmAction': 'Ja, mein Studio hat es nicht',
   'session.reportedBody': 'Gemeldet. Im Katalog dieses Studios ausgeblendet. Du kannst das unter Katalog → Mein Studio rückgängig machen.',
   'session.notesLabel': 'Notizen (optional)',
   'session.notesPlaceholder': 'z. B. keine Rolle, langen Griff benutzt',

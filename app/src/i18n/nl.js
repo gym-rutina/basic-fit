@@ -344,6 +344,9 @@ export default {
 
   // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
   'session.notHereAction': 'Mijn club heeft dit toestel niet',
+  'session.notHereConfirmTitle': 'Dit toestel verbergen in jouw club?',
+  'session.notHereConfirmBody': 'Het wordt uit de catalogus van je club verwijderd en er wordt een anonieme melding verstuurd. Je kunt dit ongedaan maken via Catalogus → Mijn club.',
+  'session.notHereConfirmAction': 'Ja, mijn club heeft het niet',
   'session.reportedBody': 'Gemeld. Verborgen in de catalogus van deze club. Je kunt dit ongedaan maken via Catalogus → Mijn club.',
   'session.notesLabel': 'Notities (optioneel)',
   'session.notesPlaceholder': 'bijv. geen katrol, lange greep gebruikt',

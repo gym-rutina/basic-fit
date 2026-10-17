@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SheetShell, SheetCloseButton } from './sheet/SheetShell.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
@@ -26,6 +26,16 @@ import { useI18n } from '../i18n/index.js';
  * machine, so the button needs no machine-specific accessible name. The caller
  * computes all of it — this sheet holds no club state of its own. When the
  * prop is absent (CatalogScreen callers never report from here) nothing renders.
+ *
+ * Accidental-tap guard (2026-10-17 UAT): the tutorial link is a bordered,
+ * full-width row with a YouTube icon (it used to be bare purple text sitting
+ * right above the report action, and the two were easy to confuse). The report
+ * is two-step: the action opens an inline confirmation panel (what will happen
+ * + where to undo it) and only its confirm button calls `onNotHere`. The panel
+ * lives inside this dialog rather than stacking a second one over it, so
+ * Escape / Back / scrim keep their single-dialog meaning. Cancel is focused on
+ * open (the safe default) and gets focus back the way it came; after a
+ * confirmed report focus lands on ✕, because the action just disappeared.
  */
 export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, videoLabel, reporting, onClose }) {
   const { t } = useI18n();
@@ -33,6 +43,20 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
   // Shared with SheetShell: the shell autofocuses the ✕ on mount (and now
   // also restores focus on unmount — the pre-shell version dumped focus).
   const closeRef = useRef(null);
+  const reportRef = useRef(null);
+  const [confirming, setConfirming] = useState(false);
+  const wasConfirming = useRef(false);
+  const reportedNow = useRef(false);
+
+  useEffect(() => {
+    if (confirming) {
+      reportRef.current?.querySelector('[data-report-cancel]')?.focus();
+    } else if (wasConfirming.current) {
+      if (reportedNow.current) closeRef.current?.focus();
+      else reportRef.current?.querySelector('[data-report-trigger]')?.focus();
+    }
+    wasConfirming.current = confirming;
+  }, [confirming]);
 
   return (
     <SheetShell onClose={onClose} labelledBy="equipment-sheet-title" initialFocusRef={closeRef} maxHeight="80vh">
@@ -79,41 +103,106 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            display: 'inline-flex',
+            display: 'flex',
             alignItems: 'center',
-            gap: 6,
-            font: '600 14px/1.2 var(--font-sans)',
+            gap: 10,
+            boxSizing: 'border-box',
+            width: '100%',
+            minHeight: 48,
+            padding: '10px 14px',
+            font: '600 14px/1.25 var(--font-sans)',
             color: 'var(--bf-purple)',
             textDecoration: 'none',
-            minHeight: 44,
+            border: '1px solid var(--bf-purple)',
+            background: 'var(--bf-purple-tint)',
+            borderRadius: 'var(--radius-control)',
           }}
         >
-          {resolvedVideoLabel}
+          <Icon name="youtube" size={22} />
+          <span dir="auto" style={{ flex: 1, minWidth: 0 }}>{resolvedVideoLabel}</span>
+          <Icon name="external-link" size={16} />
           <span className="sr-only"> {t('common.opensNewTab')}</span>
         </a>
       )}
 
       {/* club-equipment-reporting S1: the club-absence report action and its
-          one-tap finality confirmation. The sheet's title already names the
-          machine, so the label can say plainly what the report claims. The
-          status region is mounted while the action is offered (empty), so the
-          confirmation is ANNOUNCED when its text arrives rather than appearing
-          together with its own live region. */}
+          confirmation. The sheet's title already names the machine, so the
+          label can say plainly what the report claims. The status region is
+          mounted while the action is offered (empty), so the confirmation is
+          ANNOUNCED when its text arrives rather than appearing together with
+          its own live region. A hairline + gap keeps the destructive-ish
+          action visually apart from the tutorial link above it. */}
       {reporting && (reporting.canReport || reporting.reported) && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            {reporting.canReport && !reporting.reported && (
+        <div
+          ref={reportRef}
+          style={{
+            marginTop: videoHref ? 20 : 0,
+            paddingTop: videoHref ? 8 : 0,
+            borderTop: videoHref ? '1px solid var(--border-control)' : 'none',
+          }}
+        >
+          {reporting.canReport && !reporting.reported && !confirming && (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => reporting.onNotHere(reporting.equipmentId)}
+                data-report-trigger
+                onClick={() => setConfirming(true)}
                 style={{ minHeight: 44, padding: '0 10px' }}
               >
                 <Icon name="alert-triangle" size={14} style={{ color: 'var(--bf-danger)' }} /> {t('session.notHereAction')}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
+          {reporting.canReport && !reporting.reported && confirming && (
+            <div
+              role="group"
+              aria-labelledby="not-here-confirm-title"
+              style={{
+                marginTop: 8,
+                padding: 12,
+                display: 'grid',
+                gap: 10,
+                border: '1px solid var(--border-control)',
+                borderRadius: 'var(--radius-control)',
+              }}
+            >
+              <div>
+                <p id="not-here-confirm-title" dir="auto" style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)', margin: '0 0 4px' }}>
+                  {t('session.notHereConfirmTitle')}
+                </p>
+                <p dir="auto" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: 0 }}>
+                  {t('session.notHereConfirmBody')}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  data-report-cancel
+                  onClick={() => setConfirming(false)}
+                  style={{ flex: 1, minHeight: 44 }}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    reportedNow.current = true;
+                    setConfirming(false);
+                    reporting.onNotHere(reporting.equipmentId);
+                  }}
+                  style={{ flex: 1, minHeight: 44 }}
+                >
+                  {t('session.notHereConfirmAction')}
+                </Button>
+              </div>
+            </div>
+          )}
           <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
             {reporting.reported && (
               <>

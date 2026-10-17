@@ -171,19 +171,39 @@ describe('EquipmentReferenceSheet — club reporting action (2026-10-06 UAT)', (
     expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
   });
 
-  it('one-tap finality: tapping replaces the action with the polite confirmation (live region), and the ✕-style report icon is gone', async () => {
+  it('tapping the action only opens the confirmation; onNotHere fires solely from its confirm button, and Cancelar fires nothing (UAT 2026-10-17)', async () => {
+    const onNotHere = vi.fn();
+    const user = userEvent.setup();
+    render(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, onNotHere }} onClose={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /no tiene/i }));
+    expect(onNotHere).not.toHaveBeenCalled();
+    expect(screen.getByRole('group', { name: /ocultar esta máquina/i })).toBeInTheDocument();
+    // Safe default: focus lands on Cancelar, not on the destructive confirm.
+    expect(screen.getByRole('button', { name: /cancelar/i })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: /cancelar/i }));
+    expect(onNotHere).not.toHaveBeenCalled();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /no tiene/i })).toHaveFocus();
+  });
+
+  it('confirming reports once, then the parent flips `reported` and the polite confirmation replaces the action', async () => {
     const onNotHere = vi.fn();
     const user = userEvent.setup();
     const { rerender } = render(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, onNotHere }} onClose={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: /no tiene/i }));
+    await user.click(screen.getByRole('button', { name: 'Sí, mi club no la tiene' }));
+    expect(onNotHere).toHaveBeenCalledTimes(1);
     expect(onNotHere).toHaveBeenCalledWith('g3-s70');
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
 
-    // The parent flips `reported` on the same visit; the sheet then shows the
-    // confirmation instead of the action, inside a polite live region.
     rerender(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, onNotHere, reported: true }} onClose={vi.fn()} />);
     expect(screen.queryByRole('button', { name: /no tiene/i })).not.toBeInTheDocument();
     const live = [...document.querySelectorAll('[aria-live="polite"], [role="status"]')].map((n) => n.textContent).join(' | ');
     expect(live).toMatch(/Reportado\. Se ha ocultado/);
+    // The action vanished, so focus moves to ✕ instead of being dropped on <body>.
+    expect(screen.getByRole('button', { name: /cerrar/i })).toHaveFocus();
   });
 });

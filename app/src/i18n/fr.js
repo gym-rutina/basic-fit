@@ -343,6 +343,9 @@ export default {
 
   // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
   'session.notHereAction': 'Mon club n’a pas cette machine',
+  'session.notHereConfirmTitle': 'Masquer cette machine de votre club ?',
+  'session.notHereConfirmBody': 'Elle sera retirée du catalogue de votre club et un signalement anonyme sera envoyé. Vous pouvez l’annuler depuis Catalogue → Mon club.',
+  'session.notHereConfirmAction': 'Oui, mon club ne l’a pas',
   'session.reportedBody': 'Signalé. Masqué dans le catalogue de ce club. Vous pouvez l’annuler depuis Catalogue → Mon club.',
   'session.notesLabel': 'Notes (facultatif)',
   'session.notesPlaceholder': 'p. ex. pas de poulie, prise longue utilisée',

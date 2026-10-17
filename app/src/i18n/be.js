@@ -340,6 +340,9 @@ export default {
 
   // ── club-equipment-reporting (EquipmentReferenceSheet absence report + notes) ──
   'session.notHereAction': 'У маім клубе няма гэтага трэнажора',
+  'session.notHereConfirmTitle': 'Схаваць гэты трэнажор з вашага клуба?',
+  'session.notHereConfirmBody': 'Ён будзе прыбраны з каталога вашага клуба, і будзе адпраўлена ананімнае паведамленне. Вярнуць яго можна ў раздзеле Каталог → Мой клуб.',
+  'session.notHereConfirmAction': 'Так, у маім клубе яго няма',
   'session.reportedBody': 'Паведамлена. Трэнажор схаваны ў каталогу гэтага клуба. Вярнуць яго можна ў раздзеле Каталог → Мой клуб.',
   'session.notesLabel': 'Нататкі (неабавязкова)',
   'session.notesPlaceholder': 'напр., без блока, выкарыстаў доўгі хват',

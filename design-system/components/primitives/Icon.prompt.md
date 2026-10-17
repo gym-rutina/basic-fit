@@ -7,4 +7,4 @@ Thin-line stroke icon — a Feather/Lucide (ISC) subset matching basic-fit.com's
 
 Names — general: search, check, chevron-down, chevron-up, chevron-left, chevron-right, arrow-up, arrow-right, external-link, plus, minus, x, menu, filter, sliders, download, play, repeat.
 Names — content/UI: map-pin, user, info, clock, timer, calendar, pencil, bell, lock, star, home, mail, credit-card, alert-triangle, alert-octagon, smartphone, phone, globe, droplet.
-Names — fitness/brand: dumbbell, flame, heart, trending-up, bar-chart-2, target, trophy.
+Names — fitness/brand: dumbbell, flame, heart, trending-up, bar-chart-2, target, trophy, youtube.

@@ -88,6 +88,12 @@ async function openSheet(user) {
   await user.click(await screen.findByRole('button', { name: new RegExp(CAT_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }));
   await screen.findByRole('dialog');
 }
+// 2026-10-17 UAT: the report is two-step — the action opens an inline
+// confirmation; only its confirm button reports.
+async function reportNotHere(user) {
+  await user.click(await screen.findByRole('button', { name: notHereName }));
+  await user.click(await screen.findByRole('button', { name: 'Sí, mi club no la tiene' }));
+}
 
 async function complete(user, { weight = '40', notes } = {}) {
   const w = await screen.findByLabelText(/peso usado/i);
@@ -126,11 +132,28 @@ describe('S1 — club absence report inside the equipment reference sheet (AC1, 
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
     await openSheet(user);
 
-    await user.click(await screen.findByRole('button', { name: notHereName }));
+    await reportNotHere(user);
 
     await waitFor(() => expect(db.setClubExclusions).toHaveBeenCalledWith('club-a', [CATALOG_ID]));
     expect(outbox.enqueueReport).toHaveBeenCalledTimes(1);
     expect(outbox.enqueueReport).toHaveBeenCalledWith({ clubId: 'club-a', equipmentId: CATALOG_ID, signal: 'absent', method: 'session' });
+  });
+
+  it('a single tap on the action only asks: nothing is excluded or enqueued until confirmed, and Cancelar backs out cleanly (UAT 2026-10-17)', async () => {
+    const user = userEvent.setup();
+    mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
+    await openSheet(user);
+
+    await user.click(await screen.findByRole('button', { name: notHereName }));
+    expect(await screen.findByRole('button', { name: 'Sí, mi club no la tiene' })).toBeInTheDocument();
+    expect(db.setClubExclusions).not.toHaveBeenCalled();
+    expect(outbox.enqueueReport).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: /cancelar/i }));
+    expect(screen.queryByRole('button', { name: 'Sí, mi club no la tiene' })).not.toBeInTheDocument();
+    expect(notHereButton()).toHaveFocus();
+    expect(db.setClubExclusions).not.toHaveBeenCalled();
+    expect(outbox.enqueueReport).not.toHaveBeenCalled();
   });
 
   it('one-tap finality: the action is replaced by the confirmation, announced politely, pointing corrections to Catálogo → Mi club', async () => {
@@ -138,7 +161,7 @@ describe('S1 — club absence report inside the equipment reference sheet (AC1, 
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
     await openSheet(user);
 
-    await user.click(await screen.findByRole('button', { name: notHereName }));
+    await reportNotHere(user);
 
     const sentence = /Reportado\. Se ha ocultado en el catálogo de este club\. Puedes revertirlo desde Catálogo → Mi club\./;
     expect(await screen.findByText(sentence)).toBeInTheDocument();
@@ -153,7 +176,7 @@ describe('S1 — club absence report inside the equipment reference sheet (AC1, 
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
     await openSheet(user);
 
-    await user.click(await screen.findByRole('button', { name: notHereName }));
+    await reportNotHere(user);
 
     expect(await screen.findByText(/Reportado\./)).toBeInTheDocument();
     await waitFor(() => expect(db.setClubExclusions).toHaveBeenCalled());
