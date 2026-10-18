@@ -19,6 +19,18 @@ body {
   color: var(--bf-ink);
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
+  /* A single unbreakable token (e.g. "cuádriceps→isquios→…") that exceeds the
+     container wraps instead of widening it. `break-word` (not `anywhere`) so
+     min-content sizing elsewhere is unchanged. */
+  overflow-wrap: break-word;
+}
+
+/* A grid without explicit columns gets ONE auto track, which grows to the
+   widest child's min-content and pushes the whole card past the viewport.
+   Give every such single-column grid a shrinkable track. Grids that declare
+   grid-template-columns are untouched. */
+[style*="display: grid"]:not([style*="grid-template-columns"]) {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 img {

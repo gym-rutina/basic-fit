@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { BottomTabBar } from './components/BottomTabBar.jsx';
 import { InstallBanner } from './components/InstallBanner.jsx';
@@ -77,6 +77,12 @@ function Shell() {
 
   useEffect(() => { loadRutina(); }, []);
 
+  // The scroller is ONE persistent <main> shared by every route, so its
+  // scrollTop survives navigation: opening a day from the middle of Programa
+  // landed mid-list. Each route change starts at the top.
+  const mainRef = useRef(null);
+  useEffect(() => { if (mainRef.current) mainRef.current.scrollTop = 0; }, [location.pathname]);
+
   // One-shot redirect flag: ImportScreen has no navigation of its own (it
   // just calls onImported(target) to refresh `rutina` and name the landing
   // route), so without this a successful import silently saves and leaves
@@ -115,7 +121,7 @@ function Shell() {
             the `.sr-only` spans (position: absolute) resolve against the viewport, escape this scroller
             and the shell's overflow: hidden, and stretch the DOCUMENT to the page's full length: a second
             scrollbar beside this one on long screens (Program day detail). */}
-        <main style={{ position: 'relative', flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+        <main ref={mainRef} style={{ position: 'relative', flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden' }}>
           <Routes>
             <Route
               path="/import"

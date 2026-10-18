@@ -1,5 +1,5 @@
 const DS2 = window.BasicFitDesignSystem_1cb8a2;
-const { PageHeader: CatHeader, FilterPill, EquipmentCard, StatCard, PageFooter: CatFooter } = DS2;
+const { PageHeader: CatHeader, FilterPill, EquipmentCard, PageFooter: CatFooter } = DS2;
 
 /**
  * gym-directory-and-catalog (2026-08-09) additions (ux-design.md §4 /
@@ -13,7 +13,6 @@ const { PageHeader: CatHeader, FilterPill, EquipmentCard, StatCard, PageFooter: 
  */
 function CatalogScreen() {
   const data = window.BF_KIT_DATA;
-  const dir = window.BF_KIT_DIRECTORY;
   const store = window.BF_KIT_CLUB_STORE;
   const [lang, setLang] = React.useState("es");
   const [cat, setCat] = React.useState("all");
@@ -51,13 +50,6 @@ function CatalogScreen() {
         title="Catálogo de equipamiento"
         subtitle="Máquinas Matrix Aura + ZIVA en tus gimnasios Basic-Fit"
       />
-      <div style={{ ...wrap, marginTop: "var(--space-6)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-          <StatCard value={String(data.equipment.length)} label="máquinas" />
-          <StatCard value={dir.totalClubs.toLocaleString("es-ES")} label="clubes" />
-          <StatCard value="3" label="idiomas" />
-        </div>
-      </div>
       <div style={{ ...wrap, marginTop: "var(--space-6)", display: "grid", gap: 12 }}>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <span style={{ font: "var(--text-label)", letterSpacing: "var(--tracking-label)", textTransform: "uppercase", color: "var(--text-muted)" }}>Idioma</span>
@@ -91,6 +83,11 @@ function CatalogScreen() {
           )}
         </div>
       </div>
+      <div style={{ ...wrap, marginTop: "var(--space-5)" }}>
+        <p aria-live="polite" style={{ margin: 0, font: "var(--text-label)", letterSpacing: "var(--tracking-label)", textTransform: "uppercase", color: "var(--text-muted)" }}>
+          Equipos: {items.length}
+        </p>
+      </div>
       <div style={{
         ...wrap, marginTop: "var(--space-5)", paddingBottom: "var(--space-10)",
         display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14, alignItems: "start",
@@ -111,7 +108,7 @@ function CatalogScreen() {
           </div>
         )}
       </div>
-      <CatFooter lines={["Datos: Matrix Fitness + ZIVA + Basic-Fit", data.equipment.length + " máquinas · " + dir.totalClubs.toLocaleString("es-ES") + " clubes · EN/ES/BE"]} />
+      <CatFooter lines={["Datos: Matrix Fitness + ZIVA + Basic-Fit"]} />
 
       {showPicker && ClubPickerSheetComp && (
         <ClubPickerSheetComp
