@@ -194,6 +194,7 @@ export default {
   'equipment.machineWord': 'трэнажор',
   'equipment.techniqueWord': 'тэхніка',
   'equipment.watchTutorial': 'Глядзець урок на YouTube',
+  'equipment.moreActions': 'Іншыя дзеянні',
 
   // ── progress ─────────────────────────────────────────────────────────────
   'progress.noEquipment': 'без абсталявання',

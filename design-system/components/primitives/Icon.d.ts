@@ -12,7 +12,7 @@ export interface IconProps {
     | "external-link" | "download" | "play" | "filter" | "sliders"
     | "bell" | "lock" | "star" | "home" | "mail" | "credit-card" | "repeat"
     | "dumbbell" | "flame" | "heart" | "trending-up" | "bar-chart-2"
-    | "target" | "timer" | "trophy" | "youtube";
+    | "target" | "timer" | "trophy" | "youtube" | "more-horizontal";
   size?: number;
   strokeWidth?: number;
   style?: React.CSSProperties;

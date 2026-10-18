@@ -154,30 +154,56 @@ describe('EquipmentReferenceSheet — exercise tutorial link (AC18′)', () => {
   });
 });
 
-describe('EquipmentReferenceSheet — club reporting action (2026-10-06 UAT)', () => {
-  const REPORT = { equipmentId: 'g3-s70', canReport: true, reported: false, onNotHere: vi.fn() };
+describe('EquipmentReferenceSheet — club reporting action (2026-10-06 / 2026-10-17 UAT)', () => {
+  const REPORT = { equipmentId: 'g3-s70', canReport: true, reported: false, onNotHere: vi.fn(), onUndo: vi.fn() };
+  const moreButton = () => screen.queryByRole('button', { name: /más acciones/i });
+  const menuItem = () => screen.queryByRole('menuitem', { name: 'Mi club no tiene esta máquina' });
+  async function openConfirm(user) {
+    await user.click(moreButton());
+    await user.click(menuItem());
+  }
 
-  it('shows the club-absence action only when reporting.canReport is set, and no report has been made', () => {
+  it('puts the action behind a «⋯» header menu: closed by default, one item when opened, never a loose button', async () => {
+    const user = userEvent.setup();
     render(<EquipmentReferenceSheet {...RICH} reporting={REPORT} onClose={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: 'Mi club no tiene esta máquina' })).toBeInTheDocument();
-    expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
-  });
-
-  it('renders nothing when the prop is absent (catalog callers never report from here)', () => {
-    render(<EquipmentReferenceSheet {...RICH} onClose={vi.fn()} />);
-
+    expect(moreButton()).toHaveAttribute('aria-expanded', 'false');
+    expect(menuItem()).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /no tiene/i })).not.toBeInTheDocument();
-    expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
+
+    await user.click(moreButton());
+    expect(moreButton()).toHaveAttribute('aria-expanded', 'true');
+    expect(menuItem()).toHaveFocus();
   });
 
-  it('tapping the action only opens the confirmation; onNotHere fires solely from its confirm button, and Cancelar fires nothing (UAT 2026-10-17)', async () => {
+  it('renders no menu, no status text when reporting is absent or cannot report (catalog callers, no club)', () => {
+    const { rerender } = render(<EquipmentReferenceSheet {...RICH} onClose={vi.fn()} />);
+    expect(moreButton()).not.toBeInTheDocument();
+    expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
+
+    rerender(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, canReport: false }} onClose={vi.fn()} />);
+    expect(moreButton()).not.toBeInTheDocument();
+  });
+
+  it('the tutorial link is the LAST thing in the sheet — after the report region, image and Técnica', async () => {
+    const user = userEvent.setup();
+    render(<EquipmentReferenceSheet {...RICH} reporting={REPORT} onClose={vi.fn()} />);
+    await openConfirm(user);
+
+    const link = screen.getByRole('link', { name: /youtube/i });
+    const FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
+    expect(screen.getByRole('group').compareDocumentPosition(link) & FOLLOWING).toBeTruthy();
+    expect(screen.getByText('Técnica').compareDocumentPosition(link) & FOLLOWING).toBeTruthy();
+  });
+
+  it('picking the menu item only opens the confirmation; onNotHere fires solely from its confirm button, and Cancelar fires nothing', async () => {
     const onNotHere = vi.fn();
     const user = userEvent.setup();
     render(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, onNotHere }} onClose={vi.fn()} />);
 
-    await user.click(screen.getByRole('button', { name: /no tiene/i }));
+    await openConfirm(user);
     expect(onNotHere).not.toHaveBeenCalled();
+    expect(menuItem()).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: /ocultar esta máquina/i })).toBeInTheDocument();
     // Safe default: focus lands on Cancelar, not on the destructive confirm.
     expect(screen.getByRole('button', { name: /cancelar/i })).toHaveFocus();
@@ -185,25 +211,69 @@ describe('EquipmentReferenceSheet — club reporting action (2026-10-06 UAT)', (
     await user.click(screen.getByRole('button', { name: /cancelar/i }));
     expect(onNotHere).not.toHaveBeenCalled();
     expect(screen.queryByRole('group')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /no tiene/i })).toHaveFocus();
+    expect(moreButton()).toHaveFocus();
   });
 
-  it('confirming reports once, then the parent flips `reported` and the polite confirmation replaces the action', async () => {
+  it('confirming reports once; the polite confirmation then replaces the «⋯», focus goes to ✕, and Deshacer calls onUndo and brings «⋯» back', async () => {
     const onNotHere = vi.fn();
+    const onUndo = vi.fn();
     const user = userEvent.setup();
-    const { rerender } = render(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, onNotHere }} onClose={vi.fn()} />);
+    const props = { ...REPORT, onNotHere, onUndo };
+    const { rerender } = render(<EquipmentReferenceSheet {...RICH} reporting={props} onClose={vi.fn()} />);
 
-    await user.click(screen.getByRole('button', { name: /no tiene/i }));
+    await openConfirm(user);
     await user.click(screen.getByRole('button', { name: 'Sí, mi club no la tiene' }));
     expect(onNotHere).toHaveBeenCalledTimes(1);
     expect(onNotHere).toHaveBeenCalledWith('g3-s70');
     expect(screen.queryByRole('group')).not.toBeInTheDocument();
 
-    rerender(<EquipmentReferenceSheet {...RICH} reporting={{ ...REPORT, onNotHere, reported: true }} onClose={vi.fn()} />);
-    expect(screen.queryByRole('button', { name: /no tiene/i })).not.toBeInTheDocument();
+    rerender(<EquipmentReferenceSheet {...RICH} reporting={{ ...props, canReport: false, reported: true }} onClose={vi.fn()} />);
+    expect(moreButton()).not.toBeInTheDocument();
     const live = [...document.querySelectorAll('[aria-live="polite"], [role="status"]')].map((n) => n.textContent).join(' | ');
     expect(live).toMatch(/Reportado\. Se ha ocultado/);
-    // The action vanished, so focus moves to ✕ instead of being dropped on <body>.
+    // The control that had focus vanished, so focus moves to ✕ instead of <body>.
     expect(screen.getByRole('button', { name: /cerrar/i })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: /deshacer/i }));
+    expect(onUndo).toHaveBeenCalledTimes(1);
+    expect(onUndo).toHaveBeenCalledWith('g3-s70');
+
+    // The parent restores the machine: canReport returns, reported clears.
+    rerender(<EquipmentReferenceSheet {...RICH} reporting={{ ...props, canReport: true, reported: false }} onClose={vi.fn()} />);
+    expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /deshacer/i })).not.toBeInTheDocument();
+    expect(moreButton()).toHaveFocus();
+  });
+
+  it('offers no Deshacer when the caller passes no onUndo', () => {
+    render(<EquipmentReferenceSheet {...RICH} reporting={{ equipmentId: 'g3-s70', canReport: false, reported: true, onNotHere: vi.fn() }} onClose={vi.fn()} />);
+    expect(screen.getByText(/Reportado\./)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /deshacer/i })).not.toBeInTheDocument();
+  });
+
+  it('Escape closes an open menu first (sheet stays), the next Escape closes the sheet', async () => {
+    const onClose = vi.fn();
+    const user = userEvent.setup();
+    render(<EquipmentReferenceSheet {...RICH} reporting={REPORT} onClose={onClose} />);
+
+    await user.click(moreButton());
+    await user.keyboard('{Escape}');
+    expect(menuItem()).not.toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(moreButton()).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('a tap outside the open menu closes it without closing the sheet', async () => {
+    const onClose = vi.fn();
+    const user = userEvent.setup();
+    render(<EquipmentReferenceSheet {...RICH} reporting={REPORT} onClose={onClose} />);
+
+    await user.click(moreButton());
+    await user.click(screen.getByText('Técnica'));
+    expect(menuItem()).not.toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

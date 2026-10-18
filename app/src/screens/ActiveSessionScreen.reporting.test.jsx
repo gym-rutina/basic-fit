@@ -81,7 +81,9 @@ function mount(rutina, { club = CLUB, excluded = [], session, hang = false } = {
 }
 
 const notHereName = /^Mi club no tiene esta máquina$/;
-const notHereButton = () => screen.queryByRole('button', { name: notHereName });
+// 2026-10-17 UAT: the action lives behind the sheet's «⋯» header menu, so
+// "is the action offered" == "is the «⋯» trigger there".
+const notHereButton = () => screen.queryByRole('button', { name: /^más acciones$/i });
 // 2026-10-06 UAT: «No está» moved INSIDE the EquipmentReferenceSheet — the
 // tests open the sheet (tap the equipment link) before looking for it.
 async function openSheet(user) {
@@ -91,7 +93,8 @@ async function openSheet(user) {
 // 2026-10-17 UAT: the report is two-step — the action opens an inline
 // confirmation; only its confirm button reports.
 async function reportNotHere(user) {
-  await user.click(await screen.findByRole('button', { name: notHereName }));
+  await user.click(await screen.findByRole('button', { name: /^más acciones$/i }));
+  await user.click(await screen.findByRole('menuitem', { name: notHereName }));
   await user.click(await screen.findByRole('button', { name: 'Sí, mi club no la tiene' }));
 }
 
@@ -120,7 +123,8 @@ describe('S1 — club absence report inside the equipment reference sheet (AC1, 
     const user = userEvent.setup();
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
     await openSheet(user);
-    const btn = await screen.findByRole('button', { name: notHereName });
+    await user.click(await screen.findByRole('button', { name: /^más acciones$/i }));
+    const btn = await screen.findByRole('menuitem', { name: notHereName });
     expect(btn).toHaveTextContent('Mi club no tiene esta máquina');
     // AC1: no separate "confirm present" control exists
     expect(screen.queryByRole('button', { name: /está aquí|confirmar presente|presente/i })).not.toBeInTheDocument();
@@ -144,7 +148,8 @@ describe('S1 — club absence report inside the equipment reference sheet (AC1, 
     mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
     await openSheet(user);
 
-    await user.click(await screen.findByRole('button', { name: notHereName }));
+    await user.click(await screen.findByRole('button', { name: /^más acciones$/i }));
+    await user.click(await screen.findByRole('menuitem', { name: notHereName }));
     expect(await screen.findByRole('button', { name: 'Sí, mi club no la tiene' })).toBeInTheDocument();
     expect(db.setClubExclusions).not.toHaveBeenCalled();
     expect(outbox.enqueueReport).not.toHaveBeenCalled();
@@ -154,6 +159,24 @@ describe('S1 — club absence report inside the equipment reference sheet (AC1, 
     expect(notHereButton()).toHaveFocus();
     expect(db.setClubExclusions).not.toHaveBeenCalled();
     expect(outbox.enqueueReport).not.toHaveBeenCalled();
+  });
+
+  it('Deshacer restores the machine through the same hook (present/session report), brings the «⋯» back, and a second report works', async () => {
+    const user = userEvent.setup();
+    mount(rutinaWith([ex(CATALOG_ID, 'Prensa')]));
+    await openSheet(user);
+
+    await reportNotHere(user);
+    await user.click(await screen.findByRole('button', { name: /deshacer/i }));
+
+    await waitFor(() => expect(db.setClubExclusions).toHaveBeenLastCalledWith('club-a', []));
+    expect(outbox.enqueueReport).toHaveBeenLastCalledWith({ clubId: 'club-a', equipmentId: CATALOG_ID, signal: 'present', method: 'session' });
+    expect(screen.queryByText(/Reportado\./)).not.toBeInTheDocument();
+    expect(notHereButton()).toBeInTheDocument();
+
+    await reportNotHere(user);
+    expect(await screen.findByText(/Reportado\./)).toBeInTheDocument();
+    expect(outbox.enqueueReport).toHaveBeenLastCalledWith({ clubId: 'club-a', equipmentId: CATALOG_ID, signal: 'absent', method: 'session' });
   });
 
   it('one-tap finality: the action is replaced by the confirmation, announced politely, pointing corrections to Catálogo → Mi club', async () => {

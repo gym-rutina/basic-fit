@@ -198,6 +198,7 @@ export default {
   'equipment.machineWord': 'máquina',
   'equipment.techniqueWord': 'técnica',
   'equipment.watchTutorial': 'Ver tutorial en YouTube',
+  'equipment.moreActions': 'Más acciones',
 
   // ── progress ─────────────────────────────────────────────────────────────
   'progress.noEquipment': 'sin equipo',

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { SheetShell, SheetCloseButton } from './sheet/SheetShell.jsx';
+import { SheetShell, SheetCloseButton, CLOSE_BUTTON_STYLE } from './sheet/SheetShell.jsx';
 import { Button } from '../../../design-system/components/primitives/Button.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { useI18n } from '../i18n/index.js';
@@ -17,25 +17,28 @@ import { useI18n } from '../i18n/index.js';
  * must match the row that opened it), so `videoLabel` is what tells the user
  * the link is scoped to a specific exercise on that machine.
  *
- * club-equipment-reporting S1 (revised 2026-10-06 UAT): the optional
- * `reporting` prop = { equipmentId, canReport, reported, onNotHere } puts the
- * club-absence report in here instead of on the exercise row. It renders while
- * `canReport` is true and no report has been made this visit; after the tap it
- * is replaced by the polite-live-region confirmation (one-tap finality —
- * corrections live in Catálogo → Mi club). The sheet's title already names the
- * machine, so the button needs no machine-specific accessible name. The caller
- * computes all of it — this sheet holds no club state of its own. When the
- * prop is absent (CatalogScreen callers never report from here) nothing renders.
+ * club-equipment-reporting S1: the optional
+ * `reporting` prop = { equipmentId, canReport, reported, onNotHere, onUndo }
+ * puts the club-absence report in here instead of on the exercise row. The
+ * caller computes all of it — this sheet holds no club state of its own. When
+ * the prop is absent (CatalogScreen callers never report from here) nothing
+ * renders.
  *
- * Accidental-tap guard (2026-10-17 UAT): the tutorial link is a bordered,
- * full-width row with a YouTube icon (it used to be bare purple text sitting
- * right above the report action, and the two were easy to confuse). The report
- * is two-step: the action opens an inline confirmation panel (what will happen
- * + where to undo it) and only its confirm button calls `onNotHere`. The panel
- * lives inside this dialog rather than stacking a second one over it, so
- * Escape / Back / scrim keep their single-dialog meaning. Cancel is focused on
- * open (the safe default) and gets focus back the way it came; after a
- * confirmed report focus lands on ✕, because the action just disappeared.
+ * Layout (2026-10-17 UAT): the report is a rare, destructive-ish action, so it
+ * no longer competes with the tutorial link. The page reads top-down as
+ * title · [⋯] · ✕, then the report's own region (confirmation / result), then
+ * image, Técnica and — last, as the primary action — the YouTube link.
+ *   1. «⋯» in the header opens a one-item menu (the action's full sentence).
+ *   2. Picking it opens an inline confirmation (what will happen + where to
+ *      undo); only ITS confirm button calls `onNotHere`. It lives inside this
+ *      dialog rather than stacking a second one, so Escape / Back / scrim keep
+ *      their single-dialog meaning (Escape and Back close an open menu first).
+ *   3. After the report, the polite live region confirms it and an «Deshacer»
+ *      button calls `onUndo` (the caller restores the machine through the same
+ *      exclusions path), which brings the «⋯» back.
+ * Focus: the menu item on open; Cancelar on confirmation (the safe default);
+ * back to «⋯» after Cancelar or Undo; ✕ after a confirmed report, because the
+ * control that had focus just disappeared.
  */
 export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, videoLabel, reporting, onClose }) {
   const { t } = useI18n();
@@ -43,29 +46,240 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
   // Shared with SheetShell: the shell autofocuses the ✕ on mount (and now
   // also restores focus on unmount — the pre-shell version dumped focus).
   const closeRef = useRef(null);
-  const reportRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const menuItemRef = useRef(null);
+  const menuWrapRef = useRef(null);
+  const confirmRef = useRef(null);
+  // Where focus goes once the control that held it has been swapped out:
+  // 'close' | 'menu' | null. Consumed by the effect below as soon as the
+  // target exists (after Undo the «⋯» only re-mounts on the parent's re-render).
+  const pendingFocus = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const wasConfirming = useRef(false);
-  const reportedNow = useRef(false);
+
+  const reported = Boolean(reporting && reporting.reported);
+  const offered = Boolean(reporting && reporting.canReport && !reported);
+  const showReportRegion = offered || reported;
 
   useEffect(() => {
-    if (confirming) {
-      reportRef.current?.querySelector('[data-report-cancel]')?.focus();
-    } else if (wasConfirming.current) {
-      if (reportedNow.current) closeRef.current?.focus();
-      else reportRef.current?.querySelector('[data-report-trigger]')?.focus();
-    }
-    wasConfirming.current = confirming;
+    if (menuOpen) menuItemRef.current?.focus();
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (confirming) confirmRef.current?.querySelector('[data-report-cancel]')?.focus();
   }, [confirming]);
 
+  useEffect(() => {
+    const want = pendingFocus.current;
+    if (!want) return;
+    const el = want === 'close' ? closeRef.current : menuButtonRef.current;
+    if (el) {
+      pendingFocus.current = null;
+      el.focus();
+    }
+  });
+
+  // A tap/click outside the menu closes it. (Keyboard Tab out is the onBlur
+  // below; the trigger itself is inside the wrapper so it can toggle.)
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    function onPointerDown(e) {
+      if (menuWrapRef.current && !menuWrapRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [menuOpen]);
+
+  function closeMenu({ refocus } = {}) {
+    setMenuOpen(false);
+    if (refocus) menuButtonRef.current?.focus();
+  }
+
+  // Escape and system Back peel the topmost thing first: an open menu, then the sheet.
+  function handleEscape() {
+    if (menuOpen) closeMenu({ refocus: true });
+    else onClose();
+  }
+  function handleBack() {
+    if (menuOpen) {
+      closeMenu({ refocus: true });
+      return false;
+    }
+    onClose();
+    return undefined;
+  }
+
   return (
-    <SheetShell onClose={onClose} labelledBy="equipment-sheet-title" initialFocusRef={closeRef} maxHeight="80vh">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12 }}>
+    <SheetShell
+      onClose={onClose}
+      onEscape={handleEscape}
+      onBack={handleBack}
+      labelledBy="equipment-sheet-title"
+      initialFocusRef={closeRef}
+      maxHeight="80vh"
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 8 }}>
         <h2 id="equipment-sheet-title" style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: 0, flex: 1, minWidth: 0 }}>
           {name}
         </h2>
+        {offered && (
+          <div
+            ref={menuWrapRef}
+            style={{ position: 'relative', flexShrink: 0 }}
+            onBlur={(e) => {
+              // Keyboard Tab (or focus move) to somewhere outside closes the menu;
+              // relatedTarget === null is a pointer blur, handled by pointerdown.
+              if (menuOpen && e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) setMenuOpen(false);
+            }}
+          >
+            <button
+              ref={menuButtonRef}
+              type="button"
+              aria-label={t('equipment.moreActions')}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((open) => !open)}
+              style={{ ...CLOSE_BUTTON_STYLE, width: 40, height: 40 }}
+            >
+              <Icon name="more-horizontal" size={20} />
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  zIndex: 1,
+                  width: 'max-content',
+                  maxWidth: 'min(280px, 75vw)',
+                  padding: 4,
+                  background: 'var(--bf-white)',
+                  border: '1px solid var(--border-control)',
+                  borderRadius: 'var(--radius-control)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,.12)',
+                }}
+              >
+                <button
+                  ref={menuItemRef}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setConfirming(true);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    boxSizing: 'border-box',
+                    width: '100%',
+                    minHeight: 44,
+                    padding: '8px 12px',
+                    font: '600 14px/1.25 var(--font-sans)',
+                    textAlign: 'left',
+                    color: 'var(--bf-ink)',
+                    background: 'none',
+                    border: 'none',
+                    borderRadius: 'var(--radius-control)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Icon name="alert-triangle" size={16} style={{ color: 'var(--bf-danger)' }} />
+                  <span dir="auto">{t('session.notHereAction')}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         <SheetCloseButton ref={closeRef} onClick={onClose} />
       </div>
+
+      {/* club-equipment-reporting: the report's confirmation and result. The
+          status region is mounted while the action is offered (empty), so the
+          result is ANNOUNCED when its text arrives rather than appearing
+          together with its own live region. */}
+      {showReportRegion && (
+        <div style={{ marginBottom: confirming || reported ? 16 : 0 }}>
+          {offered && confirming && (
+            <div
+              ref={confirmRef}
+              role="group"
+              aria-labelledby="not-here-confirm-title"
+              style={{
+                padding: 12,
+                display: 'grid',
+                gap: 10,
+                border: '1px solid var(--border-control)',
+                borderRadius: 'var(--radius-control)',
+              }}
+            >
+              <div>
+                <p id="not-here-confirm-title" dir="auto" style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)', margin: '0 0 4px' }}>
+                  {t('session.notHereConfirmTitle')}
+                </p>
+                <p dir="auto" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: 0 }}>
+                  {t('session.notHereConfirmBody')}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  data-report-cancel
+                  onClick={() => {
+                    pendingFocus.current = 'menu';
+                    setConfirming(false);
+                  }}
+                  style={{ flex: 1, minHeight: 44 }}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    pendingFocus.current = 'close';
+                    setConfirming(false);
+                    reporting.onNotHere(reporting.equipmentId);
+                  }}
+                  style={{ flex: 1, minHeight: 44 }}
+                >
+                  {t('session.notHereConfirmAction')}
+                </Button>
+              </div>
+            </div>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flex: 1, minWidth: 0 }}>
+              {reported && (
+                <>
+                  <Icon name="check-circle" size={16} style={{ color: 'var(--bf-success)', marginTop: 2 }} />
+                  <span dir="auto" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}>
+                    {t('session.reportedBody')}
+                  </span>
+                </>
+              )}
+            </div>
+            {reported && reporting.onUndo && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  pendingFocus.current = 'menu';
+                  reporting.onUndo(reporting.equipmentId);
+                }}
+                style={{ minHeight: 44, flexShrink: 0 }}
+              >
+                {t('common.undo')}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {imageUrl && (
         <img
@@ -123,97 +337,6 @@ export function EquipmentReferenceSheet({ name, imageUrl, steps, videoHref, vide
           <Icon name="external-link" size={16} />
           <span className="sr-only"> {t('common.opensNewTab')}</span>
         </a>
-      )}
-
-      {/* club-equipment-reporting S1: the club-absence report action and its
-          confirmation. The sheet's title already names the machine, so the
-          label can say plainly what the report claims. The status region is
-          mounted while the action is offered (empty), so the confirmation is
-          ANNOUNCED when its text arrives rather than appearing together with
-          its own live region. A hairline + gap keeps the destructive-ish
-          action visually apart from the tutorial link above it. */}
-      {reporting && (reporting.canReport || reporting.reported) && (
-        <div
-          ref={reportRef}
-          style={{
-            marginTop: videoHref ? 20 : 0,
-            paddingTop: videoHref ? 8 : 0,
-            borderTop: videoHref ? '1px solid var(--border-control)' : 'none',
-          }}
-        >
-          {reporting.canReport && !reporting.reported && !confirming && (
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                data-report-trigger
-                onClick={() => setConfirming(true)}
-                style={{ minHeight: 44, padding: '0 10px' }}
-              >
-                <Icon name="alert-triangle" size={14} style={{ color: 'var(--bf-danger)' }} /> {t('session.notHereAction')}
-              </Button>
-            </div>
-          )}
-          {reporting.canReport && !reporting.reported && confirming && (
-            <div
-              role="group"
-              aria-labelledby="not-here-confirm-title"
-              style={{
-                marginTop: 8,
-                padding: 12,
-                display: 'grid',
-                gap: 10,
-                border: '1px solid var(--border-control)',
-                borderRadius: 'var(--radius-control)',
-              }}
-            >
-              <div>
-                <p id="not-here-confirm-title" dir="auto" style={{ font: '600 14px/1.3 var(--font-sans)', color: 'var(--bf-ink)', margin: '0 0 4px' }}>
-                  {t('session.notHereConfirmTitle')}
-                </p>
-                <p dir="auto" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)', margin: 0 }}>
-                  {t('session.notHereConfirmBody')}
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  data-report-cancel
-                  onClick={() => setConfirming(false)}
-                  style={{ flex: 1, minHeight: 44 }}
-                >
-                  {t('common.cancel')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    reportedNow.current = true;
-                    setConfirming(false);
-                    reporting.onNotHere(reporting.equipmentId);
-                  }}
-                  style={{ flex: 1, minHeight: 44 }}
-                >
-                  {t('session.notHereConfirmAction')}
-                </Button>
-              </div>
-            </div>
-          )}
-          <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-            {reporting.reported && (
-              <>
-                <Icon name="check-circle" size={16} style={{ color: 'var(--bf-success)', marginTop: 2 }} />
-                <span dir="auto" style={{ font: 'var(--text-caption)', color: 'var(--text-muted)' }}>
-                  {t('session.reportedBody')}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
       )}
     </SheetShell>
   );

@@ -182,7 +182,7 @@ function EquipmentRow({ ex, extraEquipment, locale, t, reporting }) {
           steps={steps}
           videoHref={videoHref}
           videoLabel={videoLabel}
-          reporting={{ equipmentId: eq.id, canReport, reported, onNotHere: reporting?.onNotHere }}
+          reporting={{ equipmentId: eq.id, canReport, reported, onNotHere: reporting?.onNotHere, onUndo: reporting?.onUndo }}
           onClose={() => {
             setSheetOpen(false);
             triggerRef.current?.focus();
@@ -459,7 +459,7 @@ export function ActiveSessionScreen({ onSessionEnded }) {
   // reports them with method "session".
   const [club] = useState(() => readClub());
   const clubId = club?.clubId ?? null;
-  const { excludedIds, exclude } = useClubExclusions(clubId, { method: 'session' });
+  const { excludedIds, exclude, include } = useClubExclusions(clubId, { method: 'session' });
   // Machines reported via «No está» during this visit — drives the sheet's
   // one-tap-final confirmation state (not persisted: the exclusion is).
   const [reportedIds, setReportedIds] = useState(() => new Set());
@@ -522,6 +522,21 @@ export function ActiveSessionScreen({ onSessionEnded }) {
   function handleNotHere(equipmentId) {
     exclude(equipmentId);
     setReportedIds((prev) => new Set(prev).add(equipmentId));
+  }
+
+  /**
+   * Undo of the report just made: the SAME hook's `include` (one mutation path,
+   * AC10) restores the machine locally and reports it present, replacing the
+   * pending absent report in the outbox (keyed club|equipment). Dropping the id
+   * from `reportedIds` brings the report action back.
+   */
+  function handleUndoNotHere(equipmentId) {
+    include(equipmentId);
+    setReportedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(equipmentId);
+      return next;
+    });
   }
 
   /**
@@ -655,7 +670,7 @@ export function ActiveSessionScreen({ onSessionEnded }) {
             locale={locale}
             t={t}
             extraEquipment={rutina.extraEquipment}
-            reporting={{ clubId, excludedIds, reportedIds, onNotHere: handleNotHere }}
+            reporting={{ clubId, excludedIds, reportedIds, onNotHere: handleNotHere, onUndo: handleUndoNotHere }}
           />
         ))}
         {isFullyComplete && (

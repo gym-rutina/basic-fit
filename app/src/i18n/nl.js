@@ -198,6 +198,7 @@ export default {
   'equipment.machineWord': 'toestel',
   'equipment.techniqueWord': 'techniek',
   'equipment.watchTutorial': 'Tutorial bekijken op YouTube',
+  'equipment.moreActions': 'Meer acties',
 
   // ── progress ─────────────────────────────────────────────────────────────
   'progress.noEquipment': 'zonder materiaal',

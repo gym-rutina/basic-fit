@@ -192,6 +192,7 @@ export default {
   'equipment.machineWord': 'machine',
   'equipment.techniqueWord': 'form',
   'equipment.watchTutorial': 'Watch tutorial on YouTube',
+  'equipment.moreActions': 'More actions',
 
   // ── progress ─────────────────────────────────────────────────────────────
   'progress.noEquipment': 'no equipment',
