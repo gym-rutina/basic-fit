@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "lastUpdated": "2026-08-25",
+    "lastUpdated": "2026-10-18",
     "source": "BasicFit standard hardware line — Matrix machines + ZIVA free weights, benches and accessories",
     "languages": [
       "en",
@@ -10,7 +10,7 @@
       "nl",
       "de"
     ],
-    "totalEquipment": 48
+    "totalEquipment": 52
   },
   "equipment": [
     {
@@ -3244,6 +3244,232 @@
       "kind": "machine"
     },
     {
+      "id": "mg-pl71",
+      "modelCode": "MG-PL71",
+      "series": "Magnum",
+      "category": "legs",
+      "kind": "machine",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "quadriceps",
+          "glutes"
+        ],
+        "secondary": [
+          "hamstrings",
+          "calves"
+        ]
+      },
+      "names": {
+        "en": "Magnum Hack Squat",
+        "es": "Hack Squat Magnum",
+        "be": "Хак-прысед Magnum",
+        "fr": "Hack squat Magnum",
+        "nl": "Magnum hacksquat",
+        "de": "Magnum Hack-Squat-Maschine"
+      },
+      "descriptions": {
+        "en": "A complete lower-body workout on the Magnum Hack Squat. A large footplate and back pad fit users of all sizes, an adjustable bottom stop sets a long or short range of motion, spring-loaded takeoff handles make use easy, and four storage horns hold plenty of plates.",
+        "es": "Un entrenamiento completo del tren inferior con la Hack Squat Magnum. Una amplia plataforma para los pies y un respaldo acolchado se adaptan a usuarios de todas las tallas, el tope inferior regulable permite un recorrido largo o corto, las asas de liberación con resorte facilitan el uso y cuatro soportes de almacenamiento ofrecen espacio de sobra para los discos.",
+        "be": "Поўная трэніроўка ніжняй часткі цела на хак-прысядзе Magnum. Вялікая пляцоўка для ног і спінка падыходзяць карыстальнікам любога росту, рэгулюемы ніжні абмежавальнік задае доўгую або кароткую амплітуду, спружынныя ручкі зняцця палягчаюць карыстанне, а чатыры трымальнікі даюць досыць месца для дыскаў.",
+        "fr": "Un travail complet du bas du corps avec le hack squat Magnum. Un grand repose-pieds et un dossier conviennent à tous les gabarits, la butée basse réglable permet une amplitude longue ou courte, les poignées de déverrouillage à ressort facilitent l’utilisation et quatre supports de rangement offrent amplement de place pour les disques.",
+        "nl": "Een complete training voor het onderlichaam met de Magnum hacksquat. Een groot voetplatform en een rugkussen passen bij gebruikers van elke lengte, de verstelbare onderste stop geeft een lange of korte bewegingsamplitude, veergeladen ontgrendelhandvatten maken het gebruik eenvoudig en vier opberghoorns bieden ruimte genoeg voor gewichtsschijven.",
+        "de": "Ein komplettes Unterkörpertraining mit der Magnum Hack-Squat-Maschine. Eine große Fußplatte und ein Rückenpolster passen für Nutzer jeder Größe, der verstellbare untere Anschlag ermöglicht einen langen oder kurzen Bewegungsumfang, federbelastete Entriegelungsgriffe erleichtern die Nutzung und vier Ablagehörne bieten reichlich Platz für Scheiben."
+      },
+      "images": [
+        {
+          "url": "https://assets.jhtbrand.co/files/product/44b9806910273f613af4072dd6de47ecd313480e/",
+          "source": "Hero image (PNG Hero)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Magnum%20Hack%20Squat%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Magnum Hack Squat"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20hack%20squat%20Magnum",
+            "type": "instruction",
+            "title": "Cómo usar la Hack Squat Magnum"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%85%D0%B0%D0%BA-%D0%BF%D1%80%D1%8B%D1%81%D0%B5%D0%B4%20Magnum%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць хак-прысед Magnum"
+          }
+        ],
+        "fr": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutoriel%20hack%20squat%20Magnum",
+            "type": "instruction",
+            "title": "Comment utiliser le hack squat Magnum"
+          }
+        ],
+        "nl": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20Magnum%20hacksquat",
+            "type": "instruction",
+            "title": "Hoe gebruik je de Magnum hacksquat?"
+          }
+        ],
+        "de": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Tutorial%20Magnum%20Hack%20Squat%20Maschine",
+            "type": "instruction",
+            "title": "So verwendest du die Magnum Hack-Squat-Maschine"
+          }
+        ]
+      },
+      "manuals": [
+        {
+          "url": "https://www.jhtsupport.com/eng/matrix/manuals",
+          "language": "en",
+          "type": "pdf",
+          "searchTerm": "MG-PL71"
+        }
+      ],
+      "instructions": {
+        "en": "<ol><li>Load the same amount of plates on each side</li><li>Set the adjustable bottom stop for your preferred range of motion</li><li>Stand on the footplate with your back and shoulders against the back pad</li><li>Release the spring-loaded takeoff handles and lower slowly under control</li><li>Push through your feet back to the starting position</li><li>Repeat for desired reps, then re-engage the handles</li></ol>",
+        "es": "<ol><li>Cargue la misma cantidad de discos en cada lado</li><li>Ajuste el tope inferior regulable según el recorrido deseado</li><li>Colóquese sobre la plataforma con la espalda y los hombros apoyados en el respaldo</li><li>Suelte las asas de liberación con resorte y baje lentamente con control</li><li>Empuje con los pies hasta volver a la posición inicial</li><li>Repita las repeticiones deseadas y vuelva a bloquear las asas</li></ol>",
+        "be": "<ol><li>Раўнамерна загрузіце аднолькавую колькасць дыскаў з абодвух бакоў</li><li>Наладзьце рэгулюемы ніжні абмежавальнік пад патрэбную амплітуду</li><li>Станьце на пляцоўку, прыціснуўшы спіну і плечы да спінкі</li><li>Вызваліце спружынныя ручкі зняцця і павольна апусціцеся пад кантролем</li><li>Адштурхніцеся ступнямі і вярніцеся ў зыходнае становішча</li><li>Паўтарыце патрэбную колькасць разоў, затым зафіксуйце ручкі</li></ol>",
+        "fr": "<ol><li>Charge la même quantité de disques de chaque côté</li><li>Règle la butée basse selon l’amplitude souhaitée</li><li>Place-toi sur le repose-pieds, le dos et les épaules contre le dossier</li><li>Libère les poignées à ressort et descends lentement en contrôlant le mouvement</li><li>Pousse sur tes pieds pour revenir à la position de départ</li><li>Répète pour le nombre de répétitions souhaité, puis reverrouille les poignées</li></ol>",
+        "nl": "<ol><li>Laad aan beide kanten evenveel schijven</li><li>Stel de verstelbare onderste stop in op de gewenste bewegingsamplitude</li><li>Ga op het voetplatform staan met je rug en schouders tegen het rugkussen</li><li>Ontgrendel de veergeladen handvatten en zak langzaam gecontroleerd naar beneden</li><li>Duw met je voeten terug naar de beginpositie</li><li>Herhaal het gewenste aantal herhalingen en vergrendel de handvatten weer</li></ol>",
+        "de": "<ol><li>Lade auf beiden Seiten gleich viele Scheiben auf</li><li>Stelle den verstellbaren unteren Anschlag auf den gewünschten Bewegungsumfang ein</li><li>Stelle dich auf die Fußplatte, Rücken und Schultern am Rückenpolster</li><li>Löse die federbelasteten Entriegelungsgriffe und senke dich langsam und kontrolliert ab</li><li>Drücke dich mit den Füßen zurück in die Ausgangsposition</li><li>Wiederhole für die gewünschte Anzahl an Wiederholungen und sichere die Griffe wieder</li></ol>"
+      },
+      "specifications": {
+        "weightStack": "plate-loaded",
+        "features": [
+          "large-footplate",
+          "back-pad",
+          "adjustable-bottom-stop",
+          "spring-loaded-takeoff-handles",
+          "four-storage-horns"
+        ]
+      }
+    },
+    {
+      "id": "mg-a63c",
+      "modelCode": "MG-A63C",
+      "series": "Magnum",
+      "category": "core",
+      "kind": "machine",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "rectus-abdominis",
+          "latissimus-dorsi"
+        ],
+        "secondary": [
+          "biceps",
+          "triceps",
+          "forearms",
+          "anterior-deltoid"
+        ]
+      },
+      "names": {
+        "en": "Magnum VKR w/Chin",
+        "es": "Elevación de rodillas con dominadas Magnum",
+        "be": "Падыманне каленяў з падцягваннямі Magnum",
+        "fr": "Relevé de genoux avec tractions Magnum",
+        "nl": "Magnum kniehef- en optrekstation",
+        "de": "Magnum Beinheber mit Klimmzug"
+      },
+      "descriptions": {
+        "en": "Designed for training versatility, the Magnum VKR with Chin lets you take on vertical knee raises, chin-ups and dips to strengthen the shoulders, arms, back and core. Multiple chin grips and rock-climbing grips add variety, an angled back support, elbow pads and handles add stability and comfort, and oversized round handles make dips more comfortable.",
+        "es": "Diseñada para la versatilidad del entrenamiento, la Magnum VKR con dominadas permite hacer elevaciones de rodillas verticales, dominadas y fondos para fortalecer hombros, brazos, espalda y core. Varios agarres para dominadas y agarres de escalada añaden variedad, el respaldo inclinado, las coderas y las asas aportan estabilidad y comodidad, y las asas redondas de gran tamaño hacen los fondos más cómodos.",
+        "be": "Magnum VKR w/Chin створана для разнастайных трэніровак: падыманне каленяў у вісе, падцягванні і аджыманні на брусах умацоўваюць плечы, рукі, спіну і кор. Некалькі хватаў для падцягванняў і скалалазныя хваты дадаюць разнастайнасць, нахіленая спінка, падлакотнікі і ручкі забяспечваюць устойлівасць і камфорт, а вялікія круглыя ручкі робяць аджыманні на брусах зручнейшымі.",
+        "fr": "Conçu pour la polyvalence, le Magnum VKR avec tractions permet de réaliser des relevés de genoux verticaux, des tractions et des dips pour renforcer les épaules, les bras, le dos et le tronc. Plusieurs prises de traction et prises d’escalade ajoutent de la variété, le dossier incliné, les appuis-coudes et les poignées apportent stabilité et confort, et les grandes poignées rondes rendent les dips plus confortables.",
+        "nl": "De Magnum VKR met chin-up is ontworpen voor veelzijdige training: verticale kniehefs, chin-ups en dips versterken schouders, armen, rug en core. Meerdere chin-upgrepen en klimgrepen zorgen voor variatie, een schuine rugsteun, ellebogensteunen en handgrepen geven stabiliteit en comfort en extra grote ronde handgrepen maken dips comfortabeler.",
+        "de": "Der Magnum VKR mit Klimmzugstange ist auf Trainingsvielfalt ausgelegt: Vertikale Beinheber, Klimmzüge und Dips kräftigen Schultern, Arme, Rücken und Rumpf. Mehrere Klimmzuggriffe und Klettergriffe sorgen für Abwechslung, die angewinkelte Rückenstütze, Ellbogenpolster und Griffe bieten Stabilität und Komfort, und extragroße runde Griffe machen Dips angenehmer."
+      },
+      "images": [
+        {
+          "url": "https://assets.jhtbrand.co/files/product/ec831caeb125c1cda740adf1e22d95d9fca357f2/",
+          "source": "Hero image (PNG Hero)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Magnum%20VKR%20with%20Chin%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Magnum VKR w/Chin"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20elevaci%C3%B3n%20de%20rodillas%20dominadas%20Magnum",
+            "type": "instruction",
+            "title": "Cómo usar la elevación de rodillas con dominadas Magnum"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D0%BF%D0%B0%D0%B4%D1%8B%D0%BC%D0%B0%D0%BD%D0%BD%D0%B5%20%D0%BA%D0%B0%D0%BB%D0%B5%D0%BD%D1%8F%D1%9E%20%D1%83%20%D0%B2%D1%96%D1%81%D0%B5%20%D0%BF%D0%B0%D0%B4%D1%86%D1%8F%D0%B3%D0%B2%D0%B0%D0%BD%D0%BD%D1%96%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць Magnum VKR w/Chin"
+          }
+        ],
+        "fr": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutoriel%20relev%C3%A9%20de%20genoux%20tractions%20Magnum",
+            "type": "instruction",
+            "title": "Comment utiliser le relevé de genoux avec tractions Magnum"
+          }
+        ],
+        "nl": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20kniehef%20chin-up%20station%20Magnum",
+            "type": "instruction",
+            "title": "Hoe gebruik je het Magnum kniehef- en optrekstation?"
+          }
+        ],
+        "de": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Tutorial%20Magnum%20Beinheber%20Klimmzug",
+            "type": "instruction",
+            "title": "So verwendest du den Magnum Beinheber mit Klimmzug"
+          }
+        ]
+      },
+      "manuals": [
+        {
+          "url": "https://www.jhtsupport.com/eng/matrix/manuals",
+          "language": "en",
+          "type": "pdf",
+          "searchTerm": "MG-A63C"
+        }
+      ],
+      "instructions": {
+        "en": "<ol><li>Knee raise: rest your forearms on the elbow pads, grip the handles and press your back against the angled back support</li><li>Let your legs hang, then raise your knees toward your chest with control</li><li>Lower slowly without swinging</li><li>Chin-ups: grip the chin handles overhead and pull up until your chin clears the handles</li><li>Dips: grip the oversized round handles, lower until your elbows reach about 90° and press back up</li><li>Repeat for desired reps</li></ol>",
+        "es": "<ol><li>Elevación de rodillas: apoye los antebrazos en las coderas, agarre las asas y apoye la espalda en el respaldo inclinado</li><li>Deje las piernas colgando y suba las rodillas hacia el pecho con control</li><li>Baje lentamente sin balancearse</li><li>Dominadas: agarre las asas de dominada por encima de la cabeza y tire hacia arriba hasta pasar la barbilla por encima de las asas</li><li>Fondos: agarre las asas redondas, baje hasta que los codos formen unos 90° y empuje hacia arriba</li><li>Repita las repeticiones deseadas</li></ol>",
+        "be": "<ol><li>Падыманне каленяў: абапрыцеся перадплеччамі на падлакотнікі, ухапіцеся за ручкі і прыцісніце спіну да нахіленай спінкі</li><li>Дайце нагам вісець, потым з кантролем падніміце калені да грудзей</li><li>Павольна апусціце ногі, не раскачваючыся</li><li>Падцягванні: ухапіцеся за ручкі зверху і падцягніцеся, пакуль падбародак не акажацца вышэй за ручкі</li><li>Аджыманні на брусах: ухапіцеся за круглыя ручкі, апусціцеся да кута ў локцях каля 90° і выціснецеся ўверх</li><li>Паўтарыце патрэбную колькасць разоў</li></ol>",
+        "fr": "<ol><li>Relevé de genoux : pose les avant-bras sur les appuis-coudes, saisis les poignées et plaque le dos contre le dossier incliné</li><li>Laisse les jambes pendre, puis monte les genoux vers la poitrine en contrôlant le mouvement</li><li>Redescends lentement sans te balancer</li><li>Tractions : saisis les poignées au-dessus de toi et tire jusqu’à passer le menton au-dessus des poignées</li><li>Dips : saisis les grandes poignées rondes, descends jusqu’à environ 90° aux coudes et repousse vers le haut</li><li>Répète pour le nombre de répétitions souhaité</li></ol>",
+        "nl": "<ol><li>Kniehef: leg je onderarmen op de ellebogensteunen, pak de handgrepen vast en druk je rug tegen de schuine rugsteun</li><li>Laat je benen hangen en trek je knieën gecontroleerd naar je borst</li><li>Zak langzaam terug zonder te zwaaien</li><li>Chin-ups: pak de handgrepen boven je vast en trek jezelf omhoog tot je kin boven de handgrepen komt</li><li>Dips: pak de grote ronde handgrepen vast, zak tot je ellebogen ongeveer 90° zijn en duw jezelf weer omhoog</li><li>Herhaal het gewenste aantal herhalingen</li></ol>",
+        "de": "<ol><li>Beinheber: Lege die Unterarme auf die Ellbogenpolster, greife die Griffe und drücke den Rücken gegen die angewinkelte Rückenstütze</li><li>Lass die Beine hängen und ziehe die Knie kontrolliert zur Brust</li><li>Senke die Beine langsam ab, ohne zu schwingen</li><li>Klimmzüge: Greife die Klimmzuggriffe über dir und ziehe dich hoch, bis das Kinn über den Griffen ist</li><li>Dips: Greife die extragroßen runden Griffe, senke dich bis die Ellbogen etwa 90° erreichen und drücke dich wieder hoch</li><li>Wiederhole für die gewünschte Anzahl an Wiederholungen</li></ol>"
+      },
+      "specifications": {
+        "weightStack": "bodyweight",
+        "features": [
+          "angled-back-support",
+          "elbow-pads",
+          "multiple-chin-grips",
+          "rock-climbing-grips",
+          "oversized-round-dip-handles"
+        ]
+      }
+    },
+    {
       "id": "g3-ms24",
       "modelCode": "G3-MS24",
       "series": "Aura",
@@ -3489,6 +3715,220 @@
           "converging-arms",
           "dual-grip-positions",
           "two-storage-horns"
+        ]
+      }
+    },
+    {
+      "id": "mg-a73",
+      "modelCode": "MG-A73",
+      "series": "Magnum",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "Magnum Power Station",
+        "es": "Estación de potencia Magnum",
+        "be": "Сілавая станцыя Magnum",
+        "fr": "Station de puissance Magnum",
+        "nl": "Magnum powerstation",
+        "de": "Magnum Power Station"
+      },
+      "descriptions": {
+        "en": "The Magnum Power Station is a free-weight power station for barbell training. Eight upright positions suit a wide range of lifts, a built-in pull-up bar adds versatility, six storage pegs hold plates of different sizes, and the two-coat powder finish resists chips and scratches.",
+        "es": "La Estación de potencia Magnum es una estación de peso libre para entrenar con barra. Ocho posiciones de los soportes se adaptan a una gran variedad de levantamientos, la barra de dominadas integrada aporta versatilidad, seis soportes guardan discos de distintos tamaños y el acabado en polvo de doble capa resiste golpes y arañazos.",
+        "be": "Сілавая станцыя Magnum — станцыя са свабоднымі вагамі для працы са штангай. Васьмі становішчаў стойкі хапае для шырокага спектра рухаў, убудаваны турнік дадае функцыянальнасці, шэсць штыроў захоўваюць дыскі розных памераў, а двухслаёвае парашковае пакрыццё ўстойлівае да сколаў і драпін.",
+        "fr": "La station de puissance Magnum est une station de poids libres pour l’entraînement à la barre. Huit positions de montants conviennent à un large éventail de mouvements, la barre de traction intégrée ajoute de la polyvalence, six supports de rangement accueillent des disques de différentes tailles et la finition poudre en deux couches résiste aux éclats et aux rayures.",
+        "nl": "Het Magnum powerstation is een vrijgewichtstation voor training met de halterstang. Acht standen van de steunen passen bij een breed scala aan oefeningen, de ingebouwde optrekstang zorgt voor extra veelzijdigheid, zes opbergpennen bieden plaats aan schijven van verschillende maten en de tweelaagse poedercoating is bestand tegen krassen en afschilferen.",
+        "de": "Die Magnum Power Station ist eine Freihantel-Station für das Training mit der Langhantel. Acht Ständerpositionen eignen sich für viele Übungen, die integrierte Klimmzugstange sorgt für Vielseitigkeit, sechs Ablagehörner nehmen Scheiben verschiedener Größen auf und die zweilagige Pulverbeschichtung ist kratz- und splitterfest."
+      },
+      "images": [
+        {
+          "url": "https://assets.jhtbrand.co/files/product/6805060109b32cdb6bbf5a484bbbaf8591c3c856/",
+          "source": "Hero image (PNG Hero)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Magnum%20Power%20Station%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Magnum Power Station"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20estaci%C3%B3n%20de%20potencia%20Magnum",
+            "type": "instruction",
+            "title": "Cómo usar la Estación de potencia Magnum"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%81%D1%96%D0%BB%D0%B0%D0%B2%D0%B0%D1%8F%20%D1%80%D0%B0%D0%BC%D0%B0%20Magnum%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць сілавую станцыю Magnum"
+          }
+        ],
+        "fr": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutoriel%20station%20de%20puissance%20Magnum",
+            "type": "instruction",
+            "title": "Comment utiliser la station de puissance Magnum"
+          }
+        ],
+        "nl": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20Magnum%20powerstation",
+            "type": "instruction",
+            "title": "Hoe gebruik je het Magnum powerstation?"
+          }
+        ],
+        "de": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Tutorial%20Magnum%20Power%20Station",
+            "type": "instruction",
+            "title": "So verwendest du die Magnum Power Station"
+          }
+        ]
+      },
+      "manuals": [
+        {
+          "url": "https://www.jhtsupport.com/eng/matrix/manuals",
+          "language": "en",
+          "type": "pdf",
+          "searchTerm": "MG-A73"
+        }
+      ],
+      "instructions": {
+        "en": "<ol><li>Set the barbell supports to the height that suits your exercise</li><li>Load the plates evenly on the bar and secure them with collars</li><li>Position yourself and unrack the bar with control</li><li>Perform the exercise through a full, controlled range of motion</li><li>Return the bar to the supports before letting go</li><li>Put the plates back on the storage pegs when finished</li></ol>",
+        "es": "<ol><li>Ajuste los soportes de la barra a la altura adecuada para su ejercicio</li><li>Cargue los discos de forma equilibrada en la barra y asegúrelos con collarines</li><li>Colóquese y saque la barra de los soportes con control</li><li>Realice el ejercicio con un recorrido completo y controlado</li><li>Devuelva la barra a los soportes antes de soltarla</li><li>Al terminar, guarde los discos en los soportes de almacenamiento</li></ol>",
+        "be": "<ol><li>Усталюйце апоры для штангі на вышыню, якая падыходзіць для практыкавання</li><li>Раўнамерна нагрузіце дыскі на штангу і замацуйце іх замкамі</li><li>Заняўшы пазіцыю, з кантролем зніміце штангу з апор</li><li>Выконвайце практыкаванне з поўнай кантраляванай амплітудай</li><li>Вярніце штангу на апоры, перш чым адпусціць яе</li><li>Пасля трэніроўкі вярніце дыскі на штыры для захоўвання</li></ol>",
+        "fr": "<ol><li>Règle les supports de barre à la hauteur adaptée à ton exercice</li><li>Charge les disques de façon équilibrée sur la barre et bloque-les avec des colliers</li><li>Place-toi et décroche la barre en contrôlant le mouvement</li><li>Réalise l’exercice sur toute l’amplitude, de façon contrôlée</li><li>Repose la barre sur les supports avant de la lâcher</li><li>Range les disques sur les supports de rangement une fois terminé</li></ol>",
+        "nl": "<ol><li>Stel de stangsteunen in op de hoogte die bij je oefening past</li><li>Laad de schijven gelijkmatig op de stang en zet ze vast met klemmen</li><li>Neem je positie in en haal de stang gecontroleerd van de steunen</li><li>Voer de oefening uit over een volledige, gecontroleerde bewegingsamplitude</li><li>Leg de stang terug op de steunen voordat je loslaat</li><li>Zet de schijven na afloop terug op de opbergpennen</li></ol>",
+        "de": "<ol><li>Stelle die Hantelauflagen auf die für deine Übung passende Höhe ein</li><li>Lade die Scheiben gleichmäßig auf die Stange und sichere sie mit Klemmen</li><li>Gehe in Position und hebe die Stange kontrolliert aus den Auflagen</li><li>Führe die Übung über den vollen, kontrollierten Bewegungsumfang aus</li><li>Lege die Stange zurück auf die Auflagen, bevor du loslässt</li><li>Lege die Scheiben danach wieder auf die Ablagehörner</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "eight-position-uprights",
+          "built-in-pull-up-bar",
+          "six-storage-pegs",
+          "two-coat-powder-finish"
+        ]
+      }
+    },
+    {
+      "id": "mg-mr47",
+      "modelCode": "MG-MR47",
+      "series": "Magnum",
+      "category": "free-weights",
+      "kind": "free-weight",
+      "verifiedAt": [],
+      "muscleGroup": {
+        "primary": [
+          "full-body"
+        ],
+        "secondary": []
+      },
+      "names": {
+        "en": "Magnum MEGA Power Rack",
+        "es": "Rack de potencia MEGA Magnum",
+        "be": "Сілавая рама MEGA Magnum",
+        "fr": "Rack de puissance MEGA Magnum",
+        "nl": "Magnum MEGA powerrack",
+        "de": "Magnum MEGA Power Rack"
+      },
+      "descriptions": {
+        "en": "Developed for power training, the Magnum MEGA Power Rack helps you get more out of every set and rep. A height indicator and a colored locking pin make bar-level changes quick and easy, the fully enclosed design optimizes spotting, and HDPE J-hooks protect the bar knurling. Seven-gauge steel uprights handle the heaviest loads, and six retractable band pegs are included.",
+        "es": "Desarrollado para el entrenamiento de potencia, el Rack de potencia MEGA Magnum ayuda a sacar más partido a cada serie y repetición. Un indicador de altura y un pasador de bloqueo de color permiten cambiar la altura de la barra con rapidez, el diseño totalmente cerrado optimiza la seguridad y los ganchos en J de HDPE protegen el moleteado de la barra. Los montantes de acero de calibre siete soportan las cargas más pesadas e incluye seis soportes retráctiles para bandas.",
+        "be": "Сілавая рама MEGA Magnum створана для сілавых трэніровак і дапамагае атрымаць больш ад кожнага падыходу. Паказальнік вышыні і каляровы фіксатар дазваляюць хутка мяняць узровень штангі, цалкам закрытая канструкцыя аптымізуе страхоўку, а J-крукі з HDPE беражуць накатку грыфа. Стойкі са сталі выбітнай тоўшчыні вытрымліваюць самыя цяжкія нагрузкі; у камплекце шэсць складных штыроў для эспандэраў.",
+        "fr": "Conçu pour l’entraînement de puissance, le rack de puissance MEGA Magnum aide à tirer plus de chaque série et répétition. Un indicateur de hauteur et une goupille de blocage colorée facilitent le changement de hauteur de barre, la structure entièrement fermée optimise la sécurité et les crochets en J en PEHD protègent le moletage de la barre. Les montants en acier de calibre sept supportent les charges les plus lourdes et six ergots rétractables pour bandes sont inclus.",
+        "nl": "Het Magnum MEGA powerrack is ontwikkeld voor krachttraining en helpt je meer uit elke set en herhaling te halen. Een hoogte-indicator en een gekleurde borgpen maken het verstellen van de stanghoogte snel en eenvoudig, het volledig gesloten ontwerp zorgt voor optimale veiligheid en HDPE J-haken beschermen de kartelling van de stang. Stalen staanders van zeven gauge verdragen de zwaarste belasting en zes intrekbare weerstandsbandpennen zijn inbegrepen.",
+        "de": "Das Magnum MEGA Power Rack ist für Krafttraining entwickelt und holt mehr aus jedem Satz und jeder Wiederholung heraus. Eine Höhenanzeige und ein farbiger Arretierstift machen Höhenwechsel der Stange schnell und einfach, das vollständig geschlossene Design optimiert die Absicherung und J-Haken aus HDPE schützen die Rändelung der Stange. Stahlständer in Stärke sieben halten auch den schwersten Belastungen stand; sechs einziehbare Bandstifte sind enthalten."
+      },
+      "images": [
+        {
+          "url": "https://assets.jhtbrand.co/files/product/fc0bde8d4a785ddd8e3e6f16eddfe54c803cb1d4/",
+          "source": "Hero image (PNG Hero)",
+          "isMain": false,
+          "type": "image"
+        }
+      ],
+      "videos": {
+        "en": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Magnum%20MEGA%20Power%20Rack%20how%20to",
+            "type": "instruction",
+            "title": "How to Use Magnum MEGA Power Rack"
+          }
+        ],
+        "es": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20rack%20de%20potencia%20Magnum",
+            "type": "instruction",
+            "title": "Cómo usar el Rack de potencia MEGA Magnum"
+          }
+        ],
+        "be": [
+          {
+            "url": "https://www.youtube.com/results?search_query=%D1%81%D1%96%D0%BB%D0%B0%D0%B2%D0%B0%D1%8F%20%D1%80%D0%B0%D0%BC%D0%B0%20%D1%82%D1%8D%D1%85%D0%BD%D1%96%D0%BA%D0%B0",
+            "type": "instruction",
+            "title": "Як выкарыстоўваць сілавую раму MEGA Magnum"
+          }
+        ],
+        "fr": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutoriel%20rack%20de%20puissance",
+            "type": "instruction",
+            "title": "Comment utiliser le rack de puissance MEGA Magnum"
+          }
+        ],
+        "nl": [
+          {
+            "url": "https://www.youtube.com/results?search_query=tutorial%20powerrack",
+            "type": "instruction",
+            "title": "Hoe gebruik je het Magnum MEGA powerrack?"
+          }
+        ],
+        "de": [
+          {
+            "url": "https://www.youtube.com/results?search_query=Tutorial%20Power%20Rack",
+            "type": "instruction",
+            "title": "So verwendest du das Magnum MEGA Power Rack"
+          }
+        ]
+      },
+      "manuals": [
+        {
+          "url": "https://www.jhtsupport.com/eng/matrix/manuals",
+          "language": "en",
+          "type": "pdf",
+          "searchTerm": "MG-MR47"
+        }
+      ],
+      "instructions": {
+        "en": "<ol><li>Set the J-hooks to the height that suits your exercise, using the height indicator</li><li>Set the safety bars just below the lowest point of the lift</li><li>Load the plates evenly on the bar and secure them with collars</li><li>Unrack the bar with control and perform the lift through a full range of motion</li><li>Re-rack the bar on the J-hooks before letting go</li><li>Put the plates back on their storage when finished</li></ol>",
+        "es": "<ol><li>Coloque los ganchos en J a la altura adecuada para su ejercicio, guiándose por el indicador de altura</li><li>Coloque las barras de seguridad justo por debajo del punto más bajo del movimiento</li><li>Cargue los discos de forma equilibrada en la barra y asegúrelos con collarines</li><li>Saque la barra con control y realice el levantamiento con un recorrido completo</li><li>Vuelva a colocar la barra en los ganchos en J antes de soltarla</li><li>Al terminar, guarde los discos en su lugar</li></ol>",
+        "be": "<ol><li>Усталюйце J-крукі на патрэбную вышыню, арыентуючыся на паказальнік вышыні</li><li>Усталюйце страховачныя планкі крыху ніжэй за найніжэйшую кропку руху</li><li>Раўнамерна нагрузіце дыскі на штангу і замацуйце іх замкамі</li><li>З кантролем зніміце штангу і выканайце рух з поўнай амплітудай</li><li>Вярніце штангу на J-крукі, перш чым адпусціць яе</li><li>Пасля трэніроўкі вярніце дыскі на месца захоўвання</li></ol>",
+        "fr": "<ol><li>Règle les crochets en J à la hauteur adaptée à ton exercice grâce à l’indicateur de hauteur</li><li>Place les barres de sécurité juste sous le point le plus bas du mouvement</li><li>Charge les disques de façon équilibrée sur la barre et bloque-les avec des colliers</li><li>Décroche la barre en contrôlant le mouvement et exécute l’exercice sur toute l’amplitude</li><li>Repose la barre sur les crochets en J avant de la lâcher</li><li>Range les disques à leur place une fois terminé</li></ol>",
+        "nl": "<ol><li>Zet de J-haken op de hoogte die bij je oefening past met behulp van de hoogte-indicator</li><li>Zet de veiligheidsstangen net onder het laagste punt van de oefening</li><li>Laad de schijven gelijkmatig op de stang en zet ze vast met klemmen</li><li>Haal de stang gecontroleerd uit het rek en voer de oefening uit over de volledige bewegingsamplitude</li><li>Leg de stang terug op de J-haken voordat je loslaat</li><li>Zet de schijven na afloop terug op hun plek</li></ol>",
+        "de": "<ol><li>Stelle die J-Haken mithilfe der Höhenanzeige auf die passende Höhe ein</li><li>Stelle die Sicherheitsstangen knapp unter den tiefsten Punkt der Übung</li><li>Lade die Scheiben gleichmäßig auf die Stange und sichere sie mit Klemmen</li><li>Hebe die Stange kontrolliert aus dem Rack und führe die Übung über den vollen Bewegungsumfang aus</li><li>Lege die Stange auf die J-Haken zurück, bevor du loslässt</li><li>Räume die Scheiben danach wieder an ihren Platz</li></ol>"
+      },
+      "specifications": {
+        "features": [
+          "fully-enclosed-design",
+          "height-indicator",
+          "colored-locking-pin",
+          "hdpe-j-hooks",
+          "seven-gauge-steel-uprights",
+          "six-retractable-band-pegs"
         ]
       }
     },

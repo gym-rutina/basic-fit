@@ -130,7 +130,7 @@ export function ProgressScreen({ rutina }) {
     <div style={PAGE_STYLE}>
       <ScreenHeader title={t('tab.progress')} onSettings={() => navigate('/settings')} />
 
-      <div style={{ paddingBlock: 'var(--space-5)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 10, minWidth: 0, maxWidth: '100%', boxSizing: 'border-box' }}>
+      <div style={{ paddingBlock: 'var(--space-5)', paddingInline: 'var(--page-pad-x)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 10, minWidth: 0, maxWidth: '100%', boxSizing: 'border-box' }}>
         {/* AC2 — Weight/reps per exercise */}
         <section aria-labelledby="progress-weight-heading" style={SECTION_STYLE}>
           <h2

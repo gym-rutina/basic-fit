@@ -13,7 +13,7 @@ import { hasSeenLibraryNotice, markLibraryNoticeSeen } from '../lib/libraryNotic
 import { buildVideoQuery } from '../lib/videoQuery.js';
 import { useI18n } from '../i18n/index.js';
 
-const wrap = { maxWidth: 760, margin: '0 auto', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 'var(--space-8)' };
+const wrap = { maxWidth: 760, margin: '0 auto', paddingInline: 'var(--page-pad-x)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--space-8)' };
 
 function SectionTitle({ children }) {
   return <h2 style={{ font: 'var(--text-h2)', textTransform: 'uppercase', color: 'var(--bf-ink)', margin: '0 0 4px' }}>{children}</h2>;

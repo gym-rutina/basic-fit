@@ -139,7 +139,7 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
         onSettings={() => navigate('/settings')}
       />
 
-      <div style={{ paddingBlock: 'var(--space-6)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 'var(--space-5)' }}>
+      <div style={{ paddingBlock: 'var(--space-6)', paddingInline: 'var(--page-pad-x)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--space-5)' }}>
         {activeSessionStatus === 'loading' && (
           <div
             aria-busy="true"
@@ -190,7 +190,7 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
               {t('home.nextLabel')}
             </div>
             <h2 style={{ font: 'var(--text-h3)', color: 'var(--bf-ink)', margin: '0 0 4px' }} dir="auto">{proposedDay.label}</h2>
-            <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 var(--space-5)' }}>
+            <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '0 0 var(--space-5)', overflowWrap: 'anywhere' }}>
               {proposedDay.intro ? (
                 <span dir="auto">{proposedDay.intro} · </span>
               ) : (
@@ -256,7 +256,7 @@ export function HomeScreen({ rutina, loadError, onGoImport, activeSessionStatus,
                           }}
                         >
                           <span style={{ minWidth: 0 }}>
-                            <span dir="auto" style={{ display: 'block', font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)' }}>
+                            <span dir="auto" style={{ display: 'block', font: '700 15px/1.3 var(--font-sans)', color: 'var(--bf-ink)', overflowWrap: 'anywhere' }}>
                               {day.label}
                               {day.intro ? ' — ' + day.intro : ''}
                             </span>

@@ -222,9 +222,7 @@ export default {
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Gerätekatalog',
   'catalog.subtitle': 'Die Standardausstattung deiner Basic-Fit Studios',
-  'catalog.statMachines': 'Geräte',
-  'catalog.statGyms': 'Studios',
-  'catalog.statLanguages': 'Sprachen',
+  'catalog.resultsCount': 'Geräte: {n}',
   'catalog.clubFilterEmpty':
     'Du hast die gesamte Ausstattung als nicht vorhanden in deinem Studio markiert. Deaktiviere „Nur mein Studio“, um den ganzen Katalog zu sehen, oder passe die Ausschlüsse in den Einstellungen an.',
   'catalog.card.inClub': 'In meinem Studio',
@@ -506,5 +504,5 @@ export default {
   'promptEquipment.noClubSelected': '(noch nicht ausgewählt — benutze die Studio-Auswahl der Anleitung)',
   'promptEquipment.equipmentIdNote': 'equipmentId ist optional: lasse es bei Körpergewichtsübungen weg.',
   'promptEquipment.exceptionNote':
-    'extraEquipment ist die AUSNAHME, nicht die Standardeinstellung: Mit 48 Katalog-Ids (einschließlich freier Gewichte, Bänke, Stangen und Matten) besitzt der Großteil der Geräte bereits eine Id. Deklariere extraEquipment NUR für Geräte ohne Herstelleridentität (ein Widerstandsband, eine Rolle, ein Handtuch).',
+    'extraEquipment ist die AUSNAHME, nicht die Standardeinstellung: Mit 52 Katalog-Ids (einschließlich freier Gewichte, Bänke, Stangen und Matten) besitzt der Großteil der Geräte bereits eine Id. Deklariere extraEquipment NUR für Geräte ohne Herstelleridentität (ein Widerstandsband, eine Rolle, ein Handtuch).',
 };

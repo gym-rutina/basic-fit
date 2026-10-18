@@ -188,7 +188,7 @@ export function LibraryScreen({ activeId = null, onActivated }) {
         leading={<BackButton onClick={() => navigate(-1)} />}
       />
 
-      <div style={{ maxWidth: 480, margin: '0 auto', paddingInline: 'var(--page-pad-x)', paddingTop: 'var(--space-6)', display: 'grid', gap: 12 }}>
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingInline: 'var(--page-pad-x)', paddingTop: 'var(--space-6)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 12 }}>
         <ul
           aria-busy={activatingId != null ? 'true' : undefined}
           style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 12 }}

@@ -222,9 +222,7 @@ export default {
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Apparatuurcatalogus',
   'catalog.subtitle': 'De standaardapparatuur van je Basic-Fit clubs',
-  'catalog.statMachines': 'toestellen',
-  'catalog.statGyms': 'clubs',
-  'catalog.statLanguages': 'talen',
+  'catalog.resultsCount': 'Toestellen: {n}',
   'catalog.clubFilterEmpty':
     'Je hebt alle apparatuur als afwezig in je club gemarkeerd. Zet “Alleen mijn club” uit om de volledige catalogus te zien, of pas de uitsluitingen aan in Instellingen.',
   'catalog.card.inClub': 'In mijn club',
@@ -506,5 +504,5 @@ export default {
   'promptEquipment.noClubSelected': '(nog niet geselecteerd — gebruik de clubkiezer van de handleiding)',
   'promptEquipment.equipmentIdNote': 'equipmentId is optioneel: laat het weg bij oefeningen met lichaamsgewicht.',
   'promptEquipment.exceptionNote':
-    'extraEquipment is de UITZONDERING, niet de standaardoptie: met 48 catalogus-id’s (inclusief vrije gewichten, banken, stangen en matjes) heeft het merendeel van de apparatuur al een id. Gebruik extraEquipment ALLEEN voor apparatuur zonder fabrikantidentiteit (een weerstandsband, een roller, een handdoek).',
+    'extraEquipment is de UITZONDERING, niet de standaardoptie: met 52 catalogus-id’s (inclusief vrije gewichten, banken, stangen en matjes) heeft het merendeel van de apparatuur al een id. Gebruik extraEquipment ALLEEN voor apparatuur zonder fabrikantidentiteit (een weerstandsband, een roller, een handdoek).',
 };

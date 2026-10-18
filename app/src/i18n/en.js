@@ -216,9 +216,7 @@ export default {
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Equipment catalog',
   'catalog.subtitle': 'Standard equipment across your Basic-Fit gyms',
-  'catalog.statMachines': 'machines',
-  'catalog.statGyms': 'clubs',
-  'catalog.statLanguages': 'languages',
+  'catalog.resultsCount': 'Equipment: {n}',
   'catalog.onlyMyClubPill': 'Only my club',
   'catalog.clubFilterEmpty':
     "You've marked all equipment as absent from your club. Turn off \"Only my club\" to see the full catalog, or edit the exclusions in Settings.",
@@ -500,5 +498,5 @@ export default {
   'promptEquipment.noClubSelected': '(not selected yet — use the guide’s club picker)',
   'promptEquipment.equipmentIdNote': 'equipmentId is optional: omit it for bodyweight exercises.',
   'promptEquipment.exceptionNote':
-    'extraEquipment is the EXCEPTION, not the default: with 48 catalog ids (including free weights, benches, bars and mats), most gear already has an id. Declare extraEquipment ONLY for identity-less gear (a band, a foam roller, a towel).',
+    'extraEquipment is the EXCEPTION, not the default: with 52 catalog ids (including free weights, benches, bars and mats), most gear already has an id. Declare extraEquipment ONLY for identity-less gear (a band, a foam roller, a towel).',
 };

@@ -5,51 +5,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { CatalogScreen } from './CatalogScreen.jsx';
 import { I18nProvider } from '../i18n/index.js';
-import { LANGUAGES } from '../data/equipment.js';
-
-/**
- * The directory module is MOCKED, and the club total is a deliberately
- * non-real sentinel (gate cycle 3, tech-plan-build-b D22).
- *
- * AC45's stat must come from `GYM_INDEX.metadata.totalClubs`. Against the real
- * module that criterion is untestable: the live total is 1,727, so an
- * implementation that HARDCODES 1727 in the JSX is indistinguishable from one
- * that reads the metadata — both render the same string, and an assertion like
- * `>= 1700` passes for both. Mocking the module with a total that exists
- * nowhere in the real data separates them, and that is the whole reason the
- * number below is not 1727.
- */
-const gymsFx = vi.hoisted(() => {
-  // `COUNTRIES` IS `GYM_INDEX.countries` (tech-plan.md:133), so it is derived
-  // rather than declared twice. Cycle 3 wrote `countries: []` beside a
-  // two-entry COUNTRIES here as well as in ClubPickerSheet.test.jsx — Bagnik
-  // flagged only the other one, and patching just the flagged instance is how
-  // cycles 1 and 2 each produced the next cycle's blocker.
-  const COUNTRIES = [
-    { code: 'ES', names: { en: 'Spain', es: 'España', be: 'Іспанія' }, cities: [] },
-    { code: 'FR', names: { en: 'France', es: 'Francia', be: 'Францыя' }, cities: [] },
-  ];
-  return { GYM_INDEX: { metadata: { totalClubs: 1483 }, countries: COUNTRIES } };
-});
-
-// Key-for-key against the D2 surface at tech-plan.md:130-138 — arities and
-// async-ness included.
-vi.mock('../data/gyms.js', () => ({
-  GYM_INDEX: gymsFx.GYM_INDEX,
-  COUNTRIES: gymsFx.GYM_INDEX.countries,
-  TOTAL_CLUBS: gymsFx.GYM_INDEX.metadata.totalClubs,
-  citiesFor: (countryCode) => gymsFx.GYM_INDEX.countries.find((c) => c.code === countryCode)?.cities ?? [],
-  /* eslint-disable no-unused-vars -- arity is the contract (tech-plan.md:130-138);
-     a zero-arity stub teaches whoever reads this mock the wrong signature. */
-  loadClubs: async (countryCode) => [],
-  findClubById: async (countryCode, id) => null,
-  resolveLegacyGymId: async (legacyId) => null,
-  /* eslint-enable no-unused-vars */
-}));
-
-// Derived from the mock, never a second literal — two copies of the sentinel
-// could drift and the assertion would then be checking the wrong number.
-const FIXTURE_TOTAL = gymsFx.GYM_INDEX.metadata.totalClubs;
+import { EQUIPMENT, LANGUAGES } from '../data/equipment.js';
 
 /**
  * pwa-ui-language AC13 + AC14 (tech-plan.md D12).
@@ -222,19 +178,22 @@ describe('the per-gym grid is gone (AC45, X8)', () => {
     expect(screen.queryAllByText(/^id \d+$/)).toEqual([]);
   });
 
-  it('reads the club total from the directory metadata, not a literal (AC45)', () => {
+  it('shows no stat blocks (machines / clubs / languages were constant noise)', () => {
     renderCatalog('es');
-    // Exact, against the mocked sentinel — the previous `>= 1700` floor was
-    // satisfied by a hardcoded 1727 just as well as by a correct read, so it
-    // could not tell the two apart. This assertion fails for a hardcoded
-    // literal, for `GYMS.length` (7), and for `COUNTRIES.length` (2 here)
-    // alike. Digits are stripped so a thousands separator is free to differ
-    // by locale.
-    const numbers = screen
-      .getAllByText(/^\d[\d.,\s]*$/)
-      .map((el) => Number(el.textContent.replace(/[^\d]/g, '')))
-      .filter((n) => Number.isFinite(n));
-    expect(numbers).toContain(FIXTURE_TOTAL);
+    expect(screen.queryByText('clubes')).not.toBeInTheDocument();
+    expect(screen.queryByText('idiomas')).not.toBeInTheDocument();
+    expect(screen.queryByText('máquinas')).not.toBeInTheDocument();
+  });
+
+  it('shows the equipment count of the filtered grid, directly above it', async () => {
+    const user = userEvent.setup();
+    renderCatalog('es');
+    const total = EQUIPMENT.length;
+    expect(screen.getByText(`Equipos: ${total}`)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Pecho' }));
+    const chest = EQUIPMENT.filter((e) => e.category === 'chest').length;
+    expect(chest).toBeLessThan(total);
+    expect(screen.getByText(`Equipos: ${chest}`)).toBeInTheDocument();
   });
 
   it('offers no club picker entry — club management lives in Settings (move-club-picker-to-settings AC4)', () => {

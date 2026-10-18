@@ -634,7 +634,7 @@ export function ActiveSessionScreen({ onSessionEnded }) {
   }
 
   return (
-    <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: 40 }}>
+    <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: 'calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + var(--space-6))' }}>
       <div aria-live="polite" className="sr-only">
         {announcement}
       </div>
@@ -657,7 +657,7 @@ export function ActiveSessionScreen({ onSessionEnded }) {
         </div>
       </div>
 
-      <div style={{ paddingBlock: 'var(--space-4)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 10 }}>
+      <div style={{ paddingBlock: 'var(--space-4)', paddingInline: 'var(--page-pad-x)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 10 }}>
         {merged.map((ex) => (
           <ExerciseLogCard
             key={ex.exerciseIndex + '-' + (ex.equipmentId ?? 'x')}

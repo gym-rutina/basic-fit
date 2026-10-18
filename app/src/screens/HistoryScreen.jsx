@@ -238,7 +238,7 @@ export function HistoryScreen() {
         }
       />
 
-      <div style={{ paddingBlock: 'var(--space-5)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 10 }}>
+      <div style={{ paddingBlock: 'var(--space-5)', paddingInline: 'var(--page-pad-x)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 10 }}>
         {/* multi-rutina-library S4 — per-rutina filter (AC17). Only rendered
             when history actually spans ≥2 rutinas; flex-wrap, no scroll
             (hidden-affordance anti-pattern); radiogroup per the proven

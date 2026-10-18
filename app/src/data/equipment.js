@@ -1,7 +1,7 @@
 // Bundled at build time (same offline-embedding convention as the existing
 // static-HTML pipeline — spec.md's Architecture note: "the app does not
-// fetch them at runtime"). Real data: 48 items (gym-directory-and-catalog
-// expanded the catalog from 27 to 48 — X1), languages en/es/be
+// fetch them at runtime"). Real data: 52 items (gym-directory-and-catalog
+// expanded the catalog from 27 to 48 — X1, then +4 Magnum), languages en/es/be
 // (data/equipment.json's own metadata.languages — spec.md's "EN/ES/RU" is a
 // known typo, flagged for eliciting-requirements; the shipped UI must never
 // hardcode "RU").

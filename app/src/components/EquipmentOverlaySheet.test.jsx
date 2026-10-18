@@ -62,13 +62,13 @@ describe('sheet semantics (ux-design §5)', () => {
 });
 
 describe('three sections grouped by kind (AC44, R7.2)', () => {
-  it('renders all 48 entries as checkboxes', async () => {
+  it('renders all 52 entries as checkboxes', async () => {
     renderOverlay();
     expect(await screen.findAllByRole('checkbox')).toHaveLength(EQUIPMENT.length);
-    expect(EQUIPMENT.length).toBe(48);
+    expect(EQUIPMENT.length).toBe(52);
   });
 
-  it('renders exactly three sections holding 29 / 14 / 5 items', () => {
+  it('renders exactly three sections holding 31 / 16 / 5 items', () => {
     /**
      * Asserted by GROUP MEMBERSHIP, not by searching the document for the
      * digits. `getByText(/5/)` matches 16 model codes in the shipped catalog
@@ -78,7 +78,7 @@ describe('three sections grouped by kind (AC44, R7.2)', () => {
      * by waiting for it to fail.
      *
      * The counts are the criterion: grouping by `category` instead of `kind`
-     * yields 27/16/5, which still sums to 48 — which is why AC44b's
+     * yields 29/18/5, which still sums to 52 — which is why AC44b's
      * membership assertion below exists as well.
      */
     renderOverlay();
@@ -89,7 +89,7 @@ describe('three sections grouped by kind (AC44, R7.2)', () => {
       accessory: within(screen.getByRole('group', { name: /accesorios/i })).getAllByRole('checkbox').length,
     };
 
-    expect(counts).toEqual({ machine: 29, 'free-weight': 14, accessory: 5 });
+    expect(counts).toEqual({ machine: 31, 'free-weight': 16, accessory: 5 });
   });
 
   it('orders the sections Máquinas → Peso libre → Accesorios (KIND_ORDER)', () => {

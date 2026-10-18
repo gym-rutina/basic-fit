@@ -35,19 +35,19 @@ describe('KIND_ORDER', () => {
 });
 
 describe('kindCounts (AC44)', () => {
-  it('counts the shipped catalog as 29 machines / 14 free weights / 5 accessories', () => {
+  it('counts the shipped catalog as 31 machines / 16 free weights / 5 accessories', () => {
     expect(kindCounts(EQUIPMENT)).toEqual({
-      machine: 29,
-      'free-weight': 14,
+      machine: 31,
+      'free-weight': 16,
       accessory: 5,
     });
   });
 
-  it('accounts for every one of the 48 entries, leaving nothing ungrouped', () => {
+  it('accounts for every one of the 52 entries, leaving nothing ungrouped', () => {
     const counts = kindCounts(EQUIPMENT);
     const total = Object.values(counts).reduce((a, b) => a + b, 0);
     expect(total).toBe(EQUIPMENT.length);
-    expect(total).toBe(48);
+    expect(total).toBe(52);
   });
 
   it('always reports all three kinds, even for an empty catalog', () => {

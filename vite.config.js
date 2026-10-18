@@ -122,7 +122,7 @@ export default defineConfig({
             // by URL in the bundled data/equipment.json, not bundled as build
             // assets — cache them on first view so a previously-viewed rutina's
             // equipment images stay available offline (tech-plan.md's PWA decision).
-            urlPattern: ({ url }) => url.hostname === 'images.jhtassets.com',
+            urlPattern: ({ url }) => url.hostname === 'images.jhtassets.com' || url.hostname === 'assets.jhtbrand.co',
             handler: 'CacheFirst',
             options: {
               cacheName: 'equipment-images',

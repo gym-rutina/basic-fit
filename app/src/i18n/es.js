@@ -222,9 +222,7 @@ export default {
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Catálogo de equipamiento',
   'catalog.subtitle': 'Equipamiento estándar de tus gimnasios Basic-Fit',
-  'catalog.statMachines': 'máquinas',
-  'catalog.statGyms': 'clubes',
-  'catalog.statLanguages': 'idiomas',
+  'catalog.resultsCount': 'Equipos: {n}',
   'catalog.onlyMyClubPill': 'Solo mi club',
   'catalog.clubFilterEmpty':
     'Has marcado todo el equipo como ausente de tu club. Desactiva «Solo mi club» para ver el catálogo completo, o edita las exclusiones en Ajustes.',
@@ -506,5 +504,5 @@ export default {
   'promptEquipment.noClubSelected': '(sin seleccionar todavía — usa el selector de club de la guía)',
   'promptEquipment.equipmentIdNote': 'equipmentId es opcional: omítelo para ejercicios a peso corporal.',
   'promptEquipment.exceptionNote':
-    'extraEquipment es la EXCEPCIÓN, no la opción por defecto: con 48 ids de catálogo (incluyendo peso libre, bancos, barras y esterillas), la mayoría del equipo ya tiene un id. Declara extraEquipment SOLO para equipamiento sin identidad de fabricante (una banda, un rodillo, una toalla).',
+    'extraEquipment es la EXCEPCIÓN, no la opción por defecto: con 52 ids de catálogo (incluyendo peso libre, bancos, barras y esterillas), la mayoría del equipo ya tiene un id. Declara extraEquipment SOLO para equipamiento sin identidad de fabricante (una banda, un rodillo, una toalla).',
 };

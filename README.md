@@ -4,7 +4,7 @@ A six-language (EN/ES/BE/FR/NL/DE) equipment catalog and training-routine PWA fo
 
 ## Overview
 
-48 equipment items (29 machines, 14 free weights, 5 accessories — spanning the Matrix Aura line plus ZIVA free weights and accessories) across BasicFit locations. Each entry includes multilingual names and instructions (English, Spanish, Belarusian, French, Dutch, German), product images, video links, PDF manuals, and muscle-group targeting.
+52 equipment items (31 machines, 16 free weights, 5 accessories — spanning the Matrix Aura and Magnum lines plus ZIVA free weights and accessories) across BasicFit locations. Each entry includes multilingual names and instructions (English, Spanish, Belarusian, French, Dutch, German), product images, video links, PDF manuals, and muscle-group targeting.
 
 A bundled club directory covers 1,727 BasicFit locations across 6 countries (Netherlands, Belgium, France, Luxembourg, Spain, Germany). The PWA's **Club Picker** lets you search it by country → city → club and remembers your choice (you manage it in **Settings → Mi club**); the Catálogo tab uses it to offer a "just my club's equipment" filter. See "Selecting your club" below.
 
@@ -62,7 +62,7 @@ basicfit-rutina/
 │       │   ├── HistoryScreen.jsx   # Past sessions + per-exercise trend
 │       │   ├── ProgressScreen.jsx  # Weight/volume/frequency progress charts
 │       │   ├── ExportScreen.jsx    # JSON + Markdown export
-│       │   ├── CatalogScreen.jsx   # Equipment catalog (48 items, EN/ES/BE/FR/NL/DE) + "Solo mi club" filter + per-card club chip
+│       │   ├── CatalogScreen.jsx   # Equipment catalog (52 items, EN/ES/BE/FR/NL/DE) + "Solo mi club" filter + per-card club chip
 │       │   └── SettingsScreen.jsx  # Settings screen (UI language switcher, backup/restore, club access link, my club + club equipment)
 │       ├── lib/
 │       │   ├── db.js               # IndexedDB wrapper (idb): rutinas library + activeRutina pointer, sessions, lastWeights, clubEquipment; readAllForBackup + atomic restoreFromBackup
@@ -85,7 +85,7 @@ basicfit-rutina/
 │       └── data/
 │           └── equipment.js        # Imports data/equipment.json at build time
 ├── data/
-│   ├── equipment.json              # Complete equipment catalog (48 items: 29 machine / 14 free-weight / 5 accessory)
+│   ├── equipment.json              # Complete equipment catalog (52 items: 31 machine / 16 free-weight / 5 accessory)
 │   ├── gyms.json                   # Legacy 7 hand-entered Malaga gyms (still the app's only club source pre-Build B)
 │   ├── gyms/                       # Scraped multi-country club directory (1,727 clubs, 6 countries) — see below
 │   │   ├── index.json              #   per-country totals + per-city club counts
@@ -167,7 +167,7 @@ npm run build
 Output goes to `dist/`. The build:
 - Bundles the React app with Vite + Rollup
 - Generates a service worker via `vite-plugin-pwa` (Workbox `generateSW`) that precaches the app shell
-- Adds a runtime cache rule for equipment images (`images.jhtassets.com`, CacheFirst, 30-day TTL) so previously-viewed equipment stays available offline
+- Adds a runtime cache rule for equipment images (`images.jhtassets.com` and `assets.jhtbrand.co`, CacheFirst, 30-day TTL) so previously-viewed equipment stays available offline
 
 ```bash
 npm run preview          # serve dist/ at http://localhost:4173
@@ -178,7 +178,7 @@ npm run test:viewport    # verify no horizontal overflow and tab-bar stays singl
 
 ```bash
 npm test                 # Vitest suites: sessionMachine, exportFormat, nextDay, db, rutinaLibrary, validateImport, ProgramScreen, LibraryScreen, ConfirmSheet, useInstallPrompt, inviteUrl, inviteStorage, ClubAccessSection, backupFormat, settingsRegistry, db.backup, BackupSection, RestoreSheet, ExportScreen.regression, scraper/normalize/validator scripts
-npm run validate-data    # data integrity gate (48 equipment items; also validates data/gyms/ when present)
+npm run validate-data    # data integrity gate (52 equipment items; also validates data/gyms/ when present)
 ```
 
 ### Installing the PWA
@@ -240,7 +240,7 @@ Two safety behaviors worth knowing before running it:
 5. **History** — past sessions with per-exercise last-3-sessions weight trend, drawn from **all** your rutinas newest-first. Once your history spans more than one program, every card gains a muted attribution line naming the program (and phase) the session came from — including programs you've since deleted from the library — and a **Filtrar por programa** pill row appears so you can view just one program's sessions; it's a view filter only (the stats stay global) and resets when you leave the screen. Each card has its own delete (trash) icon; a **Seleccionar** button in the header switches to selection mode, with **Seleccionar todo** to select everything and a **Borrar (n)** bar to delete the checked sessions in one go. Both single and bulk delete ask for confirmation first and cannot be undone. Deleting a session also rolls back any weight prefills it seeded: the next time you log that exercise, the suggested starting weight falls back to your most recent remaining session instead.
 6. **Progress** — fifth bottom tab after History: per-exercise weight chart (full history), per-session volume bars (each session's planned sets×reps, snapshotted at log time × logged weight, in kg: a rep range counts its lower bound — "10-12" is 10 — while timed holds ("30s") and free text ("AMRAP") count 0, so a hold-only session is a zero bar rather than a blank chart; each bar shows its value above and its date below, with a one-line caption under the heading restating the formula, and the same text is read out per bar to screen readers — sessions old enough to predate those snapshots are computed against the active rutina while it's active and excluded from the chart entirely once it isn't, rather than drawn as zero bars), and a trailing 12-week training-frequency heatmap — all derived from existing session history across all your rutinas (no new store). Volume for older sessions can shift if you later edit the sets/reps of the rutina they belong to.
 7. **Export** — download a JSON archive or copy Markdown to clipboard. Optional Web Share on mobile. See [`docs/export-format.md`](docs/export-format.md) for the exact format.
-8. **Catalog** — all 48 equipment items (29 machines, 14 free weights, 5 accessories) with images and instructions (EN/ES/BE/FR/NL/DE). Once you've chosen a club (in **Settings → Mi club**, see "Selecting your club" below) the Catálogo tab gets two club aids: a **"Solo mi club"** filter pill, and a chip under each equipment card — **En mi club** / **Fuera de mi club** — that includes or excludes that item from your club with one tap. Picking the club and editing the whole equipment list at once live in Settings, not here; with no club chosen the Catálogo tab shows neither the pill nor the chips.
+8. **Catalog** — all 52 equipment items (31 machines, 16 free weights, 5 accessories) with images and instructions (EN/ES/BE/FR/NL/DE). Once you've chosen a club (in **Settings → Mi club**, see "Selecting your club" below) the Catálogo tab gets two club aids: a **"Solo mi club"** filter pill, and a chip under each equipment card — **En mi club** / **Fuera de mi club** — that includes or excludes that item from your club with one tap. Picking the club and editing the whole equipment list at once live in Settings, not here; with no club chosen the Catálogo tab shows neither the pill nor the chips.
 
 ### Mis rutinas — your rutina library
 
@@ -275,12 +275,12 @@ The picker is three dependent fields — **country → city → club** — each 
 
 Once a club is selected:
 
-- **Settings → Mi club → Equipo del club** — an entry row under the club name, with a count hint such as «48 equipos · 3 marcados como ausentes» (just «48 equipos» for the instant before your saved list has loaded). It opens the **Equipamiento de tu club** sheet: untick items your specific club does not have. The list is saved per club in IndexedDB (`clubEquipment` store) and survives a reload. The row is absent until a club is chosen — there is nothing to edit without one.
+- **Settings → Mi club → Equipo del club** — an entry row under the club name, with a count hint such as «52 equipos · 3 marcados como ausentes» (just «52 equipos» for the instant before your saved list has loaded). It opens the **Equipamiento de tu club** sheet: untick items your specific club does not have. The list is saved per club in IndexedDB (`clubEquipment` store) and survives a reload. The row is absent until a club is chosen — there is nothing to edit without one.
 - The Catálogo tab's **"Solo mi club"** pill filters the grid to that club's equipment (using your saved exclusions). It appears only once a club is chosen, is on by default, and does nothing until you have excluded at least one item.
 - Every card in the Catálogo tab gets a chip beneath it — **En mi club** or **Fuera de mi club** — that flips that one item in the same saved list the Settings sheet edits (one list, two editors; a change made in one shows in the other the next time you open it). With the pill on, every visible card is in your club, so tapping a chip excludes the item and its card leaves the view. With the pill off you see the whole catalog: excluded items are dimmed, read **Fuera de mi club**, and one tap adds them back.
 - If the pill leaves nothing to show — typically because you excluded the last item — the grid is replaced by a message: «Has marcado todo el equipo como ausente de tu club. Desactiva «Solo mi club» para ver el catálogo completo, o edita las exclusiones en Ajustes.» When a chip tap empties the grid, keyboard focus moves to the pill so the way back is one keypress.
 - If saving fails, the toggle still applies immediately and a single note, «No se pudo guardar — los cambios se mantienen en esta sesión», appears above the grid (or inside the equipment sheet). The change is kept for the current session only.
-- The wizard's copied prompt embeds a club-scoped equipment table (all 48 items minus your exclusions, grouped by kind: machines / free weights / accessories) and pre-fills field 6 with your club's name, city, and address automatically. No manual gym-id lookup needed.
+- The wizard's copied prompt embeds a club-scoped equipment table (all 52 items minus your exclusions, grouped by kind: machines / free weights / accessories) and pre-fills field 6 with your club's name, city, and address automatically. No manual gym-id lookup needed.
 
 ### Club access link
 
@@ -440,7 +440,7 @@ Full schemas: `data/schema/equipment.schema.json` and `data/schema/rutina.schema
 
 ## Equipment Catalog
 
-48 items across 8 `category` values (the `category` filter pills in the Catálogo tab) — the original 6 machine-room categories, plus two added by this feature:
+52 items across 8 `category` values (the `category` filter pills in the Catálogo tab) — the original 6 machine-room categories, plus two added by this feature:
 
 ### Chest (3)
 G3-S10 Chest Press · G3-S12 Pectoral Fly · G3-S13 Converging Chest Press
@@ -454,14 +454,14 @@ G3-S30 Lat Pulldown · G3-S31 Seated Row · G3-S33 Diverging Lat Pulldown · G3-
 ### Arms (3)
 G3-S40 Arm Curl · G3-S42 Triceps Press · G3-S45 Tricep Extension
 
-### Core (5)
-G3-S50 Abdominal · G3-S51 Abdominal Crunch · G3-S52 Back Extension · G3-S55 Rotary Torso · G3-S60 Dip/Chin Assist
+### Core (6)
+G3-S50 Abdominal · G3-S51 Abdominal Crunch · G3-S52 Back Extension · G3-S55 Rotary Torso · G3-S60 Dip/Chin Assist · MG-A63C Magnum VKR w/Chin
 
-### Legs (8)
-G3-S70 Leg Press · G3-S71 Leg Extension · G3-S72 Seated Leg Curl · G3-S73 Prone Leg Curl · G3-S74 Hip Adductor · G3-S75 Hip Abductor · Smith Machine (G1-FW161) · Perfect Squat (VY-400)
+### Legs (9)
+G3-S70 Leg Press · G3-S71 Leg Extension · G3-S72 Seated Leg Curl · G3-S73 Prone Leg Curl · G3-S74 Hip Adductor · G3-S75 Hip Abductor · Smith Machine (G1-FW161) · Perfect Squat (VY-400) · MG-PL71 Magnum Hack Squat
 
-### Free weights (16)
-G3-MS24 Aura Adjustable Pulley · MG-PL13 Magnum Supine Bench Press · ZVO-DBPU-1648 Solid Steel Urethane Dumbbells · ZVO-PUTF-3078 Urethane Functional Tribells · ZVO-BSPU-1619 Solid Steel Urethane Barbells · ZVO-BCPU-1606 Solid Steel Urethane EZ Curl Barbells · ZVO-DCPU-1616 Urethane Grip Discs · ZMT-CTKB-5626 Signature Steel Competition Kettlebells · ZVO-LBHC-2953 Olympic Bars · ZVO-HCOB-2966 Olympic EZ Curl Bar 1.2m · ZFT-HCOB-2965 Olympic Tricep Bar 76cm · ZVO-PBHC-2936 Olympic Hex Trap Bar · ZVO-PBHC-2933 Multi-Grip Swiss Bar · ZEX-ICBP-TP08 Olympic Incline Bench · ZEX-XFID-6762 F-I-D Bench 2.0 · ZEX-XFLT-6752 Flat Bench 2.0
+### Free weights (18)
+G3-MS24 Aura Adjustable Pulley · MG-PL13 Magnum Supine Bench Press · MG-A73 Magnum Power Station · MG-MR47 Magnum MEGA Power Rack · ZVO-DBPU-1648 Solid Steel Urethane Dumbbells · ZVO-PUTF-3078 Urethane Functional Tribells · ZVO-BSPU-1619 Solid Steel Urethane Barbells · ZVO-BCPU-1606 Solid Steel Urethane EZ Curl Barbells · ZVO-DCPU-1616 Urethane Grip Discs · ZMT-CTKB-5626 Signature Steel Competition Kettlebells · ZVO-LBHC-2953 Olympic Bars · ZVO-HCOB-2966 Olympic EZ Curl Bar 1.2m · ZFT-HCOB-2965 Olympic Tricep Bar 76cm · ZVO-PBHC-2936 Olympic Hex Trap Bar · ZVO-PBHC-2933 Multi-Grip Swiss Bar · ZEX-ICBP-TP08 Olympic Incline Bench · ZEX-XFID-6762 F-I-D Bench 2.0 · ZEX-XFLT-6752 Flat Bench 2.0
 
 Two of these (`G3-MS24`, `MG-PL13`) are `kind: "machine"` despite living in the `free-weights` category — see the `kind` vs `category` note in Data Format above.
 

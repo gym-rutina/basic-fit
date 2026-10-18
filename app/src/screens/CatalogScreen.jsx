@@ -2,12 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenHeader } from '../components/ScreenHeader.jsx';
 import { FilterPill } from '../../../design-system/components/primitives/FilterPill.jsx';
-import { StatCard } from '../../../design-system/components/primitives/StatCard.jsx';
 import { Icon } from '../../../design-system/components/primitives/Icon.jsx';
 import { SelectField } from '../../../design-system/components/primitives/SelectField.jsx';
 import { EquipmentCard } from '../../../design-system/components/composite/EquipmentCard.jsx';
-import { EQUIPMENT, EQUIPMENT_METADATA, LANGUAGES, mainImageUrl, equipmentDisplayName } from '../data/equipment.js';
-import { TOTAL_CLUBS } from '../data/gyms.js';
+import { EQUIPMENT, LANGUAGES, mainImageUrl, equipmentDisplayName } from '../data/equipment.js';
 import { muscleGroupLabels } from '../lib/muscleGroups.js';
 import { readClub } from '../lib/clubStorage.js';
 import { useClubExclusions } from '../lib/useClubExclusions.js';
@@ -135,19 +133,11 @@ export function CatalogScreen() {
     <div style={{ background: 'var(--bf-grey-1)', minHeight: '100vh', paddingBottom: 90 }}>
       <ScreenHeader title={t('catalog.title')} subtitle={t('catalog.subtitle')} onSettings={() => navigate('/settings')} />
 
-      <div style={{ ...wrap, marginTop: 'var(--space-6)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 96px), 1fr))', gap: 10 }}>
-          <StatCard value={String(EQUIPMENT_METADATA.totalEquipment ?? EQUIPMENT.length)} label={t('catalog.statMachines')} />
-          <StatCard value={String(TOTAL_CLUBS)} label={t('catalog.statGyms')} />
-          <StatCard value={String(LANGUAGES.length)} label={t('catalog.statLanguages')} />
-        </div>
-      </div>
-
       {/* move-club-picker-to-settings AC4/S2: the club identity row, the
           choose/change buttons and the equipment-overlay entry are GONE from
           this screen — unconditionally, in every state. Club management lives
           in Settings' "Mi club" section. */}
-      <div style={{ ...wrap, marginTop: 'var(--space-6)', display: 'grid', gap: 12 }}>
+      <div style={{ ...wrap, marginTop: 'var(--space-6)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 12 }}>
         {/* pill-overflow-ux S2 (AC7): the ES/EN/BE pill row is now a labelled
             select. Behaviour contract unchanged — `lang` stays screen-local,
             never persisted, and equipment name/description/video follow it
@@ -218,6 +208,17 @@ export function CatalogScreen() {
             </FilterPill>
           </div>
         )}
+      </div>
+
+      {/* Live count of what the grid below actually shows — reflects the
+          category and "Solo mi club" filters, so it sits right above the grid. */}
+      <div style={{ ...wrap, marginTop: 'var(--space-5)' }}>
+        <p
+          aria-live="polite"
+          style={{ margin: 0, font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)' }}
+        >
+          {t('catalog.resultsCount', { n: items.length })}
+        </p>
       </div>
 
       {/* D2 / R7.3 — ONE screen-level write-failure note. `writeFailed` is a

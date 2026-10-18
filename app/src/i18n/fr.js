@@ -221,9 +221,7 @@ export default {
   // ── catalog (CatalogScreen.jsx) ──────────────────────────────────────────
   'catalog.title': 'Catalogue d’équipement',
   'catalog.subtitle': 'L’équipement standard de tes clubs Basic-Fit',
-  'catalog.statMachines': 'machines',
-  'catalog.statGyms': 'clubs',
-  'catalog.statLanguages': 'langues',
+  'catalog.resultsCount': 'Équipements : {n}',
   'catalog.clubFilterEmpty':
     'Tu as marqué tout l’équipement comme absent de ton club. Désactive « Uniquement mon club » pour voir le catalogue complet, ou modifie les exclusions dans les Réglages.',
   'catalog.card.inClub': 'Dans mon club',
@@ -505,5 +503,5 @@ export default {
   'promptEquipment.noClubSelected': '(pas encore sélectionné — utilise le sélecteur de club du guide)',
   'promptEquipment.equipmentIdNote': 'equipmentId est facultatif : omets-le pour les exercices au poids du corps.',
   'promptEquipment.exceptionNote':
-    'extraEquipment est l’EXCEPTION, pas l’option par défaut : avec 48 ids au catalogue (poids libres, bancs, barres et tapis inclus), la plupart des équipements ont déjà un id. Déclare extraEquipment UNIQUEMENT pour du matériel sans identité de fabricant (une bande élastique, un rouleau, une serviette).',
+    'extraEquipment est l’EXCEPTION, pas l’option par défaut : avec 52 ids au catalogue (poids libres, bancs, barres et tapis inclus), la plupart des équipements ont déjà un id. Déclare extraEquipment UNIQUEMENT pour du matériel sans identité de fabricant (une bande élastique, un rouleau, une serviette).',
 };

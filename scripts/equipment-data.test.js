@@ -58,20 +58,19 @@ const KIND_IMPLIED_BY_CATEGORY = {
 };
 
 describe('catalog size (X1, AC11)', () => {
-  it('holds exactly 48 entries', () => {
-    // 27 + 21. Not 47: the brief's rollups say 47 and its itemised tables
-    // say 48 — see spec.md X1 for which one is arithmetic and which is a
-    // consistent off-by-one.
-    expect(ITEMS).toHaveLength(48);
+  it('holds exactly 52 entries', () => {
+    // 27 + 21 (gym-directory-and-catalog X1) + 4 Magnum additions: MG-PL71,
+    // MG-A63C, MG-A73, MG-MR47 (photographed from the gym floor labels).
+    expect(ITEMS).toHaveLength(52);
   });
 
   it('agrees with metadata.totalEquipment', () => {
-    expect(catalog.metadata.totalEquipment).toBe(48);
+    expect(catalog.metadata.totalEquipment).toBe(52);
   });
 
   it('has no duplicate id and no duplicate modelCode', () => {
-    expect(new Set(ITEMS.map((i) => i.id)).size).toBe(48);
-    expect(new Set(ITEMS.map((i) => i.modelCode)).size).toBe(48);
+    expect(new Set(ITEMS.map((i) => i.id)).size).toBe(52);
+    expect(new Set(ITEMS.map((i) => i.modelCode)).size).toBe(52);
   });
 });
 
@@ -83,9 +82,10 @@ describe('the 21 additions (AC12, AC13)', () => {
     expect(item.kind).toBe(kind);
   });
 
-  it('adds exactly those 21 and nothing else', () => {
+  it('adds exactly those 21 plus the two Magnum free-weight stations', () => {
     const added = ITEMS.filter((i) => ['free-weights', 'accessories'].includes(i.category));
-    expect(added).toHaveLength(21);
+    expect(added).toHaveLength(23);
+    expect(added.filter((i) => i.modelCode === 'MG-A73' || i.modelCode === 'MG-MR47')).toHaveLength(2);
   });
 
   it('does not make ZVO-DBPU-1633 an entry — it is a heavier variant of ZVO-DBPU-1648', () => {
@@ -116,7 +116,7 @@ describe('gymZone / gyms → verifiedAt migration (R2.2, AC15, AC16)', () => {
 });
 
 describe('kind (M11, AC44 data half, AC44b)', () => {
-  it('is present and explicit on all 48 — never left to the schema default', () => {
+  it('is present and explicit on all 52 — never left to the schema default', () => {
     // R2.2/R2.3 write it explicitly so the counts below are assertable
     // rather than inferred from an absent field.
     for (const item of ITEMS) {
@@ -124,9 +124,9 @@ describe('kind (M11, AC44 data half, AC44b)', () => {
     }
   });
 
-  it('splits 29 machines / 14 free weights / 5 accessories', () => {
+  it('splits 31 machines / 16 free weights / 5 accessories', () => {
     const counts = ITEMS.reduce((acc, i) => ({ ...acc, [i.kind]: (acc[i.kind] ?? 0) + 1 }), {});
-    expect(counts).toEqual({ machine: 29, 'free-weight': 14, accessory: 5 });
+    expect(counts).toEqual({ machine: 31, 'free-weight': 16, accessory: 5 });
   });
 
   it('uses only the three catalog kinds — never "gear" (AC44c)', () => {
@@ -150,13 +150,13 @@ describe('kind (M11, AC44 data half, AC44b)', () => {
     }
   });
 
-  it('keeps all 27 pre-existing machines at kind: machine', () => {
+  it('keeps all 29 muscle-category entries at kind: machine', () => {
     const muscleCategories = Object.keys(KIND_IMPLIED_BY_CATEGORY).filter(
       (c) => KIND_IMPLIED_BY_CATEGORY[c] === 'machine'
     );
     const existing = ITEMS.filter((i) => muscleCategories.includes(i.category));
 
-    expect(existing).toHaveLength(27);
+    expect(existing).toHaveLength(29);
     expect(existing.every((i) => i.kind === 'machine')).toBe(true);
   });
 });

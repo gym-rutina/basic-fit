@@ -83,7 +83,7 @@ export function ExportScreen() {
         <p style={{ font: 'var(--text-body-sm)', color: 'var(--text-muted)', margin: '6px 0 0' }}>{t('export.subtitle')}</p>
       </div>
 
-      <div style={{ paddingBlock: 'var(--space-5)', paddingInline: 'var(--page-pad-x)', display: 'grid', gap: 'var(--space-5)' }}>
+      <div style={{ paddingBlock: 'var(--space-5)', paddingInline: 'var(--page-pad-x)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--space-5)' }}>
         <div>
           <label htmlFor="export-range" style={{ display: 'block', font: 'var(--text-label)', letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
             {t('export.rangeLabel')}
